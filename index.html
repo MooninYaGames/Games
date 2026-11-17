@@ -377,6 +377,46 @@
     }
     @media(prefers-reduced-motion:reduce){.nmf-die.tumbling{animation:none!important;transform:none!important}}
 
+  
+    /* v1.2: simple primary action + transparent secondary action */
+    .nf-board-main.is-rolling{display:grid;grid-template-columns:minmax(0,1fr) 166px;grid-template-rows:auto auto;align-items:center;justify-items:stretch;gap:4px 16px;min-height:214px;padding:14px 8px 9px}
+    .nf-board-main.is-rolling .nmf-dice{grid-area:1 / 1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;overflow:visible;width:100%;max-width:100%;min-height:100px;padding:7px 4px;margin:0;gap:10px}
+    .nf-board-main.is-rolling .nf-board-message{grid-area:2 / 1;text-align:center;margin:0;font-size:.76rem}
+    .nf-board-main.is-rolling .nf-buttons{grid-area:1 / 2 / span 2 / 3;display:flex;flex-direction:column;justify-content:center;align-items:stretch;width:100%;gap:5px}
+    .nf-buttons .nf-primary{background:linear-gradient(135deg,#22c7c1,#10a7ad);border:1px solid #55e2db;color:#062c39;font-weight:850;font-size:.87rem;min-height:49px;padding:12px 10px;box-shadow:0 5px 13px rgba(3,10,20,.25);white-space:normal}
+    .nf-buttons .nf-primary:disabled{opacity:.46;filter:saturate(.5);box-shadow:none}
+    .nf-buttons .nf-end-round{font:inherit;border:0;background:transparent;box-shadow:none;color:#a6c7d2;text-decoration:underline;text-decoration-color:#7da1aa65;text-underline-offset:3px;font-size:.73rem;font-weight:650;min-height:33px;padding:5px 8px;border-radius:6px;cursor:pointer}
+    .nf-buttons .nf-end-round:hover:not(:disabled){background:#ffffff0a;color:#e9ffff}
+    .nf-buttons .nf-end-round:disabled{opacity:.45;cursor:not-allowed}
+    .nf-recap{width:min(100%,650px);margin:10px auto;padding:16px 20px 18px;display:flex;flex-direction:column;gap:11px;color:#e8fbfc;min-height:260px}
+    .nf-recap-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .nf-recap-heading h2{font-size:clamp(1.3rem,2.4vw,1.8rem);margin:4px 0 0;letter-spacing:-.03em}
+    .nf-recap-points{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;color:#7befe4;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .nf-recap-points.negative{color:#ffb8c2}
+    .nf-recap-points small{font-size:.65rem;color:#c1dde0;letter-spacing:.03em;font-weight:600}
+    .nf-recap-rows{display:grid;gap:5px;max-height:145px;overflow:auto;padding:3px 0}
+    .nf-recap-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #9ddee125;font-size:.86rem;color:#e5f7f9}
+    .nf-recap-mod{color:#7befe4;font-weight:750}
+    .nf-recap-health{display:grid;grid-template-columns:1fr auto;gap:4px 12px;background:#102f3b;border:1px solid #326975;border-radius:10px;padding:10px 13px;color:#effafb;font-size:.85rem}
+    .nf-recap-health>span:first-child{color:#faa8b4;font-weight:800}
+    .nf-recap-health small{grid-column:1 / -1;font-size:.75rem;color:#b1d1da}
+    .nf-recap-reward{border:1px solid #c8ba7280;background:#d4ba6020;padding:8px 11px;border-radius:9px;color:#ffe6a0;font-size:.8rem;font-weight:750}
+    .nf-recap-continue{width:100%;max-width:290px;align-self:flex-end;font-size:.85rem}
+    @media(max-width:650px){
+      .nf-board-main.is-rolling{grid-template-columns:minmax(0,1fr) 105px;min-height:205px;column-gap:5px;padding:8px 1px 5px}
+      .nf-board-main.is-rolling .nmf-dice{gap:6px 7px;padding:4px 0;min-height:158px}
+      .nf-board-main.is-rolling .nmf-die{flex-basis:57px;width:57px;height:75px}
+      .nf-board-main.is-rolling .nf-board-message{font-size:.67rem}
+      .nf-board-main.is-rolling .nf-buttons{gap:6px}
+      .nf-buttons .nf-primary{font-size:.72rem;min-height:53px;padding:9px 6px}
+      .nf-buttons .nf-end-round{font-size:.68rem;padding:5px 2px}
+      .nf-recap{padding:13px 7px 15px;gap:9px}
+      .nf-recap-points{font-size:1.7rem}
+      .nf-recap-rows{max-height:132px}
+      .nf-recap-row{font-size:.78rem}
+      .nf-recap-continue{max-width:100%}
+    }
+
   </style>
 </head>
 <body>
@@ -692,22 +732,48 @@
   }
   function bankNmf(){
     if(!nmf||nmfRollLocked||nmf.phase!=='rolling')return;
-    const r=scoreNmfRoll(nmf.dice),drain=nmfDrain(nmf.round);
+    const r=scoreNmfRoll(nmf.dice),drain=nmfDrain(nmf.round),hpBefore=nmf.hp;
     nmf.score+=r.total;
-    nmf.hp+=r.heal-r.penalty-drain;
-    nmf.lastResult={...r,drain,round:nmf.round};
+    nmf.hp=Math.max(0,nmf.hp+r.heal-r.penalty-drain);
+    nmf.lastResult={...r,drain,round:nmf.round,hpBefore,hpAfter:nmf.hp};
     nmf.history.unshift({round:nmf.round,total:r.total,hp:nmf.hp,damage:r.penalty+drain,heal:r.heal});
     nmf.history=nmf.history.slice(0,20);
     nmf.selected=[];
-    if(nmf.hp<=0){nmf.hp=0;nmf.phase='over';}
+    // Pause on an actual scoring explanation before advancing to another round.
+    // Saving the phase makes this recap survive a page refresh.
+    nmf.mysteryQueue=nmf.hp>0?r.dips+(nmf.round%5===0?1:0):0;
+    nmf.phase='recap';
+    saveNmf();render();
+  }
+  function continueNmf(){
+    if(!nmf||nmf.phase!=='recap')return;
+    if(nmf.hp<=0){nmf.phase='over';}
     else{
-      nmf.mysteryQueue=r.dips+(nmf.round%5===0?1:0);
       nmf.round++;
       nmf.dice=[];
       if(nmf.mysteryQueue>0 && nmf.bag.length)openMysteryNmf();
       else{nmf.mysteryQueue=0;nmf.phase='ready';}
     }
     saveNmf();render();
+  }
+  function nfRecapView(){
+    const r=nmf.lastResult;
+    if(!r)return '<div class="nf-recap"><button class="btn" data-action="nf-continue">Continue</button></div>';
+    const sign=(v)=>v>=0?'+'+v:String(v);
+    const healthRows=[];
+    if(r.heal)healthRows.push(`+${r.heal} healing`);
+    if(r.penalty)healthRows.push(`−${r.penalty} four-of-a-kind`);
+    healthRows.push(`−${r.drain} round drain`);
+    const bonus=nmf.hp>0&&r.round%5===0?1:0;
+    const picks=nmf.hp>0&&nmf.bag.length?nmf.mysteryQueue:0;
+    const nextLabel=nmf.hp<=0?'View final score':picks?`Open Mystery Box (${picks})`:`Continue to round ${r.round+1}`;
+    return `<div class="nf-recap" aria-live="polite">
+      <div class="nf-recap-heading"><div><span class="eyebrow">ROUND ${r.round} COMPLETE</span><h2>Score breakdown</h2></div><div class="nf-recap-points ${r.total<0?'negative':''}">${sign(r.total)} <small>points</small></div></div>
+      <div class="nf-recap-rows">${r.breakdown.length?r.breakdown.map(line=>`<div class="nf-recap-row"><span>${escaped(line)}</span></div>`).join(''):'<div class="nf-recap-row"><span>No numerical faces scored.</span></div>'}${r.mods!==1?`<div class="nf-recap-row nf-recap-mod"><span>Subtotal ${sign(r.subtotal)} × ${r.mods} modifier</span><strong>${sign(r.total)}</strong></div>`:''}</div>
+      <div class="nf-recap-health"><span>♥ HP</span><span>${r.hpBefore} → <strong>${r.hpAfter}</strong></span><small>${healthRows.join(' · ')}</small></div>
+      ${picks?`<div class="nf-recap-reward">✦ ${picks} Mystery Box ${picks===1?'pick':'picks'} earned${bonus?' (includes round-5 bonus)':''}</div>`:''}
+      <button class="btn nf-recap-continue" data-action="nf-continue">${nextLabel} →</button>
+    </div>`;
   }
   function openMysteryNmf(){
     if(!nmf)return;
@@ -739,12 +805,12 @@
   }
   function nfView(){
     if(!nmf)return `<div class="page-heading nf-heading"><div><span class="eyebrow">DICE GAME · V1.2</span><h1>No More Fours</h1><p>Five dice. Three rerolls. Ten HP.</p></div><a class="btn sm ghost" href="#no-fours-rules">Rules</a></div><section class="nmf-start surface"><div class="nmf-start-art"><span class="giant-die">⚄</span><span class="giant-die secondary">⚃</span></div><div><h2>Start a run</h2><p>Roll dice, grow your collection, and aim for your highest score.</p><div class="nmf-start-actions"><button class="btn" data-action="nf-new">Start game</button><a class="btn ghost" href="#scores">High scores</a></div></div></section>`;
-    const ready=nmf.phase==='ready',roll=nmf.phase==='rolling',mystery=nmf.phase==='mystery',over=nmf.phase==='over';
+    const ready=nmf.phase==='ready',roll=nmf.phase==='rolling',mystery=nmf.phase==='mystery',over=nmf.phase==='over',recap=nmf.phase==='recap';
     return `<section class="nf-game-screen"><div class="game-head nf-head"><div class="game-head-left"><div class="game-mark" aria-hidden="true">⚄</div><div><div class="game-name">No More Fours <small class="nmf-version">V1.2</small></div></div></div><div class="game-head-actions"><a class="btn sm ghost" href="#no-fours-rules">Rules</a><a class="btn sm ghost" href="#scores">High scores</a><button class="btn sm outline" data-action="nf-reset">New game</button></div></div>
       <div class="nf-stats" aria-label="Game status"><div class="nf-stat"><span>SCORE</span><strong>${Math.round(nmf.score).toLocaleString()}</strong></div><div class="nf-stat hp-stat"><span><b class="hp-heart" aria-hidden="true">♥</b> HP</span><strong class="${nmf.hp<=3?'danger-txt':''}">${nmf.hp}</strong></div><div class="nf-stat"><span>ROUND</span><strong>${nmf.round}</strong></div><div class="nf-stat"><span>REROLLS</span><strong>${roll?nmf.rerollsLeft:nmfRerollBudget()}</strong></div></div>
-      <section class="nf-board surface" aria-label="No More Fours play area"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':mystery?'MYSTERY BOX':'GAME COMPLETE'}</span><span>${nmf.pool.length} dice in collection</span></div>
-      ${mystery?mysteryView():over?`<div class="nf-over"><span class="eyebrow">RUN COMPLETE</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Round ${nmf.round} · ${nmf.submitted?'Score saved in this browser.':'Save your score with three initials.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">High scores</a></div></div>`:
-      `<div class="nf-board-main"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn" data-action="nf-roll">Roll dice</button>':`<button class="btn ghost" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="btn" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>Finish round</button>`}</div></div>`}
+      <section class="nf-board surface" aria-label="No More Fours play area"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':recap?'ROUND RESULTS':mystery?'MYSTERY BOX':'GAME COMPLETE'}</span><span>${nmf.pool.length} dice in collection</span></div>
+      ${mystery?mysteryView():recap?nfRecapView():over?`<div class="nf-over"><span class="eyebrow">RUN COMPLETE</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Round ${nmf.round} · ${nmf.submitted?'Score saved in this browser.':'Save your score with three initials.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">High scores</a></div></div>`:
+      `<div class="nf-board-main ${roll?'is-rolling':'is-ready'}"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn nf-primary" data-action="nf-roll">Roll dice</button>':`<button class="btn nf-primary" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="nf-end-round" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>End round</button>`}</div></div>`}
       ${nmfAwardToast?`<div class="nf-award-toast" aria-live="polite"><span>✦</span> Added ${escaped(nmfAwardToast)} to your dice</div>`:''}</section>
       <details class="nf-details"><summary>Collection, recent rounds &amp; local high scores <span aria-hidden="true">⌄</span></summary><div class="nf-details-grid"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Die')}</span></div>`).join('')}</div></section><section class="surface nf-aside"><div class="panel-title">LAST ROUNDS</div>${nmf.history.slice(0,5).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p>No rounds completed.</p>'}</section><section class="surface nf-aside"><div class="panel-title">HIGH SCORES</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">See all scores →</a></section></div></details></section>`;
   }
@@ -783,6 +849,7 @@
     if(action==='nf-select'){toggleNmfDie(Number(button.dataset.index));return;}
     if(action==='nf-reroll'){rerollNmf();return;}
     if(action==='nf-bank'){bankNmf();return;}
+    if(action==='nf-continue'){continueNmf();return;}
     if(action==='nf-choice'){chooseMysteryNmf(button.dataset.id);return;}
     if(action==='player-count'){cfg.count=Number(button.dataset.num);render();return;}
     if(action==='new-game'||action==='rematch'){newGame();return;}
