@@ -128,18 +128,191 @@
     .nf-mini-scores .score-line{grid-template-columns:28px 1fr 65px 35px;padding:8px 0;font-size:.72rem;gap:5px}.nf-mini-scores .score-amount{font-size:.78rem}.nf-mini-scores .score-round{font-size:.7rem}.nf-mini-scores .empty-score{padding:12px 0;font-size:.74rem}.nf-more-scores{display:block;color:#91f7f5;font-size:.76rem;margin-top:12px}
     @media(max-width:520px){.nav-link.nav-cta{display:block}}
 
+
+    /* Minimal game navigation; original dark-aqua visual system retained */
+    .site-header{height:56px;position:relative;background:rgba(5,31,40,.95)}
+    .header-inner{height:56px;padding:0 24px}
+    .brand{pointer-events:none;user-select:none;letter-spacing:.06em;font-size:.95rem}
+    .nav-links{display:none!important}
+    .game-back-link{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;color:#8adbdc;font-weight:750;line-height:1;margin:0 0 12px;padding:4px 0}
+    .game-back-link:hover{color:#e2ffff}
+    .shell{padding-top:20px}
+    .hero{min-height:335px;padding:28px}
+    .hero-copy h1{font-size:clamp(2.8rem,4.7vw,4.3rem)}
+    .hero-copy p{max-width:430px}
+    .hero-buttons{display:none}
+    .hero-mascot{max-height:280px}
+    .section-top{margin-top:28px}
+    /* Quiet, space-efficient gameplay stage */
+    .nf-game-screen{max-width:1180px;margin:0 auto}
+    .nf-head{margin-bottom:9px}
+    .nf-head .game-name{font-size:1.42rem}
+    .nf-head .game-mark{width:36px;height:36px;font-size:1.25rem}
+    .nf-head .game-head-actions .btn{padding:7px 10px;min-height:32px}
+    .nf-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+    .nf-stat{min-height:63px;padding:11px 15px;background:#10333e;border:1px solid #2b626b;border-radius:11px;display:flex;flex-direction:column;gap:3px;justify-content:center}
+    .nf-stat span{font-size:.67rem;color:#9dd9db;letter-spacing:.08em}
+    .nf-stat strong{font-size:1.6rem;line-height:1.15;margin:0;font-variant-numeric:tabular-nums}
+    .hp-heart{display:inline-block;color:#f07891;font-size:1.1rem;margin-right:3px;line-height:.5;vertical-align:-1px;letter-spacing:0}
+    .nf-board{min-height:0;padding:12px 14px 16px;background:radial-gradient(ellipse at 50% -40%,#194b55 0,transparent 62%),#0e2a35;border:1px solid #377780;border-radius:16px;box-shadow:0 12px 30px #00131f35;position:relative}
+    .nf-board-top{padding:0 2px 10px;border-bottom:1px solid #72c7cc2a;font-size:.68rem}
+    .nf-board-main{min-height:242px;padding:8px 0 7px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px}
+    .nmf-dice{display:flex;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;width:max-content;max-width:100%;min-height:125px;gap:10px;padding:18px 7px 10px;margin:0 auto;scrollbar-width:thin;scrollbar-color:#327d80 transparent}
+    .nmf-die{width:79px;height:94px;flex:0 0 79px;border-radius:13px;border:2px solid #b7eaeb;background:linear-gradient(145deg,#f4ffff,#d9f4f2);color:#0a4c58;box-shadow:0 5px 0 #045362,0 9px 18px #00121d66;transition:border-color .12s,box-shadow .12s,filter .12s;animation:none!important;transform:none!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;padding:5px}
+    .nmf-die.special-die{background:linear-gradient(145deg,#dcffff,#a8e8e6);border-color:#6adad6}
+    .nmf-die.clickable:hover,.nmf-die:not(:disabled):hover{filter:brightness(1.04);transform:none!important}
+    .nmf-die.selected{border-color:#f5c56d;box-shadow:0 0 0 3px #efcf7944,0 5px 0 #92682d,0 9px 18px #00121d66;transform:none!important}
+    .selected-check{position:absolute;top:-10px;left:-8px;display:none;place-items:center;width:22px;height:22px;border-radius:50%;background:#f2c36b;color:#172d36;border:2px solid #0c3641;font-weight:950;font-size:.68rem;z-index:2}
+    .nmf-die.selected .selected-check{display:grid}
+    .die-core{display:grid;place-items:center;position:relative;transform-style:preserve-3d;perspective:500px;width:62px;height:58px;flex:none;backface-visibility:visible}
+    .nmf-die.tumbling .die-core{animation:die-roll-physically .72s cubic-bezier(.24,.62,.19,1) both;will-change:transform}
+    @keyframes die-roll-physically{
+      0%{transform:translateY(1px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)}
+      22%{transform:translateY(-28px) rotateX(165deg) rotateY(90deg) rotateZ(35deg) scale(.94)}
+      52%{transform:translateY(-14px) rotateX(430deg) rotateY(210deg) rotateZ(-26deg) scale(.96)}
+      75%{transform:translateY(-13px) rotateX(650deg) rotateY(338deg) rotateZ(8deg) scale(1.04)}
+      100%{transform:translateY(0px) rotateX(720deg) rotateY(360deg) rotateZ(0deg) scale(1)}
+    }
+    .nmf-die .die-face{font-size:2.15rem;line-height:1;letter-spacing:-.06em;z-index:1;transform:translateZ(3px)}
+    .nmf-die small{font-size:.53rem;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nmf-die .die-corner{top:1px;right:0px;font-size:.7rem}
+    .nf-board-message{font-size:.77rem;color:#a9d5db;margin:0;min-height:19px}
+    .nf-buttons{gap:10px;min-height:43px;margin:0}
+    .nf-buttons .btn{min-height:40px;padding:10px 22px;border-radius:9px;font-size:.82rem}
+    .nf-preview,.nf-round-note,.nmf-tip{display:none!important}
+    .nf-details{border:1px solid #255b65;background:#0b2935;border-radius:12px;margin-top:10px;color:#aed9df;overflow:hidden}
+    .nf-details>summary{cursor:pointer;padding:10px 15px;font-size:.76rem;font-weight:750;list-style:none;display:flex;justify-content:space-between;align-items:center}
+    .nf-details>summary::-webkit-details-marker{display:none}
+    .nf-details[open]>summary{border-bottom:1px solid #32646c}
+    .nf-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+    .nf-details .nf-aside{padding:14px;min-width:0;box-shadow:none}
+    .nf-details .nf-collection{max-height:190px;overflow:auto}
+    .nf-details .nf-collection>div{padding:6px 8px}
+    .nf-award-toast{pointer-events:none;position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);z-index:8;background:linear-gradient(120deg,#164f61,#116276);border:1px solid #f0d98b;border-radius:12px;color:#fff7d9;padding:16px 24px;box-shadow:0 0 34px #e4cb6e44;animation:reward-toast 1.3s ease forwards;font-weight:800;text-align:center}
+    .nf-award-toast span{color:#f3d47b;font-size:1.6rem;vertical-align:middle;margin-right:8px}
+    @keyframes reward-toast{0%{opacity:0;transform:translate(-50%,-35%) scale(.84)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}35%,74%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(.98)}}
+    /* Mystery Box: dramatic staged reveal, scoped to the special event */
+    .mystery-cinematic{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:268px;overflow:hidden;text-align:center;isolation:isolate}
+    .mystery-cinematic p{font-size:.75rem;color:#99e8e7;margin:8px 0 0;letter-spacing:.1em}
+    .magic-field{position:relative;width:300px;height:196px;display:grid;place-items:center;perspective:650px}
+    .magic-sigil{position:absolute;top:50%;left:50%;width:190px;height:190px;border:2px solid #a2f7e15c;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 40px #54ffe67d,inset 0 0 35px #50ffe545;animation:magic-orbit 1.5s ease-in-out both}
+    .magic-sigil:after{content:'✦  ✧  ✦  ✧';font-size:19px;letter-spacing:.45em;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#dbfff4;white-space:nowrap}
+    @keyframes magic-orbit{0%{opacity:0;transform:translate(-50%,-50%) rotate(-180deg) scale(.25)}40%{opacity:1}80%{transform:translate(-50%,-50%) rotate(170deg) scale(1.15);opacity:1}100%{transform:translate(-50%,-50%) rotate(240deg) scale(1.85);opacity:0}}
+    .magic-chest{position:relative;z-index:2;width:105px;height:85px;transform-style:preserve-3d;animation:chest-arrive 1.65s ease-out both}
+    .magic-lid{position:absolute;z-index:3;top:10px;left:2px;width:101px;height:39px;border:2px solid #f9d99c;border-radius:15px 15px 5px 5px;background:linear-gradient(#286878,#0b4554);transform-origin:bottom center;box-shadow:inset 0 4px 9px #a9f9e455;animation:magic-lid-open 1.5s ease-in-out both}
+    .magic-base{position:absolute;bottom:0;left:0;width:105px;height:56px;border:2px solid #f2d288;border-radius:9px 9px 15px 15px;background:linear-gradient(145deg,#246d73,#092e42);box-shadow:0 0 25px #eac77a66,0 14px 35px #0008;display:grid;place-items:center;color:#fae0a6;font-size:2rem}
+    @keyframes chest-arrive{0%{opacity:0;transform:translateY(90px) scale(.5) rotate(-15deg)}27%{opacity:1;transform:translateY(-19px) scale(1.12)}58%{transform:translateY(4px) scale(1)}80%{transform:translateY(-12px) scale(1.04)}100%{transform:translateY(-10px) scale(1.15)}}
+    @keyframes magic-lid-open{0%,49%{transform:rotateX(0deg)}65%{transform:rotateX(-70deg)}100%{transform:rotateX(-112deg)}}
+    .magic-title{font-size:1.02rem;font-weight:900;color:#d1fff9;letter-spacing:.16em;text-shadow:0 0 21px #6fead7;animation:magic-caption 1.4s ease both}
+    @keyframes magic-caption{0%{opacity:0;letter-spacing:.35em}45%{opacity:1}100%{letter-spacing:.16em}}
+    .magic-spark{position:absolute;top:50%;left:50%;width:5px;height:5px;border-radius:50%;background:#ffffd1;box-shadow:0 0 9px 2px #9cfbe1;opacity:0;z-index:3;--theta:calc(var(--i) * 12.857deg);animation:magic-spark-fly 1.55s cubic-bezier(.12,.59,.27,1) both;animation-delay:calc(var(--i) * 12ms)}
+    @keyframes magic-spark-fly{0%,15%{opacity:0;transform:rotate(var(--theta)) translateX(0) scale(.5)}36%{opacity:1}75%{opacity:1}100%{opacity:0;transform:rotate(var(--theta)) translateX(var(--dist)) scale(0)}}
+    .nf-mystery.revealed{position:relative;isolation:isolate;padding:15px 4px 4px;min-height:260px;display:flex;flex-direction:column;justify-content:center}
+    .mystery-ambient{position:absolute;inset:0;pointer-events:none;z-index:-1;opacity:.85}
+    .nf-mystery h2{font-size:clamp(1.45rem,2.5vw,2rem);margin:4px 0 3px;color:#e9fffb}
+    .nf-mystery p{font-size:.77rem;margin:0 auto 11px}
+    .nf-mystery .eyebrow{color:#e7d493}
+    .mystery-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:740px;width:100%;margin:0 auto}
+    .mystery-option{min-height:157px;padding:14px 8px;border:1px solid #8ee6da9a;border-radius:12px;background:radial-gradient(ellipse at 50% 0%,#1b6f78,#0c3a48 80%);box-shadow:0 0 24px #58dfe222,0 12px 23px #0017207a;animation:magic-card-arrive .58s cubic-bezier(.2,.7,.1,1.16) both;animation-delay:var(--delay);gap:5px}
+    @keyframes magic-card-arrive{0%{opacity:0;transform:translateY(42px) rotateY(100deg) scale(.7);filter:brightness(2)}65%{opacity:1}100%{opacity:1;transform:translateY(0) rotateY(0deg) scale(1);filter:brightness(1)}}
+    .mystery-glyph{font-size:2.3rem;line-height:1;color:#fff1b1;text-shadow:0 0 14px #f1d77c}
+    .mystery-option b{font-size:.89rem}
+    .mystery-option small{font-size:.65rem;line-height:1.3;color:#ccebea}
+    .mini-tag{padding:3px 9px;font-size:.62rem}
+    .nf-remaining{font-size:.66rem;margin:8px auto 0!important;color:#b9dfe0}
+    .nf-over{padding:22px 8px 12px;min-height:265px}
+    /* Rulebook images are generated from real die pips; readable and usable offline */
+    .nf-rule-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0 22px}
+    .nf-rule-steps>div{border:1px solid #3b7882;background:#102e3a;border-radius:11px;padding:12px;min-width:0}
+    .nf-rule-steps p{font-size:.76rem;line-height:1.4;margin:6px 0 0}
+    .step-index{display:grid;place-items:center;background:#1b646c;color:#e1fbfb;border-radius:9px;width:27px;height:27px;font-size:.78rem;font-weight:950;margin-bottom:8px}
+    .nf-rule-gallery{display:grid;grid-template-columns:1fr;gap:9px}
+    .nf-rule-example{border:1px solid #3b7983;border-radius:12px;background:#0e313f;display:grid;grid-template-columns:minmax(160px,1fr) 1fr;gap:13px;align-items:center;padding:12px}
+    .nf-rule-visual{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:6px}
+    .rule-visual-die{width:39px;height:39px;flex:0 0 39px;border:1px solid #aeede5;border-radius:8px;background:linear-gradient(135deg,#f6fffe,#cdeee9);box-shadow:0 3px 0 #46848b,0 6px 10px #00161c55;padding:7px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;place-items:center}
+    .rule-visual-die i{width:6px;height:6px;border-radius:50%;background:transparent}
+    .rule-visual-die i.on{background:#115f6a;box-shadow:inset 0 1px 2px #052d35}
+    .nf-rule-explain b{display:block;color:#eafffd;font-size:.92rem}
+    .nf-rule-explain p{font-size:.75rem;margin:4px 0 5px;line-height:1.35}
+    .nf-rule-explain strong{font-size:.84rem;color:#90f3ed}
+    .nf-rule-example.harm .nf-rule-explain strong{color:#ff8b9a}
+    .nf-rule-example.prize{border-color:#c6b86b6e}
+    .nf-rule-example.prize .nf-rule-explain strong{color:#f1d999}
+    .nf-rule-footnote{font-size:.77rem;margin:11px 0 18px}
+    .hp-drain-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+    .hp-drain-row span{background:#0e303f;border:1px solid #337681;border-radius:9px;text-align:center;padding:10px 6px;font-size:.7rem;color:#b6dadd}
+    .hp-drain-row b{display:block;color:#fa849b;margin-top:5px}
+    .nf-box-explain{display:flex;align-items:center;gap:15px;padding:12px 14px;border:1px solid #568e8e;border-radius:11px;background:linear-gradient(120deg,#143d4c,#123241)}
+    .nf-box-explain p{font-size:.78rem;margin:0}
+    .nf-box-icon{font-size:2.5rem;color:#e8d38a;line-height:1}
+    .special-icon.illustrated-special{border:1px solid #81ddce;background:linear-gradient(130deg,#235d69,#0d3e4e);font-size:1.5rem;box-shadow:0 3px 0 #06404a}
+    @media(max-width:760px){
+      .header-inner{min-height:56px;padding:0 14px}
+      .shell{padding-top:12px}
+      .nf-details-grid{grid-template-columns:1fr}
+      .hero{min-height:0}
+      .nf-stats{gap:7px}
+      .nf-stat{padding:9px 10px;min-height:56px}
+      .nf-stat strong{font-size:1.45rem}
+    }
+    @media(max-width:650px){
+      .site-header{height:51px;position:relative}
+      .site-header .header-inner{height:51px;min-height:51px;display:flex;flex-wrap:nowrap;padding:0 13px}
+      .header-inner .brand{height:100%}
+      .game-back-link{margin-bottom:7px;font-size:.72rem}
+      .nf-head{margin-top:0;gap:6px;margin-bottom:8px}
+      .nf-head .game-name{font-size:1.18rem}
+      .nf-head .game-mark{display:none}
+      .nf-head .game-head-actions{gap:4px}
+      .nf-head .game-head-actions .btn{font-size:.68rem;padding:6px 8px;min-height:29px}
+      .nf-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:7px}
+      .nf-stat{padding:7px 6px;min-height:55px;align-items:flex-start;border-radius:9px}
+      .nf-stat span{font-size:.57rem;letter-spacing:.03em}
+      .nf-stat strong{font-size:1.27rem}
+      .nf-board{min-height:0;padding:9px 8px 13px}
+      .nf-board-top{padding-bottom:8px;font-size:.58rem}
+      .nf-board-main{min-height:234px;padding:7px 0;gap:6px}
+      .nmf-dice{gap:5px;min-height:109px;padding:11px 4px 7px}
+      .nmf-die{width:61px;height:78px;flex-basis:61px;border-radius:11px;padding:3px}
+      .die-core{width:50px;height:49px}
+      .nmf-die .die-face{font-size:1.78rem}
+      .nmf-die small{font-size:.48rem;max-width:56px}
+      .nmf-die .die-corner{font-size:.5rem}
+      .nf-board-message{font-size:.71rem}
+      .nf-buttons .btn{min-height:40px;padding:10px 16px;font-size:.78rem}
+      .nf-details{margin-top:8px}
+      .mystery-cinematic{min-height:245px}
+      .magic-field{height:170px}
+      .nf-mystery.revealed{min-height:250px;padding:12px 0 5px}
+      .mystery-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+      .mystery-option{min-height:171px;padding:7px 4px;flex-direction:column;text-align:center;gap:4px}
+      .mystery-option b{font-size:.69rem;line-height:1.15}
+      .mystery-option small{font-size:.59rem;line-height:1.18;max-width:100%;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+      .mystery-glyph{font-size:1.8rem}
+      .mini-tag{font-size:.55rem;padding:4px 6px}
+      .nf-rule-steps{grid-template-columns:1fr}
+      .nf-rule-steps>div{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:2px 7px}
+      .nf-rule-steps p{grid-column:2;margin:0}
+      .nf-rule-example{grid-template-columns:1fr;gap:9px;padding:11px}
+      .nf-rule-visual{gap:5px}
+      .rule-visual-die{width:42px;height:42px;flex-basis:42px}
+      .hp-drain-row{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(prefers-reduced-motion:reduce){.nmf-die.tumbling .die-core,.magic-sigil,.magic-chest,.magic-lid,.magic-spark,.magic-title,.mystery-option,.nf-award-toast{animation:none!important}}
+
+
+    /* Real pips for standard dice; special dice use clearly labeled faces */
+    .nmf-die .die-face .rule-visual-die{width:46px;height:46px;border:0;border-radius:0;flex-basis:46px;background:transparent;box-shadow:none;padding:6px;gap:3px}
+    .nmf-die .die-face .rule-visual-die i{width:9px;height:9px}
+    .nmf-die .die-face .rule-visual-die i.on{background:#0f5863;box-shadow:inset 0 1px 1px #043c4b}
+    @media(max-width:650px){.nmf-die .die-face .rule-visual-die{width:38px;height:38px;flex-basis:38px;padding:5px;gap:2px}.nmf-die .die-face .rule-visual-die i{width:7px;height:7px}}
+
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a href="#home" class="brand" aria-label="Moonin Ya Games home"><span class="brand-symbol"><img id="brand-mascot" alt=""></span><span class="brand-name">Moonin <b>Ya</b> Games</span></a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a class="nav-link" data-nav="home" href="#home">Games</a>
-        <a class="nav-link" data-nav="play" href="#play">Race to 15</a>
-        <a class="nav-link" data-nav="no-fours" href="#no-fours">No More Fours</a>
-        <a class="nav-link nav-cta" data-nav="scores" href="#scores">High scores</a>
-      </nav>
+      <div class="brand" aria-label="Moonin Ya Games"><span class="brand-symbol"><img id="brand-mascot" alt=""></span><span class="brand-name">Moonin <b>Ya</b> Games</span></div>
     </div>
   </header>
   <main id="app" class="shell"></main>
@@ -326,7 +499,7 @@
   }
   function nav(){document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===route||(route==='rules'&&el.dataset.nav==='play')||(route==='no-fours-rules'&&el.dataset.nav==='no-fours')));}
   function homeView(){
-    return `<section class="hero"><div class="hero-copy"><span class="eyebrow">ORIGINAL BROWSER GAMES</span><h1>Moonin Ya<br><span class="accent">Games</span></h1><p>Choose a game below and play directly in your browser.</p><div class="hero-buttons"><a class="btn" href="#play">Race to 15</a><a class="btn ghost" href="#no-fours">No More Fours</a></div></div><div class="hero-mascot"><span class="mascot-halo" aria-hidden="true"></span><img src="${MASCOT}" alt="Cute smiling pangolin with a curved scaly tail"><span class="mascot-label">Our mascot</span></div></section><div class="section-top"><div><span class="eyebrow">THE COLLECTION</span><h2>Games</h2></div></div><section class="game-grid" aria-label="Available games"><a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Bid, choose a zero-value suit and flip cards without busting. Play against computer opponents.</p></a><a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME · V1.2</span><span class="tile-arrow">↗</span></div><h3>No More Fours</h3><p>Roll, reroll, score and survive. Collect special dice and chase a high score.</p></a></section>`;
+    return `<section class="hero"><div class="hero-copy"><span class="eyebrow">ORIGINAL BROWSER GAMES</span><h1>Moonin Ya<br><span class="accent">Games</span></h1><p>Choose a game below and play directly in your browser.</p></div><div class="hero-mascot"><span class="mascot-halo" aria-hidden="true"></span><img src="${MASCOT}" alt="Cute smiling pangolin with a curved scaly tail"><span class="mascot-label">Our mascot</span></div></section><div class="section-top"><div><span class="eyebrow">THE COLLECTION</span><h2>Games</h2></div></div><section class="game-grid" aria-label="Available games"><a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Bid, choose a zero-value suit and flip cards without busting. Play against computer opponents.</p></a><a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME · V1.2</span><span class="tile-arrow">↗</span></div><h3>No More Fours</h3><p>Roll, reroll, score and survive. Collect special dice and chase a high score.</p></a></section>`;
   }
   function setupView(){return `<div class="page-heading"><div><span class="eyebrow">CARD GAME</span><h1>Race to <span class="accent">15.</span></h1><p>A turn-based auction and card-flipping game.</p></div><a class="btn ghost" href="#rules">Full rulebook ↗</a></div><div class="setup-layout"><section class="surface setup-pane"><span class="tag">SINGLE PLAYER VS. COMPUTERS</span><h2 style="margin-top:20px">Game setup</h2><p>Face computer opponents at a fully simulated card table. Uses two complete shuffled decks and the Race to 15 rules.</p><div class="setup-field"><label>Total players (including you)</label><div class="player-buttons">${[2,3,4,5,6].map(n=>`<button class="player-num ${cfg.count===n?'selected':''}" data-action="player-count" data-num="${n}" aria-pressed="${cfg.count===n}">${n}</button>`).join('')}</div></div><button class="btn wide" data-action="new-game">DEAL THE CARDS <span>→</span></button><div class="setup-note">Your first hand starts with 3 cards, plus the opening-round bonus. The dealer (you) opens the first clockwise auction.</div></section><aside class="surface setup-benefits"><div><span class="eyebrow">RACE TO 15</span><h2 style="font-size:2rem;margin-top:9px">Game rules</h2></div><div class="setup-benefit"><span class="benefit-mark">♠</span><span>Keep your flipped-card total at or below the value of your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♥</span><span>One suit counts as zero. Aces can erase a flipped card's value.</span></div><div class="setup-benefit"><span class="benefit-mark">♦</span><span>Each successful shorter bid lets you keep up to two flipped cards, growing your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♣</span><span>Safely complete a bid of <strong style="color:#ffdda0">15 or more flips</strong> in one attempt.</span></div></aside></div>`;}
   function playerPanel(){return `<aside class="surface players-panel"><div class="panel-title">AT THE TABLE · ${g.players.length} PLAYERS</div><div class="player-list">${g.players.map((p,i)=>`<div class="player-row ${i===0?'me':''} ${currentActor()===i?'active':''}"><div class="avatar">${i===0?'YOU':escaped(p.name).slice(0,1)}</div><div class="player-detail"><div class="player-name">${escaped(p.name)} ${currentActor()===i?'· TURN':''}</div><div class="player-stats">${p.hand.length} cards · best ${p.best} flips</div><div class="player-stats">${p.hailUsed?'Hail Mary used':'Hail Mary ready'}</div></div><strong class="player-stat-num">${p.hand.length}</strong></div>`).join('')}</div><div class="small-status"><span class="status-dot"></span> Opponent hands stay hidden</div></aside>`;}
@@ -397,17 +570,33 @@
     gold:{name:'Golden Cube',faces:['dip','dip','heal2','heal2',6,6],desc:'Two Mystery Dips, two +2 HP, and two 6s.',count:1,glyph:'✦'}
   };
   let nmf=null;
+  let nmfRollingIndices=[];
+  let nmfRollLocked=false;
+  let nmfMotionTimer=null;
+  let nmfMysteryRevealing=false;
+  let nmfMysteryTimer=null;
+  let nmfAwardToast='';
+  const launchRollMotion=(indices)=>{
+    nmfRollingIndices=[...indices]; nmfRollLocked=true;
+    clearTimeout(nmfMotionTimer);
+    nmfMotionTimer=setTimeout(()=>{nmfRollLocked=false; if(route==='no-fours')render();},760);
+  };
+  const launchMysteryMotion=()=>{
+    nmfMysteryRevealing=true;
+    clearTimeout(nmfMysteryTimer);
+    nmfMysteryTimer=setTimeout(()=>{nmfMysteryRevealing=false; if(nmf?.phase==='mystery'&&route==='no-fours')render();},1800);
+  };
   const loadNmf=()=>{try{const a=JSON.parse(localStorage.getItem(NMF_SAVE)||'null');if(a&&a.version==='1.2'&&Array.isArray(a.dice)&&Array.isArray(a.pool)&&typeof a.hp==='number')nmf=a;}catch(e){nmf=null;}};
   const saveNmf=()=>{try{if(nmf)localStorage.setItem(NMF_SAVE,JSON.stringify(nmf));else localStorage.removeItem(NMF_SAVE);}catch(e){}};
   const scoresNmf=()=>{try{const a=JSON.parse(localStorage.getItem(NMF_BOARD)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.score==='number').sort((a,b)=>b.score-a.score).slice(0,20):[];}catch(e){return [];}};
   const addScoreNmf=(name)=>{const entry={name:String(name).toUpperCase().replace(/[^A-Z]/g,'').slice(0,3).padEnd(3,'-'),score:Math.round(nmf.score),round:nmf.round,date:new Date().toISOString().slice(0,10)};let list=scoresNmf();list.push(entry);list.sort((a,b)=>b.score-a.score);list=list.slice(0,20);try{localStorage.setItem(NMF_BOARD,JSON.stringify(list));}catch(e){}nmf.submitted=true;saveNmf();};
-  const startNmf=()=>{nmf={version:'1.2',hp:10,score:0,round:1,phase:'ready',pool:[{type:'base',id:'b0'},{type:'base',id:'b1'},{type:'base',id:'b2'},{type:'base',id:'b3'},{type:'base',id:'b4'}],dice:[],rerollsLeft:3,selected:[],bag:Object.entries(NMF_SPECIALS).flatMap(([type,s])=>Array.from({length:s.count},(_,j)=>`${type}-${j}`)),mysteryOptions:[],mysteryQueue:0,submitted:false,lastResult:null,history:[]};saveNmf();render();};
+  const startNmf=()=>{clearTimeout(nmfMotionTimer);clearTimeout(nmfMysteryTimer);nmfRollLocked=false;nmfMysteryRevealing=false;nmfRollingIndices=[];nmfAwardToast='';nmf={version:'1.2',hp:10,score:0,round:1,phase:'ready',pool:[{type:'base',id:'b0'},{type:'base',id:'b1'},{type:'base',id:'b2'},{type:'base',id:'b3'},{type:'base',id:'b4'}],dice:[],rerollsLeft:3,selected:[],bag:Object.entries(NMF_SPECIALS).flatMap(([type,s])=>Array.from({length:s.count},(_,j)=>`${type}-${j}`)),mysteryOptions:[],mysteryQueue:0,submitted:false,lastResult:null,history:[]};saveNmf();render();};
   const dieFaces=(type)=>type==='base'?[1,2,3,4,5,6]:NMF_SPECIALS[type].faces;
   const throwDie=(type)=>{const faces=dieFaces(type);return faces[randint(faces.length)];};
   const nmfRerollBudget=()=>3+nmf.pool.filter(d=>d.type==='troll').length;
-  function rollNmf(){if(!nmf||nmf.phase!=='ready')return;nmf.dice=nmf.pool.map(d=>({...d,face:throwDie(d.type)}));nmf.rerollsLeft=nmfRerollBudget();nmf.selected=[];nmf.phase='rolling';nmf.lastResult=null;saveNmf();render();}
-  function rerollNmf(){if(!nmf||nmf.phase!=='rolling'||nmf.rerollsLeft<1||!nmf.selected.length)return;nmf.selected.forEach(i=>{if(nmf.dice[i])nmf.dice[i].face=throwDie(nmf.dice[i].type);});nmf.rerollsLeft--;nmf.selected=[];saveNmf();render();}
-  function toggleNmfDie(index){if(!nmf||nmf.phase!=='rolling'||nmf.rerollsLeft<1||!nmf.dice[index])return;nmf.selected=nmf.selected.includes(index)?nmf.selected.filter(i=>i!==index):[...nmf.selected,index];saveNmf();render();}
+  function rollNmf(){if(!nmf||nmf.phase!=='ready')return;nmf.dice=nmf.pool.map(d=>({...d,face:throwDie(d.type)}));nmf.rerollsLeft=nmfRerollBudget();nmf.selected=[];nmf.phase='rolling';nmf.lastResult=null;launchRollMotion(nmf.dice.map((_,i)=>i));saveNmf();render();nmfRollingIndices=[];}
+  function rerollNmf(){if(!nmf||nmfRollLocked||nmf.phase!=='rolling'||nmf.rerollsLeft<1||!nmf.selected.length)return;const rolling=[...nmf.selected];rolling.forEach(i=>{if(nmf.dice[i])nmf.dice[i].face=throwDie(nmf.dice[i].type);});nmf.rerollsLeft--;nmf.selected=[];launchRollMotion(rolling);saveNmf();render();nmfRollingIndices=[];}
+  function toggleNmfDie(index){if(!nmf||nmfRollLocked||nmf.phase!=='rolling'||nmf.rerollsLeft<1||!nmf.dice[index])return;nmf.selected=nmf.selected.includes(index)?nmf.selected.filter(i=>i!==index):[...nmf.selected,index];saveNmf();render();}
   function nmfDrain(round){return Math.pow(2,Math.floor((round-1)/10));}
   function scoreNmfRoll(dice){
     let groups=new Map(),heal=0,dips=0,mods=1,penalty=0;
@@ -432,7 +621,7 @@
     return {subtotal,total:subtotal*mods,heal,dips,penalty,mods,breakdown};
   }
   function bankNmf(){
-    if(!nmf||nmf.phase!=='rolling')return;
+    if(!nmf||nmfRollLocked||nmf.phase!=='rolling')return;
     const r=scoreNmfRoll(nmf.dice),drain=nmfDrain(nmf.round);
     nmf.score+=r.total;
     nmf.hp+=r.heal-r.penalty-drain;
@@ -453,11 +642,12 @@
   function openMysteryNmf(){
     if(!nmf)return;
     if(nmf.mysteryQueue<=0||!nmf.bag.length){nmf.phase='ready';nmf.mysteryOptions=[];nmf.mysteryQueue=0;return;}
-    nmf.phase='mystery';nmf.mysteryOptions=shuffle(nmf.bag).slice(0,3);
+    nmf.phase='mystery';nmf.mysteryOptions=shuffle(nmf.bag).slice(0,3);launchMysteryMotion();
   }
   function chooseMysteryNmf(id){
-    if(!nmf||nmf.phase!=='mystery'||!nmf.mysteryOptions.includes(id))return;
+    if(!nmf||nmfMysteryRevealing||nmf.phase!=='mystery'||!nmf.mysteryOptions.includes(id))return;
     const type=id.replace(/-\d+$/,'');
+    nmfAwardToast=NMF_SPECIALS[type]?.name||'New die';
     nmf.pool.push({type,id});
     nmf.bag=nmf.bag.filter(x=>x!==id);
     nmf.mysteryQueue=Math.max(0,nmf.mysteryQueue-1);
@@ -467,24 +657,41 @@
   }
   const faceNmf=(face)=>face==='heal1'?'+1 HP':face==='heal2'?'+2 HP':face==='dip'?'?':face==='double'?'×2':face==='negate'?'×−1':String(face);
   function topScoreRows(limit=10){const list=scoresNmf().slice(0,limit);return list.length?list.map((x,i)=>`<div class="score-line"><span class="score-pos">${String(i+1).padStart(2,'0')}</span><strong>${escaped(x.name)}</strong><span class="score-amount">${x.score.toLocaleString()}</span><span class="score-round">R${x.round}</span></div>`).join(''):'<div class="empty-score">No scores saved yet.</div>';}
-  function nfView(){
-    if(!nmf)return `<div class="page-heading"><div><span class="eyebrow">DICE GAME · VERSION 1.2</span><h1>No More <span class="accent">Fours</span></h1><p>Five dice, three rerolls, ten health points.</p></div><a class="btn ghost" href="#no-fours-rules">Rules</a></div><section class="nmf-start surface"><div class="nmf-start-art"><span class="giant-die">⚄</span><span class="giant-die secondary">⚃</span></div><div><span class="eyebrow">SINGLE PLAYER</span><h2>Start a run</h2><p>Score as many points as you can before your HP reaches zero. Earn special dice from the Mystery Box.</p><div class="nmf-start-actions"><button class="btn" data-action="nf-new">Start game</button><a class="btn ghost" href="#scores">High scores</a></div></div></section>`;
-    const scorePreview=nmf.dice.length?scoreNmfRoll(nmf.dice):null;
-    const ready=nmf.phase==='ready',roll=nmf.phase==='rolling',mystery=nmf.phase==='mystery',over=nmf.phase==='over';
-    const currentNmfRoll=nmf.lastResult;
-    return `<div class="game-head"><div class="game-head-left"><div class="game-mark" aria-hidden="true">⚄</div><div><div class="game-name">No More Fours <small class="nmf-version">V1.2</small></div><div class="subline">Five starting dice · Special dice stay with you for the run</div></div></div><div class="game-head-actions"><a class="btn sm ghost" href="#no-fours-rules">Rules</a><a class="btn sm ghost" href="#scores">High scores</a><button class="btn sm outline" data-action="nf-reset">New game</button></div></div>
-    <div class="nf-stats"><div class="nf-stat"><span>SCORE</span><strong>${Math.round(nmf.score).toLocaleString()}</strong></div><div class="nf-stat"><span>HP</span><strong class="${nmf.hp<=3?'danger-txt':''}">${nmf.hp}</strong></div><div class="nf-stat"><span>ROUND</span><strong>${nmf.round}</strong></div><div class="nf-stat"><span>REROLLS LEFT</span><strong>${roll?nmf.rerollsLeft:nmfRerollBudget()}</strong></div></div>
-    <div class="nf-layout"><section class="nf-board surface"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':mystery?'MYSTERY BOX':'RUN COMPLETE'}</span><span>${nmf.pool.length} dice · ${Math.max(0,nmf.bag.length)} mystery dice available</span></div>
-    ${mystery?`<div class="nf-mystery"><span class="eyebrow">MYSTERY BOX</span><h2>Choose one die</h2><p>Keep one permanently for this run. The other options return to the box.</p><div class="mystery-options">${nmf.mysteryOptions.map(id=>{const t=id.replace(/-\d+$/,''),s=NMF_SPECIALS[t];return `<button class="mystery-option" data-action="nf-choice" data-id="${id}"><span class="mystery-glyph">${s.glyph}</span><b>${escaped(s.name)}</b><small>${escaped(s.desc)}</small><span class="mini-tag">Choose this die</span></button>`;}).join('')}</div><p class="nf-remaining">${nmf.mysteryQueue} selection${nmf.mysteryQueue===1?'':'s'} remaining</p></div>`:over?`<div class="nf-over"><span class="eyebrow">GAME OVER</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Your run ended on round ${nmf.round}. ${nmf.submitted?'Score added to this browser’s leaderboard.':'Enter exactly three letters to save your score.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">Leaderboard</a></div></div>`: `<div class="nf-board-main"><div class="nmf-dice">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type];return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${nmf.selected.includes(i)?'selected':''} ${roll?'clickable':''} ${d.face!==null?'rolled':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0?'':'disabled'} aria-pressed="${nmf.selected.includes(i)}" title="${escaped(spec?.name||'Standard die')}"><span class="die-face">${d.face===null?'?':faceNmf(d.face)}</span><small>${escaped(spec?.name||'Standard')}</small><span class="die-corner">${spec?.glyph||'•'}</span></button>`}).join('')}</div><div class="nf-board-message">${ready?'Roll all your dice to begin the round.':`${nmf.selected.length} selected for reroll · ${nmf.rerollsLeft} rerolls available`}</div>${roll?`<div class="nf-preview"><div><span>Projected round score</span><strong>${Math.round(scorePreview.total).toLocaleString()}</strong></div><div><span>Four-of-a-kind damage</span><strong>${scorePreview.penalty?`−${scorePreview.penalty} HP`:'—'}</strong></div><div><span>End-of-round HP drain</span><strong>−${nmfDrain(nmf.round)} HP</strong></div></div>`:`<p class="nf-round-note">End-of-round drain: −${nmfDrain(nmf.round)} HP</p>`}
-    <div class="nf-buttons">${ready?'<button class="btn" data-action="nf-roll">Roll dice</button>':`<button class="btn ghost" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft?'':'disabled'}>Reroll selected (${nmf.rerollsLeft})</button><button class="btn" data-action="nf-bank">Finish round</button>`}</div>${roll?'<p class="nmf-tip">Tap only the dice you want to reroll. Unselected dice stay unchanged.</p>':''}</div>`}</section>
-    <aside class="nf-sidebar"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Standard die')}</span></div>`).join('')}</div></section>${currentNmfRoll?`<section class="surface nf-aside"><div class="panel-title">LAST ROUND · ${currentNmfRoll.round}</div><p style="margin:10px 0 0">Score: <strong>${currentNmfRoll.total>=0?'+':''}${currentNmfRoll.total}</strong></p><p style="margin:7px 0 0">HP: +${currentNmfRoll.heal} healing, −${currentNmfRoll.penalty} matching penalty, −${currentNmfRoll.drain} drain</p></section>`:''}<section class="surface nf-aside"><div class="panel-title">HIGH SCORES · TOP 5</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">Full leaderboard →</a></section><section class="surface nf-aside"><div class="panel-title">RECENT ROUNDS</div>${nmf.history.slice(0,6).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p style="margin:12px 0 0">No completed rounds.</p>'}</section></aside></div>`;
+  const PIP_POS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
+  function ruleDie(n){return `<span class="rule-visual-die" aria-label="Die showing ${n}">${Array.from({length:9},(_,i)=>`<i class="${(PIP_POS[n]||[]).includes(i+1)?'on':''}"></i>`).join('')}</span>`;}
+  function ruleExample(faces,title,description,outcome,kind=''){
+    return `<section class="nf-rule-example ${kind}"><div class="nf-rule-visual">${faces.map(n=>ruleDie(n)).join('')}</div><div class="nf-rule-explain"><b>${title}</b><p>${description}</p><strong>${outcome}</strong></div></section>`;
   }
-  function nfRulesView(){return `<section class="rules-hero"><div><span class="eyebrow">RULEBOOK · VERSION 1.2</span><h1>No More <span class="accent">Fours</span></h1><p>Five dice to start. Ten HP. Score as much as possible.</p></div><a class="btn" href="#no-fours">Play No More Fours</a></section><div class="nf-rules-grid"><article class="surface nf-rules"><h2>How to play</h2><ol><li>Start with <strong>5 standard dice</strong>, <strong>10 HP</strong>, and <strong>3 rerolls</strong> per round.</li><li>Roll all dice. Tap the dice you want to reroll, then select <strong>Reroll selected</strong>. All unselected dice stay put. You may stop before using every reroll.</li><li>Select <strong>Finish round</strong> to score the faces, apply healing and penalties, then lose the round’s HP drain.</li><li>Continue until your HP reaches <strong>0</strong>. Enter your <strong>three-letter initials</strong> for the high-score list.</li></ol><h2>Scoring</h2><div class="rules-metric"><span>Single die</span><b>Face value</b></div><div class="rules-metric"><span>Matching pair</span><b>Sum ×2</b></div><div class="rules-metric"><span>Matching triple</span><b>Sum ×3</b></div><div class="rules-metric"><span>Exactly four matching</span><b>−3 HP</b></div><div class="rules-metric"><span>Five or more matching</span><b>Sum ×3 + Mystery Box</b></div><p>Numerical faces, including special-die numbers, can match. Matching fours causes HP damage even if the face value is not 4. Negative-number faces reduce your score.</p><h2>HP drain</h2><p>After every round, lose HP according to the round number: rounds 1–10 <strong>−1</strong>, 11–20 <strong>−2</strong>, 21–30 <strong>−4</strong>, 31–40 <strong>−8</strong>, doubling every 10 rounds after that.</p><h2>Mystery Box</h2><p>You see <strong>3 random special dice</strong> (or fewer if the box is nearly empty). Choose <strong>one</strong> to add permanently to your dice for that run; the unchosen dice return to the pool. Five or more matching number faces grant a Mystery Box pick. You also earn a free pick after surviving rounds <strong>5, 10, 15</strong>, and so on. Some special faces provide additional picks.</p></article><aside class="surface nf-rules"><h2>Special dice</h2>${Object.entries(NMF_SPECIALS).map(([id,s])=>`<div class="special-rule"><span class="special-icon">${s.glyph}</span><div><strong>${escaped(s.name)}</strong><p>${escaped(s.desc)} <small>${s.count} ${s.count===1?'copy':'copies'} in the Mystery Box.</small></p></div></div>`).join('')}<p class="nf-local-note">Scores are saved to the browser on this device, not a shared online leaderboard.</p></aside></div>`;}
+  function magicParticles(){return Array.from({length:28},(_,i)=>`<i class="magic-spark" style="--i:${i};--dist:${65+(i%5)*20}px"></i>`).join('');}
+  function mysteryView(){
+    if(nmfMysteryRevealing)return `<div class="mystery-cinematic" role="status" aria-live="polite"><div class="magic-field">${magicParticles()}<div class="magic-sigil"></div><div class="magic-chest"><div class="magic-lid"></div><div class="magic-base"><span>✦</span></div></div></div><div class="magic-title">MYSTERY BOX</div><p>Opening…</p></div>`;
+    return `<div class="nf-mystery revealed"><div class="mystery-ambient">${magicParticles()}</div><span class="eyebrow">✦ MYSTERY BOX ✦</span><h2>Choose a special die</h2><p>Keep one for the rest of this run.</p><div class="mystery-options">${nmf.mysteryOptions.map((id,i)=>{const t=id.replace(/-\d+$/,''),s=NMF_SPECIALS[t];return `<button class="mystery-option" data-action="nf-choice" data-id="${id}" style="--delay:${i*110}ms" aria-label="Take ${escaped(s.name)}: ${escaped(s.desc)}"><span class="mystery-glyph">${s.glyph}</span><b>${escaped(s.name)}</b><small>${escaped(s.desc)}</small><span class="mini-tag">Select die</span></button>`;}).join('')}</div><p class="nf-remaining">${nmf.mysteryQueue} pick${nmf.mysteryQueue===1?'':'s'} remaining</p></div>`;
+  }
+  function nfView(){
+    if(!nmf)return `<div class="page-heading nf-heading"><div><span class="eyebrow">DICE GAME · V1.2</span><h1>No More Fours</h1><p>Five dice. Three rerolls. Ten HP.</p></div><a class="btn sm ghost" href="#no-fours-rules">Rules</a></div><section class="nmf-start surface"><div class="nmf-start-art"><span class="giant-die">⚄</span><span class="giant-die secondary">⚃</span></div><div><h2>Start a run</h2><p>Roll dice, grow your collection, and aim for your highest score.</p><div class="nmf-start-actions"><button class="btn" data-action="nf-new">Start game</button><a class="btn ghost" href="#scores">High scores</a></div></div></section>`;
+    const ready=nmf.phase==='ready',roll=nmf.phase==='rolling',mystery=nmf.phase==='mystery',over=nmf.phase==='over';
+    return `<section class="nf-game-screen"><div class="game-head nf-head"><div class="game-head-left"><div class="game-mark" aria-hidden="true">⚄</div><div><div class="game-name">No More Fours <small class="nmf-version">V1.2</small></div></div></div><div class="game-head-actions"><a class="btn sm ghost" href="#no-fours-rules">Rules</a><a class="btn sm ghost" href="#scores">High scores</a><button class="btn sm outline" data-action="nf-reset">New game</button></div></div>
+      <div class="nf-stats" aria-label="Game status"><div class="nf-stat"><span>SCORE</span><strong>${Math.round(nmf.score).toLocaleString()}</strong></div><div class="nf-stat hp-stat"><span><b class="hp-heart" aria-hidden="true">♥</b> HP</span><strong class="${nmf.hp<=3?'danger-txt':''}">${nmf.hp}</strong></div><div class="nf-stat"><span>ROUND</span><strong>${nmf.round}</strong></div><div class="nf-stat"><span>REROLLS</span><strong>${roll?nmf.rerollsLeft:nmfRerollBudget()}</strong></div></div>
+      <section class="nf-board surface" aria-label="No More Fours play area"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':mystery?'MYSTERY BOX':'GAME COMPLETE'}</span><span>${nmf.pool.length} dice in collection</span></div>
+      ${mystery?mysteryView():over?`<div class="nf-over"><span class="eyebrow">RUN COMPLETE</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Round ${nmf.round} · ${nmf.submitted?'Score saved in this browser.':'Save your score with three initials.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">High scores</a></div></div>`:
+      `<div class="nf-board-main"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Standard die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Standard die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'Standard')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn" data-action="nf-roll">Roll dice</button>':`<button class="btn ghost" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="btn" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>Finish round</button>`}</div></div>`}
+      ${nmfAwardToast?`<div class="nf-award-toast" aria-live="polite"><span>✦</span> Added ${escaped(nmfAwardToast)} to your dice</div>`:''}</section>
+      <details class="nf-details"><summary>Collection, recent rounds &amp; local high scores <span aria-hidden="true">⌄</span></summary><div class="nf-details-grid"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Standard die')}</span></div>`).join('')}</div></section><section class="surface nf-aside"><div class="panel-title">LAST ROUNDS</div>${nmf.history.slice(0,5).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p>No rounds completed.</p>'}</section><section class="surface nf-aside"><div class="panel-title">HIGH SCORES</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">See all scores →</a></section></div></details></section>`;
+  }
+  function nfRulesView(){return `<section class="rules-hero"><div><span class="eyebrow">ILLUSTRATED RULEBOOK · V1.2</span><h1>No More Fours</h1><p>Roll five dice, manage your HP, and build your score.</p></div><a class="btn" href="#no-fours">Play game</a></section><div class="nf-rules-grid"><article class="surface nf-rules"><h2>How a round works</h2><div class="nf-rule-steps"><div><span class="step-index">1</span><strong>Roll</strong><p>Start with 5 standard dice, 10 HP, and 3 rerolls per round.</p></div><div><span class="step-index">2</span><strong>Choose</strong><p>Tap dice to select them. Only selected dice roll when you press Reroll selected.</p></div><div><span class="step-index">3</span><strong>Finish</strong><p>Score the final faces, apply penalties and healing, and lose the round's HP drain.</p></div></div><h2>Illustrated scoring</h2><div class="nf-rule-gallery">
+      ${ruleExample([2],'Single','Unmatched dice score their face value.','2 points')}
+      ${ruleExample([2,2],'Matching pair','Double the sum: (2 + 2) × 2.','8 points')}
+      ${ruleExample([3,3,3],'Matching triple','Triple the sum: (3 + 3 + 3) × 3.','27 points')}
+      ${ruleExample([4,4,4,4],'Exactly four alike','Any exactly four matching numbers cause damage.','−3 HP','harm')}
+      ${ruleExample([5,5,5,5,5],'Five or more alike','Triple the sum and earn a Mystery Box pick.','75 points + ✦ Mystery Box','prize')}
+      </div><p class="nf-rule-footnote">Different number groups score independently. Special dice can add healing, multipliers, penalties, or Mystery Box picks. Negative-number dice subtract points.</p><h2>Health drain</h2><div class="hp-drain-row"><span>Rounds 1–10 <b>♥ −1</b></span><span>11–20 <b>♥ −2</b></span><span>21–30 <b>♥ −4</b></span><span>31–40 <b>♥ −8</b></span></div><p>The drain doubles every 10 rounds. Your run ends when you reach 0 HP.</p><h2>Mystery Box</h2><div class="nf-box-explain"><span class="nf-box-icon" aria-hidden="true">✦</span><p>Five or more matching numbers earn a Mystery Box. Survive rounds 5, 10, 15, and so on for a bonus pick. See 3 special dice, choose 1 to keep for your run, and return the others to the box.</p></div></article><aside class="surface nf-rules"><h2>Special dice</h2>${Object.entries(NMF_SPECIALS).map(([id,s])=>`<div class="special-rule"><span class="special-icon illustrated-special">${s.glyph}</span><div><strong>${escaped(s.name)}</strong><p>${escaped(s.desc)} <small>${s.count} ${s.count===1?'copy':'copies'} available.</small></p></div></div>`).join('')}<p class="nf-local-note">High scores are saved on this device, not shared between players.</p></aside></div>`;}
   function scoresView(){return `<div class="page-heading"><div><span class="eyebrow">NO MORE FOURS · V1.2</span><h1>High <span class="accent">scores</span></h1><p>Saved in this browser on this device.</p></div><a class="btn" href="#no-fours">Play No More Fours</a></div><div class="scores-layout"><section class="surface scores-card"><div class="score-line score-head"><span>RANK</span><strong>INITIALS</strong><span class="score-amount">SCORE</span><span class="score-round">ROUND</span></div>${topScoreRows(20)}</section><aside class="surface score-info"><span class="eyebrow">PERSONAL LEADERBOARD</span><h2>Top 20</h2><p>Your scores are stored locally in your browser. Other players and devices have separate scoreboards.</p><a class="btn ghost" href="#no-fours-rules">Read the rules</a></aside></div>`;}
 
   function render(){
     clearTimeout(aiTimer);clearTimeout(announcementTimer);
-    APP.innerHTML=route==='rules'?rulesView():route==='play'?gameView():route==='no-fours'?nfView():route==='no-fours-rules'?nfRulesView():route==='scores'?scoresView():homeView();
+    const view=route==='rules'?rulesView():route==='play'?gameView():route==='no-fours'?nfView():route==='no-fours-rules'?nfRulesView():route==='scores'?scoresView():homeView();
+    APP.innerHTML=(route==='home'?'':'<a class="game-back-link" href="#home" aria-label="Back to all games">← All games</a>')+view;
+    nmfAwardToast='';
     nav();
     if(g){g.newCardId=null;save();}
     if(route==='play'&&g){
