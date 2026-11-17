@@ -388,6 +388,7 @@
     .nf-buttons .nf-end-round{font:inherit;border:0;background:transparent;box-shadow:none;color:#a6c7d2;text-decoration:underline;text-decoration-color:#7da1aa65;text-underline-offset:3px;font-size:.73rem;font-weight:650;min-height:33px;padding:5px 8px;border-radius:6px;cursor:pointer}
     .nf-buttons .nf-end-round:hover:not(:disabled){background:#ffffff0a;color:#e9ffff}
     .nf-buttons .nf-end-round:disabled{opacity:.45;cursor:not-allowed}
+    .nf-auto-end-note{display:block;text-align:center;color:#b7d4da;font-size:.76rem;font-weight:650;line-height:1.4;padding:12px 0}
     .nf-recap{width:min(100%,650px);margin:10px auto;padding:16px 20px 18px;display:flex;flex-direction:column;gap:11px;color:#e8fbfc;min-height:260px}
     .nf-recap-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
     .nf-recap-heading h2{font-size:clamp(1.3rem,2.4vw,1.8rem);margin:4px 0 0;letter-spacing:-.03em}
@@ -683,13 +684,26 @@
   let nmfRollingIndices=[];
   let nmfRollLocked=false;
   let nmfMotionTimer=null;
+  let nmfAutoBankTimer=null;
+  // On the final reroll, let the dice finish shaking and remain visible briefly.
+  function queueNmfAutoBank(){
+    if(nmfAutoBankTimer || !nmf || nmf.phase!=='rolling' || nmf.rerollsLeft!==0 || nmfRollLocked)return;
+    nmfAutoBankTimer=setTimeout(()=>{
+      nmfAutoBankTimer=null;
+      if(nmf && nmf.phase==='rolling' && nmf.rerollsLeft===0 && !nmfRollLocked) bankNmf();
+    },650);
+  }
   let nmfMysteryRevealing=false;
   let nmfMysteryTimer=null;
   let nmfAwardToast='';
   const launchRollMotion=(indices)=>{
     nmfRollingIndices=[...indices]; nmfRollLocked=true;
     clearTimeout(nmfMotionTimer);
-    nmfMotionTimer=setTimeout(()=>{nmfRollLocked=false; if(route==='no-fours')render();},540);
+    nmfMotionTimer=setTimeout(()=>{
+      nmfRollLocked=false;
+      if(route==='no-fours')render();
+      queueNmfAutoBank();
+    },540);
   };
   const launchMysteryMotion=()=>{
     nmfMysteryRevealing=true;
@@ -700,7 +714,7 @@
   const saveNmf=()=>{try{if(nmf)localStorage.setItem(NMF_SAVE,JSON.stringify(nmf));else localStorage.removeItem(NMF_SAVE);}catch(e){}};
   const scoresNmf=()=>{try{const a=JSON.parse(localStorage.getItem(NMF_BOARD)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.score==='number').sort((a,b)=>b.score-a.score).slice(0,20):[];}catch(e){return [];}};
   const addScoreNmf=(name)=>{const entry={name:String(name).toUpperCase().replace(/[^A-Z]/g,'').slice(0,3).padEnd(3,'-'),score:Math.round(nmf.score),round:nmf.round,date:new Date().toISOString().slice(0,10)};let list=scoresNmf();list.push(entry);list.sort((a,b)=>b.score-a.score);list=list.slice(0,20);try{localStorage.setItem(NMF_BOARD,JSON.stringify(list));}catch(e){}nmf.submitted=true;saveNmf();};
-  const startNmf=()=>{clearTimeout(nmfMotionTimer);clearTimeout(nmfMysteryTimer);nmfRollLocked=false;nmfMysteryRevealing=false;nmfRollingIndices=[];nmfAwardToast='';nmf={version:'1.2',hp:10,score:0,round:1,phase:'ready',pool:[{type:'base',id:'b0'},{type:'base',id:'b1'},{type:'base',id:'b2'},{type:'base',id:'b3'},{type:'base',id:'b4'}],dice:[],rerollsLeft:3,selected:[],bag:Object.entries(NMF_SPECIALS).flatMap(([type,s])=>Array.from({length:s.count},(_,j)=>`${type}-${j}`)),mysteryOptions:[],mysteryQueue:0,submitted:false,lastResult:null,history:[]};saveNmf();render();};
+  const startNmf=()=>{clearTimeout(nmfMotionTimer);clearTimeout(nmfMysteryTimer);clearTimeout(nmfAutoBankTimer);nmfAutoBankTimer=null;nmfRollLocked=false;nmfMysteryRevealing=false;nmfRollingIndices=[];nmfAwardToast='';nmf={version:'1.2',hp:10,score:0,round:1,phase:'ready',pool:[{type:'base',id:'b0'},{type:'base',id:'b1'},{type:'base',id:'b2'},{type:'base',id:'b3'},{type:'base',id:'b4'}],dice:[],rerollsLeft:3,selected:[],bag:Object.entries(NMF_SPECIALS).flatMap(([type,s])=>Array.from({length:s.count},(_,j)=>`${type}-${j}`)),mysteryOptions:[],mysteryQueue:0,submitted:false,lastResult:null,history:[]};saveNmf();render();};
   const dieFaces=(type)=>type==='base'?[1,2,3,4,5,6]:NMF_SPECIALS[type].faces;
   const throwDie=(type)=>{const faces=dieFaces(type);return faces[randint(faces.length)];};
   const nmfRerollBudget=()=>3+nmf.pool.filter(d=>d.type==='troll').length;
@@ -732,6 +746,7 @@
   }
   function bankNmf(){
     if(!nmf||nmfRollLocked||nmf.phase!=='rolling')return;
+    clearTimeout(nmfAutoBankTimer);nmfAutoBankTimer=null;
     const r=scoreNmfRoll(nmf.dice),drain=nmfDrain(nmf.round),hpBefore=nmf.hp;
     nmf.score+=r.total;
     nmf.hp=Math.max(0,nmf.hp+r.heal-r.penalty-drain);
@@ -768,7 +783,7 @@
     const picks=nmf.hp>0&&nmf.bag.length?nmf.mysteryQueue:0;
     const nextLabel=nmf.hp<=0?'View final score':picks?`Open Mystery Box (${picks})`:`Continue to round ${r.round+1}`;
     return `<div class="nf-recap" aria-live="polite">
-      <div class="nf-recap-heading"><div><span class="eyebrow">ROUND ${r.round} COMPLETE</span><h2>Score breakdown</h2></div><div class="nf-recap-points ${r.total<0?'negative':''}">${sign(r.total)} <small>points</small></div></div>
+      <div class="nf-recap-heading"><div><span class="eyebrow">ROUND ${r.round} COMPLETE</span></div><div class="nf-recap-points ${r.total<0?'negative':''}">${sign(r.total)} <small>points</small></div></div>
       <div class="nf-recap-rows">${r.breakdown.length?r.breakdown.map(line=>`<div class="nf-recap-row"><span>${escaped(line)}</span></div>`).join(''):'<div class="nf-recap-row"><span>No numerical faces scored.</span></div>'}${r.mods!==1?`<div class="nf-recap-row nf-recap-mod"><span>Subtotal ${sign(r.subtotal)} × ${r.mods} modifier</span><strong>${sign(r.total)}</strong></div>`:''}</div>
       <div class="nf-recap-health"><span>♥ HP</span><span>${r.hpBefore} → <strong>${r.hpAfter}</strong></span><small>${healthRows.join(' · ')}</small></div>
       ${picks?`<div class="nf-recap-reward">✦ ${picks} Mystery Box ${picks===1?'pick':'picks'} earned${bonus?' (includes round-5 bonus)':''}</div>`:''}
@@ -810,11 +825,11 @@
       <div class="nf-stats" aria-label="Game status"><div class="nf-stat"><span>SCORE</span><strong>${Math.round(nmf.score).toLocaleString()}</strong></div><div class="nf-stat hp-stat"><span><b class="hp-heart" aria-hidden="true">♥</b> HP</span><strong class="${nmf.hp<=3?'danger-txt':''}">${nmf.hp}</strong></div><div class="nf-stat"><span>ROUND</span><strong>${nmf.round}</strong></div><div class="nf-stat"><span>REROLLS</span><strong>${roll?nmf.rerollsLeft:nmfRerollBudget()}</strong></div></div>
       <section class="nf-board surface" aria-label="No More Fours play area"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':recap?'ROUND RESULTS':mystery?'MYSTERY BOX':'GAME COMPLETE'}</span><span>${nmf.pool.length} dice in collection</span></div>
       ${mystery?mysteryView():recap?nfRecapView():over?`<div class="nf-over"><span class="eyebrow">RUN COMPLETE</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Round ${nmf.round} · ${nmf.submitted?'Score saved in this browser.':'Save your score with three initials.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">High scores</a></div></div>`:
-      `<div class="nf-board-main ${roll?'is-rolling':'is-ready'}"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn nf-primary" data-action="nf-roll">Roll dice</button>':`<button class="btn nf-primary" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="nf-end-round" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>End round</button>`}</div></div>`}
+      `<div class="nf-board-main ${roll?'is-rolling':'is-ready'}"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'Final roll complete'}</div><div class="nf-buttons">${ready?'<button class="btn nf-primary" data-action="nf-roll">Roll dice</button>':nmf.rerollsLeft===0?'<span class="nf-auto-end-note" role="status">Scoring automatically…</span>':`<button class="btn nf-primary" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="nf-end-round" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>End round</button>`}</div></div>`}
       ${nmfAwardToast?`<div class="nf-award-toast" aria-live="polite"><span>✦</span> Added ${escaped(nmfAwardToast)} to your dice</div>`:''}</section>
       <details class="nf-details"><summary>Collection, recent rounds &amp; local high scores <span aria-hidden="true">⌄</span></summary><div class="nf-details-grid"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Die')}</span></div>`).join('')}</div></section><section class="surface nf-aside"><div class="panel-title">LAST ROUNDS</div>${nmf.history.slice(0,5).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p>No rounds completed.</p>'}</section><section class="surface nf-aside"><div class="panel-title">HIGH SCORES</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">See all scores →</a></section></div></details></section>`;
   }
-  function nfRulesView(){return `<section class="rules-hero"><div><span class="eyebrow">ILLUSTRATED RULEBOOK · V1.2</span><h1>No More Fours</h1><p>Roll five dice, manage your HP, and build your score.</p></div><a class="btn" href="#no-fours">Play game</a></section><div class="nf-rules-grid"><article class="surface nf-rules"><h2>How a round works</h2><div class="nf-rule-steps"><div><span class="step-index">1</span><strong>Roll</strong><p>Start with 5 standard dice, 10 HP, and 3 rerolls per round.</p></div><div><span class="step-index">2</span><strong>Choose</strong><p>Tap dice to select them. Only selected dice roll when you press Reroll selected.</p></div><div><span class="step-index">3</span><strong>Finish</strong><p>Score the final faces, apply penalties and healing, and lose the round's HP drain.</p></div></div><h2>Illustrated scoring</h2><div class="nf-rule-gallery">
+  function nfRulesView(){return `<section class="rules-hero"><div><span class="eyebrow">ILLUSTRATED RULEBOOK · V1.2</span><h1>No More Fours</h1><p>Roll five dice, manage your HP, and build your score.</p></div><a class="btn" href="#no-fours">Play game</a></section><div class="nf-rules-grid"><article class="surface nf-rules"><h2>How a round works</h2><div class="nf-rule-steps"><div><span class="step-index">1</span><strong>Roll</strong><p>Start with 5 standard dice, 10 HP, and 3 rerolls per round.</p></div><div><span class="step-index">2</span><strong>Choose</strong><p>Tap dice to select them. Only selected dice roll when you press Reroll selected.</p></div><div><span class="step-index">3</span><strong>Finish</strong><p>Score the final faces, apply penalties and healing, and lose the round's HP drain. The round ends automatically after your final reroll.</p></div></div><h2>Illustrated scoring</h2><div class="nf-rule-gallery">
       ${ruleExample([2],'Single','Unmatched dice score their face value.','2 points')}
       ${ruleExample([2,2],'Matching pair','Double the sum: (2 + 2) × 2.','8 points')}
       ${ruleExample([3,3,3],'Matching triple','Triple the sum: (3 + 3 + 3) × 3.','27 points')}
@@ -830,6 +845,7 @@
     nmfAwardToast='';
     nav();
     if(g){g.newCardId=null;save();}
+    if(route==='no-fours')queueNmfAutoBank();
     if(route==='play'&&g){
       if(g.banner){announcementTimer=setTimeout(()=>{if(g?.banner){g.banner=null;render();}},g.banner.kind==='win'?4500:1900);}
       else if(g.phase!=='over'&&!myTurn()){aiTimer=setTimeout(()=>{botAction();save();render();},650);}
