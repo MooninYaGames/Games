@@ -469,6 +469,20 @@
     .nf-neg-examples p{margin:0 0 10px}
     .nf-neg-examples p:last-child{margin-bottom:0}
     @media(max-width:650px){.scores-layout .score-line{grid-template-columns:40px 1fr 100px;gap:7px}}
+
+/* Rod Pumpernickel profile — restrained, dark-aqua UI */
+.rod-profile-link{display:inline-flex;align-items:center;gap:7px;text-decoration:none;transition:transform .16s,background .16s}
+.rod-profile-link:hover,.rod-profile-link:focus-visible{transform:translateY(-2px);background:#e8ffff}
+.rod-page{max-width:1100px;margin:0 auto}
+.rod-page-heading{margin:16px 0 25px}
+.rod-page-heading h1{font-size:clamp(2.25rem,5vw,3.7rem);margin:10px 0 0;letter-spacing:-.045em}
+.rod-profile-grid{display:grid;grid-template-columns:minmax(240px,.88fr) minmax(0,1.12fr);gap:22px;align-items:stretch}
+.rod-portrait{border-radius:22px;border:1px solid #86dcd955;background:radial-gradient(circle at 50% 45%,#2f96a0,#0d3b46 76%);display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:330px;padding:20px}
+.rod-portrait img{width:min(100%,460px);height:auto;max-height:440px;object-fit:contain;filter:drop-shadow(0 16px 20px #00182077)}
+.rod-story{padding:clamp(24px,3vw,40px);display:flex;align-items:center}
+.rod-story p{margin:0;white-space:pre-wrap;line-height:1.85;font-size:clamp(.99rem,1.35vw,1.08rem);color:#e0f4f3;letter-spacing:0}
+.rod-back{margin-top:25px}
+@media(max-width:770px){.rod-profile-grid{grid-template-columns:1fr}.rod-portrait{min-height:240px;max-height:360px}.rod-page-heading{margin-top:5px}.rod-story{padding:25px}}
 </style>
 </head>
 <body>
@@ -478,7 +492,7 @@
     </div>
   </header>
   <main id="app" class="shell"></main>
-  <footer class="footer">Moonin Ya Games <span aria-hidden="true">·</span> <a href="#home">All games</a></footer>
+  <footer class="footer">Moonin Ya Games <span aria-hidden="true">·</span> <a href="#home">All games</a> <span aria-hidden="true">·</span> <a href="#rod">Who is Rod Pumpernickel?</a></footer>
 <script src="https://api.unbase.dev/v1/leaderboard.js" data-key="unbase_qh3bnxm6qyni.pk.tzbkP2qDlHUMTx-ukcM2L1ZoxcoV8s6tvP-IcBnHOY0"></script>
 <script>
 (() => {
@@ -661,8 +675,9 @@
     return `<span class="${classes}" aria-label="${rank(card.r)} of ${SUITNAME[card.suit]}"><span class="face-corner">${rank(card.r)}<small>${SYM[card.suit]}</small></span><span class="face-suit">${SYM[card.suit]}</span><span class="face-corner face-bottom">${rank(card.r)}<small>${SYM[card.suit]}</small></span></span>`;
   }
   function nav(){document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===route||(route==='rules'&&el.dataset.nav==='play')||(route==='no-fours-rules'&&el.dataset.nav==='no-fours')));}
+  function rodView(){return `<section class="rod-page"><div class="rod-page-heading"><span class="eyebrow">MOONIN YA GAMES</span><h1>Who is Rod Pumpernickel?</h1></div><div class="rod-profile-grid"><div class="rod-portrait"><img src="${MASCOT}" alt="Rod Pumpernickel the pangolin mascot"></div><article class="rod-story surface"><p>Rod Pumpernickel is a Pangolin who only lives for one thing:  MAKING GAMES.  He was saddened to see Pangolins erroneously blamed for starting the COVID-19 pandemic and he wants to rehabilitate the image of the gentle Pangolin.  Rod Pumpernickel does not care about fame or money, he simply enjoys making games for THE LOVE OF THE GAME!  Most of his games are playable with a deck of cards as Rod Pumpernickel has no interest in the pursuit of more wealth, he simply wants to make people smile when they think of Pangolins.</p></article></div><a class="btn ghost rod-back" href="#home">← Back to games</a></section>`;}
   function homeView(){
-    return `<section class="hero"><div class="hero-copy"><span class="eyebrow">ORIGINAL BROWSER GAMES</span><h1>Moonin Ya<br><span class="accent">Games</span></h1><p>Choose a game below and play directly in your browser.</p></div><div class="hero-mascot"><span class="mascot-halo" aria-hidden="true"></span><img src="${MASCOT}" alt="Cute smiling pangolin with a curved scaly tail"><span class="mascot-label">Our mascot</span></div></section><div class="section-top"><div><span class="eyebrow">THE COLLECTION</span><h2>Games</h2></div></div><section class="game-grid" aria-label="Available games"><a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Bid, choose a zero-value suit and flip cards without busting. Play against computer opponents.</p></a><a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME · V1.2</span><span class="tile-arrow">↗</span></div><h3>No More Fours</h3><p>Roll, reroll, score and survive. Collect special dice and chase a high score.</p></a></section>`;
+    return `<section class="hero"><div class="hero-copy"><span class="eyebrow">ORIGINAL BROWSER GAMES</span><h1>Moonin Ya<br><span class="accent">Games</span></h1><p>Choose a game below and play directly in your browser.</p></div><div class="hero-mascot"><span class="mascot-halo" aria-hidden="true"></span><img src="${MASCOT}" alt="Rod Pumpernickel, the Moonin Ya Games pangolin mascot"><a class="mascot-label rod-profile-link" href="#rod" aria-label="Read about Rod Pumpernickel">Rod Pumpernickel <span aria-hidden="true">↗</span></a></div></section><div class="section-top"><div><span class="eyebrow">THE COLLECTION</span><h2>Games</h2></div></div><section class="game-grid" aria-label="Available games"><a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Bid, choose a zero-value suit and flip cards without busting. Play against computer opponents.</p></a><a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME · V1.2</span><span class="tile-arrow">↗</span></div><h3>No More Fours</h3><p>Roll, reroll, score and survive. Collect special dice and chase a high score.</p></a></section>`;
   }
   function setupView(){return `<div class="page-heading"><div><span class="eyebrow">CARD GAME</span><h1>Race to <span class="accent">15.</span></h1><p>A turn-based auction and card-flipping game.</p></div><a class="btn ghost" href="#rules">Full rulebook ↗</a></div><div class="setup-layout"><section class="surface setup-pane"><span class="tag">SINGLE PLAYER VS. COMPUTERS</span><h2 style="margin-top:20px">Game setup</h2><p>Face computer opponents at a fully simulated card table. Uses two complete shuffled decks and the Race to 15 rules.</p><div class="setup-field"><label>Total players (including you)</label><div class="player-buttons">${[2,3,4,5,6].map(n=>`<button class="player-num ${cfg.count===n?'selected':''}" data-action="player-count" data-num="${n}" aria-pressed="${cfg.count===n}">${n}</button>`).join('')}</div></div><button class="btn wide" data-action="new-game">DEAL THE CARDS <span>→</span></button><div class="setup-note">Your first hand starts with 3 cards, plus the opening-round bonus. The dealer (you) opens the first clockwise auction.</div></section><aside class="surface setup-benefits"><div><span class="eyebrow">RACE TO 15</span><h2 style="font-size:2rem;margin-top:9px">Game rules</h2></div><div class="setup-benefit"><span class="benefit-mark">♠</span><span>Keep your flipped-card total at or below the value of your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♥</span><span>One suit counts as zero. Aces can erase a flipped card's value.</span></div><div class="setup-benefit"><span class="benefit-mark">♦</span><span>Each successful shorter bid lets you keep up to two flipped cards, growing your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♣</span><span>Safely complete a bid of <strong style="color:#ffdda0">15 or more flips</strong> in one attempt.</span></div></aside></div>`;}
   function playerPanel(){return `<aside class="surface players-panel"><div class="panel-title">AT THE TABLE · ${g.players.length} PLAYERS</div><div class="player-list">${g.players.map((p,i)=>`<div class="player-row ${i===0?'me':''} ${currentActor()===i?'active':''}"><div class="avatar">${i===0?'YOU':escaped(p.name).slice(0,1)}</div><div class="player-detail"><div class="player-name">${escaped(p.name)} ${currentActor()===i?'· TURN':''}</div><div class="player-stats">${p.hand.length} cards · best ${p.best} flips</div><div class="player-stats">${p.hailUsed?'Hail Mary used':'Hail Mary ready'}</div></div><strong class="player-stat-num">${p.hand.length}</strong></div>`).join('')}</div><div class="small-status"><span class="status-dot"></span> Opponent hands stay hidden</div></aside>`;}
@@ -1006,7 +1021,7 @@
   function scoresView(){return `<div class="page-heading"><div><span class="eyebrow">NO MORE FOURS · V1.2</span><h1>Worldwide <span class="accent">leaderboard</span></h1><p>Compete with players on any device.</p></div><a class="btn" href="#no-fours">Play No More Fours</a></div><div class="scores-layout"><section class="surface scores-card"><div class="score-line score-head"><span>RANK</span><strong>INITIALS</strong><span class="score-amount">SCORE</span></div><div data-online-list="20">${topScoreRows(20)}</div></section><aside class="surface score-info"><span class="eyebrow">SHARED HIGH SCORES</span><h2>Top 20</h2><p data-online-status role="status">Checking leaderboard…</p><button class="btn sm ghost" data-action="nf-refresh">Refresh scores</button><p class="online-fairness">Scores are shared worldwide. Browser submissions are not fully cheat-proof.</p><a class="btn ghost" href="#no-fours-rules">Read the rules</a></aside></div>`;}
   function render(){
     clearTimeout(aiTimer);clearTimeout(announcementTimer);
-    const view=route==='rules'?rulesView():route==='play'?gameView():route==='no-fours'?nfView():route==='no-fours-rules'?nfRulesView():route==='scores'?scoresView():homeView();
+    const view=route==='rules'?rulesView():route==='play'?gameView():route==='no-fours'?nfView():route==='no-fours-rules'?nfRulesView():route==='scores'?scoresView():route==='rod'?rodView():homeView();
     APP.innerHTML=(route==='home'?'':'<a class="game-back-link" href="#home" aria-label="Back to all games">← All games</a>')+view;
     nmfAwardToast='';
     nav();
@@ -1021,7 +1036,7 @@
   }
   function updateRoute(){
     const path=location.hash.toLowerCase().replace('#','').split('/');
-    route=['home','play','rules','no-fours','no-fours-rules','scores'].includes(path[0])?path[0]:'home';
+    route=['home','play','rules','no-fours','no-fours-rules','scores','rod'].includes(path[0])?path[0]:'home';
     render();
     if(route==='rules' && path[1] && document.getElementById(path[1])) document.getElementById(path[1]).scrollIntoView({behavior:'smooth',block:'start'});
     else window.scrollTo({top:0,behavior:'instant'});
