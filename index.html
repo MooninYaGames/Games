@@ -309,38 +309,76 @@
     @media(max-width:650px){.nmf-die .die-face .rule-visual-die{width:38px;height:38px;flex-basis:38px;padding:5px;gap:2px}.nmf-die .die-face .rule-visual-die i{width:7px;height:7px}}
 
   
-    /* Physically roll the entire die housing, including its border, label and pips. */
+    /* Site v1.0: crisp, tactile dice with high-contrast recessed pips. */
+    .nmf-die{
+      border:2px solid #9bd4d5;
+      background:linear-gradient(150deg,#f9ffff 0%,#d3efef 70%,#bce4e7 100%);
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.94),inset -2px -2px 0 rgba(47,115,128,.14),0 5px 0 #155968,0 11px 18px #00121d55;
+    }
+    .nmf-die.special-die{
+      background:linear-gradient(140deg,#f4ffff,#bbf0ec 70%,#95d9d8);
+      border-color:#6cd4d1;
+    }
+    .die-core{
+      width:61px;height:61px;
+      background:linear-gradient(145deg,#fff 0%,#f5ffff 42%,#d9eeee 100%);
+      border:1px solid #b6dfe0;border-radius:13px;
+      display:grid;place-items:center;
+      box-shadow:inset 2px 3px 2px #ffffff,inset -3px -4px 6px rgba(20,85,102,.14),0 2px 6px rgba(15,68,79,.16);
+      perspective:none;transform:none;
+    }
+    .nmf-die.special-die .die-core{border-color:#91d9d4;background:linear-gradient(135deg,#fff,#d6f4ef)}
+    .nmf-die .die-face{transform:none;letter-spacing:0;font-size:2.15rem;font-weight:900;color:#093e52}
+    .nmf-die .die-face .rule-visual-die{
+      width:56px;height:56px;flex-basis:56px;
+      padding:6px;gap:2px;border:0;border-radius:0;
+      background:transparent;box-shadow:none;
+    }
+    .nmf-die .die-face .rule-visual-die i{width:12px;height:12px}
+    .nmf-die .die-face .rule-visual-die i.on{
+      background:radial-gradient(circle at 37% 32%,#0f6981,#063e53 76%);
+      box-shadow:inset 1px 2px 2px rgba(0,0,0,.42),0 1px 0 rgba(255,255,255,.9);
+    }
+    .nmf-die small{font-size:.56rem;max-width:72px;color:#255a68;font-weight:800}
+    .nmf-die.selected{
+      border-color:#f5c56d;
+      box-shadow:0 0 0 3px #efcf7959,0 5px 0 #92682d,0 9px 18px #00121d66;
+    }
+    /* Only a true roll/reroll gets motion; tapping to select is instantaneous. */
     .nmf-die.tumbling{
-      animation:whole-die-tumble .86s cubic-bezier(.20,.70,.20,1) both!important;
-      transform-origin:50% 55%;
-      transform-style:preserve-3d;
-      backface-visibility:visible;
-      will-change:transform,filter;
-      z-index:5;
+      animation:whole-die-shake .48s ease-in-out both!important;
+      transform-origin:center 65%;
+      will-change:transform;
+      z-index:4;
       pointer-events:none;
     }
-    .nmf-die.tumbling:nth-child(2n){animation-name:whole-die-tumble-alt!important}
-    .nmf-die.tumbling:nth-child(3n){animation-duration:.93s!important}
-    @keyframes whole-die-tumble{
-      0%{transform:translate3d(-10px,0,0) rotateX(-20deg) rotateY(-18deg) rotateZ(-24deg) scale(.94);filter:brightness(.92)}
-      17%{transform:translate3d(-15px,-16px,0) rotateX(-100deg) rotateY(24deg) rotateZ(-112deg) scale(.99);filter:brightness(1.15)}
-      40%{transform:translate3d(13px,-25px,0) rotateX(-205deg) rotateY(55deg) rotateZ(-224deg) scale(.94);filter:brightness(.91)}
-      62%{transform:translate3d(18px,-9px,0) rotateX(-310deg) rotateY(18deg) rotateZ(-345deg) scale(1.08);filter:brightness(1.07)}
-      77%{transform:translate3d(5px,0,0) rotateX(-355deg) rotateY(-10deg) rotateZ(-366deg) scale(.95);filter:brightness(.98)}
-      88%{transform:translate3d(2px,-6px,0) rotateX(-360deg) rotateY(0deg) rotateZ(-358deg) scale(1.02);filter:brightness(1.02)}
-      100%{transform:translate3d(0,0,0) rotateX(-360deg) rotateY(0deg) rotateZ(-360deg) scale(1);filter:brightness(1)}
+    .nmf-die.tumbling:nth-child(2n){animation-name:whole-die-shake-alt!important}
+    .nmf-die.tumbling:nth-child(3n){animation-delay:.025s!important}
+    @keyframes whole-die-shake{
+      0%,100%{transform:translate(0,0) rotate(0deg)}
+      14%{transform:translate(-4px,-2px) rotate(-5deg)}
+      30%{transform:translate(4px,-3px) rotate(5deg)}
+      46%{transform:translate(-3px,-2px) rotate(-4deg)}
+      62%{transform:translate(3px,-1px) rotate(3deg)}
+      78%{transform:translate(-1px,-1px) rotate(-2deg)}
+      90%{transform:translate(1px,0) rotate(1deg)}
     }
-    @keyframes whole-die-tumble-alt{
-      0%{transform:translate3d(11px,0,0) rotateX(18deg) rotateY(15deg) rotateZ(21deg) scale(.94);filter:brightness(.95)}
-      19%{transform:translate3d(16px,-20px,0) rotateX(108deg) rotateY(-32deg) rotateZ(120deg) scale(.97);filter:brightness(1.15)}
-      43%{transform:translate3d(-9px,-28px,0) rotateX(214deg) rotateY(-48deg) rotateZ(243deg) scale(.94);filter:brightness(.89)}
-      64%{transform:translate3d(-17px,-8px,0) rotateX(324deg) rotateY(12deg) rotateZ(345deg) scale(1.06);filter:brightness(1.08)}
-      78%{transform:translate3d(-4px,0,0) rotateX(363deg) rotateY(0deg) rotateZ(366deg) scale(.94);filter:brightness(1)}
-      90%{transform:translate3d(1px,-5px,0) rotateX(358deg) rotateY(0deg) rotateZ(358deg) scale(1.02);filter:brightness(1.03)}
-      100%{transform:translate3d(0,0,0) rotateX(360deg) rotateY(0deg) rotateZ(360deg) scale(1);filter:brightness(1)}
+    @keyframes whole-die-shake-alt{
+      0%,100%{transform:translate(0,0) rotate(0deg)}
+      14%{transform:translate(4px,-2px) rotate(5deg)}
+      30%{transform:translate(-4px,-3px) rotate(-5deg)}
+      46%{transform:translate(3px,-2px) rotate(4deg)}
+      62%{transform:translate(-3px,-1px) rotate(-3deg)}
+      78%{transform:translate(1px,-1px) rotate(2deg)}
+      90%{transform:translate(-1px,0) rotate(-1deg)}
     }
-    /* Keep the game accessible to players who prefer less motion. */
-    @media(prefers-reduced-motion:reduce){.nmf-die.tumbling{animation:none!important;transform:none!important;filter:none!important}}
+    @media(max-width:650px){
+      .die-core{width:50px;height:50px;border-radius:11px}
+      .nmf-die .die-face .rule-visual-die{width:47px;height:47px;flex-basis:47px;padding:4px;gap:1px}
+      .nmf-die .die-face .rule-visual-die i{width:10px;height:10px}
+      .nmf-die small{font-size:.49rem;max-width:56px}
+    }
+    @media(prefers-reduced-motion:reduce){.nmf-die.tumbling{animation:none!important;transform:none!important}}
 
   </style>
 </head>
@@ -614,7 +652,7 @@
   const launchRollMotion=(indices)=>{
     nmfRollingIndices=[...indices]; nmfRollLocked=true;
     clearTimeout(nmfMotionTimer);
-    nmfMotionTimer=setTimeout(()=>{nmfRollLocked=false; if(route==='no-fours')render();},980);
+    nmfMotionTimer=setTimeout(()=>{nmfRollLocked=false; if(route==='no-fours')render();},540);
   };
   const launchMysteryMotion=()=>{
     nmfMysteryRevealing=true;
