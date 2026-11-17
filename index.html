@@ -320,26 +320,24 @@
       border-color:#6cd4d1;
     }
     .die-core{
-      width:61px;height:61px;
-      background:linear-gradient(145deg,#fff 0%,#f5ffff 42%,#d9eeee 100%);
-      border:1px solid #b6dfe0;border-radius:13px;
+      width:64px;height:64px;
       display:grid;place-items:center;
-      box-shadow:inset 2px 3px 2px #ffffff,inset -3px -4px 6px rgba(20,85,102,.14),0 2px 6px rgba(15,68,79,.16);
+      background:transparent;border:0;box-shadow:none;
       perspective:none;transform:none;
     }
-    .nmf-die.special-die .die-core{border-color:#91d9d4;background:linear-gradient(135deg,#fff,#d6f4ef)}
+    .nmf-die.special-die .die-core{background:transparent;border:0}
     .nmf-die .die-face{transform:none;letter-spacing:0;font-size:2.15rem;font-weight:900;color:#093e52}
     .nmf-die .die-face .rule-visual-die{
-      width:56px;height:56px;flex-basis:56px;
-      padding:6px;gap:2px;border:0;border-radius:0;
+      width:60px;height:60px;flex-basis:60px;
+      padding:4px;gap:3px;border:0;border-radius:0;
       background:transparent;box-shadow:none;
     }
-    .nmf-die .die-face .rule-visual-die i{width:12px;height:12px}
+    .nmf-die .die-face .rule-visual-die i{width:13px;height:13px}
     .nmf-die .die-face .rule-visual-die i.on{
       background:radial-gradient(circle at 37% 32%,#0f6981,#063e53 76%);
       box-shadow:inset 1px 2px 2px rgba(0,0,0,.42),0 1px 0 rgba(255,255,255,.9);
     }
-    .nmf-die small{font-size:.56rem;max-width:72px;color:#255a68;font-weight:800}
+    .nmf-die small{display:none}
     .nmf-die.selected{
       border-color:#f5c56d;
       box-shadow:0 0 0 3px #efcf7959,0 5px 0 #92682d,0 9px 18px #00121d66;
@@ -373,10 +371,9 @@
       90%{transform:translate(-1px,0) rotate(-1deg)}
     }
     @media(max-width:650px){
-      .die-core{width:50px;height:50px;border-radius:11px}
-      .nmf-die .die-face .rule-visual-die{width:47px;height:47px;flex-basis:47px;padding:4px;gap:1px}
-      .nmf-die .die-face .rule-visual-die i{width:10px;height:10px}
-      .nmf-die small{font-size:.49rem;max-width:56px}
+      .die-core{width:52px;height:52px}
+      .nmf-die .die-face .rule-visual-die{width:50px;height:50px;flex-basis:50px;padding:3px;gap:2px}
+      .nmf-die .die-face .rule-visual-die i{width:11px;height:11px}
     }
     @media(prefers-reduced-motion:reduce){.nmf-die.tumbling{animation:none!important;transform:none!important}}
 
@@ -747,9 +744,9 @@
       <div class="nf-stats" aria-label="Game status"><div class="nf-stat"><span>SCORE</span><strong>${Math.round(nmf.score).toLocaleString()}</strong></div><div class="nf-stat hp-stat"><span><b class="hp-heart" aria-hidden="true">♥</b> HP</span><strong class="${nmf.hp<=3?'danger-txt':''}">${nmf.hp}</strong></div><div class="nf-stat"><span>ROUND</span><strong>${nmf.round}</strong></div><div class="nf-stat"><span>REROLLS</span><strong>${roll?nmf.rerollsLeft:nmfRerollBudget()}</strong></div></div>
       <section class="nf-board surface" aria-label="No More Fours play area"><div class="nf-board-top"><span>${ready?'READY TO ROLL':roll?'SELECT DICE TO REROLL':mystery?'MYSTERY BOX':'GAME COMPLETE'}</span><span>${nmf.pool.length} dice in collection</span></div>
       ${mystery?mysteryView():over?`<div class="nf-over"><span class="eyebrow">RUN COMPLETE</span><h2>${Math.round(nmf.score).toLocaleString()} points</h2><p>Round ${nmf.round} · ${nmf.submitted?'Score saved in this browser.':'Save your score with three initials.'}</p>${nmf.submitted?'':`<form id="nf-highscore-form" class="highscore-entry"><input name="initials" maxlength="3" minlength="3" pattern="[a-zA-Z]{3}" required placeholder="AAA" aria-label="Three letter initials" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">Save score</button></form>`}<div class="control-row"><button class="btn ghost" data-action="nf-new">Play again</button><a class="btn ghost" href="#scores">High scores</a></div></div>`:
-      `<div class="nf-board-main"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Standard die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Standard die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'Standard')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn" data-action="nf-roll">Roll dice</button>':`<button class="btn ghost" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="btn" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>Finish round</button>`}</div></div>`}
+      `<div class="nf-board-main"><div class="nmf-dice" aria-label="Dice. Select dice only when you want to reroll them.">${(roll?nmf.dice:nmf.pool.map(d=>({...d,face:null}))).map((d,i)=>{const spec=NMF_SPECIALS[d.type],selected=nmf.selected.includes(i),tumbling=nmfRollingIndices.includes(i);return `<button class="nmf-die ${d.type==='base'?'base-die':'special-die'} ${selected?'selected':''} ${tumbling?'tumbling':''}" data-action="nf-select" data-index="${i}" ${roll&&nmf.rerollsLeft>0&&!nmfRollLocked?'':'disabled'} aria-pressed="${selected}" aria-label="${escaped(spec?.name||'Die')}, ${d.face===null?'not rolled':faceNmf(d.face)}${selected?', selected for reroll':''}" title="${escaped(spec?.name||'Die')}"><span class="die-core"><span class="die-face">${d.face===null?'?':d.type==='base'&&typeof d.face==='number'&&d.face>=1&&d.face<=6?ruleDie(d.face):faceNmf(d.face)}</span><span class="die-corner">${spec?.glyph||'•'}</span></span><small>${escaped(spec?.name||'')}</small><span class="selected-check" aria-hidden="true">✓</span></button>`;}).join('')}</div><div class="nf-board-message">${ready?'Roll to begin.':nmfRollLocked?'Rolling…':nmf.rerollsLeft?`${nmf.selected.length} selected · ${nmf.rerollsLeft} rerolls left`:'No rerolls remaining'}</div><div class="nf-buttons">${ready?'<button class="btn" data-action="nf-roll">Roll dice</button>':`<button class="btn ghost" data-action="nf-reroll" ${nmf.selected.length&&nmf.rerollsLeft&&!nmfRollLocked?'':'disabled'}>Reroll selected</button><button class="btn" data-action="nf-bank" ${nmfRollLocked?'disabled':''}>Finish round</button>`}</div></div>`}
       ${nmfAwardToast?`<div class="nf-award-toast" aria-live="polite"><span>✦</span> Added ${escaped(nmfAwardToast)} to your dice</div>`:''}</section>
-      <details class="nf-details"><summary>Collection, recent rounds &amp; local high scores <span aria-hidden="true">⌄</span></summary><div class="nf-details-grid"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Standard die')}</span></div>`).join('')}</div></section><section class="surface nf-aside"><div class="panel-title">LAST ROUNDS</div>${nmf.history.slice(0,5).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p>No rounds completed.</p>'}</section><section class="surface nf-aside"><div class="panel-title">HIGH SCORES</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">See all scores →</a></section></div></details></section>`;
+      <details class="nf-details"><summary>Collection, recent rounds &amp; local high scores <span aria-hidden="true">⌄</span></summary><div class="nf-details-grid"><section class="surface nf-aside"><div class="panel-title">YOUR DICE</div><div class="nf-collection">${nmf.pool.map(d=>`<div><span class="collection-symbol">${NMF_SPECIALS[d.type]?.glyph||'⚄'}</span><span>${escaped(NMF_SPECIALS[d.type]?.name||'Die')}</span></div>`).join('')}</div></section><section class="surface nf-aside"><div class="panel-title">LAST ROUNDS</div>${nmf.history.slice(0,5).map(e=>`<div class="nf-history"><span>R${e.round}</span><strong>${e.total>=0?'+':''}${e.total}</strong><span>${e.hp} HP</span></div>`).join('')||'<p>No rounds completed.</p>'}</section><section class="surface nf-aside"><div class="panel-title">HIGH SCORES</div><div class="nf-mini-scores">${topScoreRows(5)}</div><a href="#scores" class="nf-more-scores">See all scores →</a></section></div></details></section>`;
   }
   function nfRulesView(){return `<section class="rules-hero"><div><span class="eyebrow">ILLUSTRATED RULEBOOK · V1.2</span><h1>No More Fours</h1><p>Roll five dice, manage your HP, and build your score.</p></div><a class="btn" href="#no-fours">Play game</a></section><div class="nf-rules-grid"><article class="surface nf-rules"><h2>How a round works</h2><div class="nf-rule-steps"><div><span class="step-index">1</span><strong>Roll</strong><p>Start with 5 standard dice, 10 HP, and 3 rerolls per round.</p></div><div><span class="step-index">2</span><strong>Choose</strong><p>Tap dice to select them. Only selected dice roll when you press Reroll selected.</p></div><div><span class="step-index">3</span><strong>Finish</strong><p>Score the final faces, apply penalties and healing, and lose the round's HP drain.</p></div></div><h2>Illustrated scoring</h2><div class="nf-rule-gallery">
       ${ruleExample([2],'Single','Unmatched dice score their face value.','2 points')}
