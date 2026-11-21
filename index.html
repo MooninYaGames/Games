@@ -587,7 +587,7 @@
 .bm-personal-note{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:5px;align-items:center}
 .bm-shell .bm-personal-note select{width:100%;min-width:0;padding:7px 4px;font-size:13px;min-height:36px;background:#10261e;color:#f2e2c4;border:1px solid #85734d;border-radius:6px}
 @media(max-width:460px){.bm-notes .bm-note-head,.bm-notes .bm-note-row{grid-template-columns:minmax(0,1fr) minmax(132px,.95fr);gap:7px}.bm-notes .bm-note-head h3{font-size:15px}.bm-notes .bm-note-head h3:last-child{font-size:13px}.bm-shell .bm-personal-note select{font-size:12px;padding:6px 2px}}
-/* Bad Magicians v1.9 — stable, distinct Gregory and Edwardo voices. */
+/* Bad Magicians v1.10 — stable, distinct Gregory and Edwardo voices. */
 .bm-banner.bm-pending-reveal{display:none}
 .bm-secret-overlay{position:absolute;inset:0;z-index:12;display:flex;justify-content:center;align-items:center;padding:12px;box-sizing:border-box;background:#132c23ac;animation:bm-reveal-backdrop 3s ease both}
 .bm-secret-reveal{width:min(310px,88%);padding:clamp(12px,3vw,24px);box-sizing:border-box;text-align:center;border:2px solid #d3ad6c;border-radius:16px;background:linear-gradient(155deg,#1e4034f7,#102923f9);box-shadow:0 8px 36px #000a;animation:bm-reveal-card 3s cubic-bezier(.18,.73,.25,1) both}
@@ -819,87 +819,83 @@ const BM=(()=>{
  function store(){try{localStorage.setItem('bad-magicians-settings',JSON.stringify(settings));}catch(e){}}
  let audio=null;
  // Browser speech synthesis: prefer a Southern US voice, and use Spanish for Roberta.
- let spokenUtterance=null, speechResolve=null, speechTimer=null, narrationToken=0;
- // Once assigned, both gentlemen keep exactly the same browser voice objects for this session.
- let castVoices=null, voiceListPromise=null;
+ let spokenUtterance=null, speechResolve=null, speechTimer=null;
+ // Start speech immediately on the same call stack as the game event. Waiting for
+ // getVoices() to populate before calling speak() can leave mobile Safari silent.
  const synth=()=>window.speechSynthesis;
- function stopVoice(){narrationToken++;clearTimeout(speechTimer);speechTimer=null;const done=speechResolve;speechResolve=null;spokenUtterance=null;try{synth()?.cancel();}catch(e){}if(done)done();}
- function voiceId(v){return `${v.voiceURI||v.name}|${v.name}|${v.lang}`;}
- function voiceIsFemale(v){return /\b(?:female|woman|girl|samantha|zira|susan|jenny|aria|ava|allison|siri|victoria|karen|kate|tessa|serena|linda|hazel|fiona|moira|sophia|emily|emma|sara|sarah|amy|olivia|grace|joanna|paulina|monica|luciana|sofia|claire|alice)\b/i.test(v.name);}
- function voiceIsMale(v){return !voiceIsFemale(v)&&/\b(?:male|man|guy|aaron|alex|albert|andrew|arthur|brian|bruce|daniel|david|davis|eddy|evan|fred|george|gordon|grandpa|james|joey|john|junior|lee|mark|matthew|michael|mike|nathan|oliver|paul|ralph|reed|richard|robert|rocko|ryan|scott|thomas|tom|william)\b/i.test(v.name);}
- function voiceSortByScore(list,score){return list.slice().sort((a,b)=>score(b)-score(a)||voiceId(a).localeCompare(voiceId(b)));}
- function pinCastVoices(voices){
-   // Select once, not once per line: iOS and other browsers may reorder getVoices().
-   if(castVoices)return;
-   const english=voices.filter(v=>/^en(?:[-_]|$)/i.test(v.lang||''));
-   const all=english.length?english:voices;
-   const male=all.filter(voiceIsMale);
-   const possibleGreg=male.length?male:all.filter(v=>!voiceIsFemale(v));
-   const gregPool=possibleGreg.length?possibleGreg:all;
-   const gregScore=v=>
-     (/southern|texas|cowboy|country|dallas|american south/i.test(v.name)?200:0)+
-     (voiceIsMale(v)?100:0)+(/en[-_]US/i.test(v.lang)?50:0)+
-     (/\b(?:fred|aaron|alex|davis|eddy|tom|grandpa|junior|rocko)\b/i.test(v.name)?10:0);
-   const greg=voiceSortByScore(gregPool,gregScore)[0]||null;
-   // Edwardo must be assigned after Gregory, and must never reuse his voice
-   // if another English voice is available on the device.
-   const other=all.filter(v=>!greg||voiceId(v)!==voiceId(greg));
-   const otherMale=other.filter(voiceIsMale);
-   const edPool=otherMale.length?otherMale:other;
-   const edScore=v=>
-     (/en[-_]GB/i.test(v.lang)?120:0)+(voiceIsMale(v)?100:0)+
-     (/\b(?:daniel|arthur|george|oliver|ryan)\b/i.test(v.name)?15:0)-
-     (voiceIsFemale(v)?50:0);
-   const ed=voiceSortByScore(edPool,edScore)[0]||greg;
-   castVoices={1:greg,2:ed};
+ const castVoiceIds={1:null,2:null,3:null};
+ function stopVoice(){
+   clearTimeout(speechTimer);speechTimer=null;
+   const done=speechResolve;speechResolve=null;spokenUtterance=null;
+   try{synth()?.cancel();}catch(e){}
+   if(done)done();
  }
+ function voiceId(v){return String(v.voiceURI||v.name+'|'+v.lang);}
+ function voiceIsFemale(v){return /\b(?:female|woman|girl|samantha|zira|susan|jenny|aria|ava|allison|siri|victoria|karen|kate|tessa|serena|linda|hazel|fiona|moira|sophia|emily|emma|sara|sarah|amy|olivia|grace|joanna|paulina|monica|luciana|sofia|claire|alice)\b/i.test(v.name||'');}
+ function voiceIsMale(v){return !voiceIsFemale(v)&&/\b(?:male|man|guy|aaron|alex|albert|andrew|arthur|brian|bruce|daniel|david|davis|eddy|evan|fred|george|gordon|grandpa|james|joey|john|junior|lee|mark|matthew|michael|mike|nathan|oliver|paul|ralph|reed|richard|robert|rocko|ryan|scott|thomas|tom|william)\b/i.test(v.name||'');}
+ function bestVoice(voices,score){return voices.slice().sort((a,b)=>score(b)-score(a)||voiceId(a).localeCompare(voiceId(b)))[0]||null;}
  function chooseVoice(i,voices){
-   if(i===1||i===2){
-     if(!castVoices&&voices.length)pinCastVoices(voices);
-     return castVoices?.[i]||null;
+   // Voice lists can be empty on initial iOS calls; do not block narration on this.
+   if(!voices.length)return null;
+   const previous=castVoiceIds[i];
+   if(previous){const same=voices.find(v=>voiceId(v)===previous);if(same)return same;}
+   const en=voices.filter(v=>/^en(?:[-_]|$)/i.test(v.lang||''));
+   const es=voices.filter(v=>/^es(?:[-_]|$)/i.test(v.lang||''));
+   let selected=null;
+   if(i===3){
+     const pool=es.length?es:voices;
+     selected=bestVoice(pool,v=>
+       (/paulina|monica|mónica|luciana|sabina|elvira|dalia|sofia|catalina|laura/i.test(v.name)?30:0)+
+       (/es[-_]MX|es[-_]US/i.test(v.lang)?10:0));
+   }else if(i===1){
+     const pool=en.length?en:voices;
+     const male=pool.filter(voiceIsMale);
+     const nonfemale=pool.filter(v=>!voiceIsFemale(v));
+     const candidates=male.length?male:nonfemale.length?nonfemale:pool;
+     selected=bestVoice(candidates,v=>
+       (/southern|texas|cowboy|country|dallas|american south/i.test(v.name)?200:0)+
+       (voiceIsMale(v)?100:0)+(/en[-_]US/i.test(v.lang)?30:0)+
+       (/\b(?:fred|aaron|alex|davis|eddy|tom|grandpa|junior|rocko)\b/i.test(v.name)?5:0));
+   }else{
+     const pool=en.length?en:voices;
+     const distinct=pool.filter(v=>voiceId(v)!==castVoiceIds[1]);
+     const candidates=distinct.length?distinct:pool;
+     const male=candidates.filter(voiceIsMale);
+     selected=bestVoice(male.length?male:candidates,v=>
+       (/en[-_]GB/i.test(v.lang)?100:0)+(voiceIsMale(v)?80:0)-
+       (voiceIsFemale(v)?70:0)+(/\b(?:daniel|arthur|george|oliver|ryan)\b/i.test(v.name)?5:0));
    }
-   const pool=voices.filter(v=>(v.lang||'').toLowerCase().startsWith('es'));
-   return pool.find(v=>/paulina|monica|mónica|luciana|sabina|elvira|dalia|sofia|catalina|female|laura/i.test(v.name))||pool.find(v=>/es[-_]MX|es[-_]US|es[-_]ES/i.test(v.lang))||pool[0]||null;
- }
- function availableVoices(){
-   const engine=synth();if(!engine)return Promise.resolve([]);
-   const voices=engine.getVoices();if(voices.length||castVoices)return Promise.resolve(voices);
-   // Some browsers report zero voices initially; wait for voice discovery
-   // before assigning the cast instead of changing Gregory's voice mid-game.
-   if(!voiceListPromise)voiceListPromise=new Promise(resolve=>{
-     let settled=false;
-     const done=()=>{if(settled)return;const found=engine.getVoices();if(!found.length)return;settled=true;clearTimeout(timeout);engine.removeEventListener?.('voiceschanged',done);resolve(found);};
-     engine.addEventListener?.('voiceschanged',done);
-     const timeout=setTimeout(()=>{if(settled)return;settled=true;engine.removeEventListener?.('voiceschanged',done);const found=engine.getVoices();if(!found.length&&!castVoices)castVoices={1:null,2:null};resolve(found);},2200);
-     done();
-   });
-   return voiceListPromise;
+   if(selected)castVoiceIds[i]=voiceId(selected);
+   return selected;
  }
  function narrate(line){
-   stopVoice();const token=narrationToken;
+   stopVoice();
    return new Promise(resolve=>{
      if(!line||!settings.voices||!active||!synth()||!window.SpeechSynthesisUtterance){resolve();return;}
-     void availableVoices().then(voices=>{
-       if(token!==narrationToken||!active||!settings.voices){resolve();return;}
-       try{
-         const u=new SpeechSynthesisUtterance(line.text);const i=line.i;
-         u.lang=i===3?'es-ES':i===1?'en-US':'en-GB';
-         const v=chooseVoice(i,voices);
-         // Never silence Gregory merely because a recognized male voice is unavailable.
-         // With only one installed voice, different pitch/rate profiles are the fallback.
-         if(v){u.voice=v;u.lang=v.lang;}
-         const sameVoice=castVoices&&castVoices[1]&&castVoices[2]&&voiceId(castVoices[1])===voiceId(castVoices[2]);
-         u.rate=i===1?.82:i===2?.93:.97;
-         u.pitch=i===1?.62:i===2?(sameVoice?1.08:.87):1.12;
-         u.volume=state?.banner?.stage==='shout'?1:.9;
-         if(state?.banner?.stage==='shout'){u.rate*=1.12;u.pitch=Math.min(2,u.pitch*1.12);}
-         spokenUtterance=u;speechResolve=resolve;
-         const finish=()=>{if(spokenUtterance!==u)return;clearTimeout(speechTimer);speechTimer=null;spokenUtterance=null;speechResolve=null;resolve();};
-         u.onend=finish;u.onerror=finish;
-         speechTimer=setTimeout(()=>{if(spokenUtterance===u)stopVoice();},Math.min(26000,Math.max(6500,line.text.length*115)));
-         synth().speak(u);
-       }catch(e){stopVoice();resolve();}
-     }).catch(()=>resolve());
+     try{
+       const u=new SpeechSynthesisUtterance(line.text),i=line.i;
+       u.lang=i===3?'es-ES':i===1?'en-US':'en-GB';
+       const voices=synth().getVoices();
+       const v=chooseVoice(i,voices);
+       // Browser default speech is preferable to silence on devices that report
+       // no installed voices. Still speak, with a different character profile.
+       if(v){u.voice=v;u.lang=v.lang;}
+       u.rate=i===1?.82:i===2?.94:.97;
+       u.pitch=i===1?.74:i===2?1.02:1.12;
+       u.volume=state?.banner?.stage==='shout'?1:.9;
+       if(state?.banner?.stage==='shout'){u.rate*=1.12;u.pitch=Math.min(2,u.pitch*1.12);}
+       spokenUtterance=u;speechResolve=resolve;
+       const finish=()=>{
+         if(spokenUtterance!==u)return;
+         clearTimeout(speechTimer);speechTimer=null;spokenUtterance=null;speechResolve=null;resolve();
+       };
+       u.onend=finish;u.onerror=finish;
+       speechTimer=setTimeout(()=>{if(spokenUtterance===u)stopVoice();},
+         Math.min(28000,Math.max(7000,line.text.length*150)));
+       try{synth().resume();}catch(e){}
+       // No promise, timeout or asynchronous voice lookup between the event and speak().
+       synth().speak(u);
+     }catch(e){stopVoice();resolve();}
    });
  }
  function spokenCard(c,i){return i===3?`${rank(c)===1?'as':rank(c)} de ${['picas','corazones','diamantes','tréboles'][suit(c)]}`:`${rank(c)===1?'ace':rank(c)} of ${suitNames[suit(c)]}`;}
@@ -983,7 +979,7 @@ const BM=(()=>{
  function prefillGuesses(){for(const t of [1,2,3]){const c=noteCard(t);if(c!==null&&!deck.includes(state.guesses[t]))state.guesses[t]=c;}}
  function notes(){return `<section class="bm-notes"><div class="bm-note-head"><h3>${settings.notes?'Automatic notes':'Notes'}</h3><h3>I think it’s a</h3></div>${[1,2,3].map(t=>{const n=state.personalNotes[t],lines=settings.notes?state.history.flatMap(h=>{if(h.type==='q'&&h.target===t)return [`${h.yes?'YES':'NO'} — ${qtext(h)}`];if(h.type==='guess'){const r=h.results.find(x=>x.target===t);return r?[`${cn(r.card)} — ${r.correct?'correct guess':'incorrect guess'}`]:[];}return [];}):[];return `<div class="bm-note-row"><div class="bm-note-clues"><b>${names[t]}</b>${settings.notes?(lines.length?lines.map(x=>`<p>${esc(x)}</p>`).join(''):'<p class="bm-dim">No information yet.</p>'):''}</div><div class="bm-personal-note"><select aria-label="${names[t]} suspected rank" data-bm-change="note-rank-${t}"><option value="">Rank</option>${Array.from({length:10},(_,i)=>`<option value="${i+1}" ${n.rank===String(i+1)?'selected':''}>${rn(i+1)}</option>`).join('')}</select><select aria-label="${names[t]} suspected suit" data-bm-change="note-suit-${t}"><option value="">Suit</option>${suits.map((symbol,i)=>`<option value="${i}" ${n.suit===String(i)?'selected':''}>${symbol} ${suitNames[i]}</option>`).join('')}</select></div></div>`;}).join('')}</section>`;}
  function selects(){return `<div class="bm-controls"><div class="bm-tabs"><button data-bm="mode-ask" ${!state.players[0].hand.length?'disabled':''} class="${state.mode==='ask'?'bm-primary':''}">Ask a question</button><button data-bm="mode-guess" class="${state.mode==='guess'?'bm-primary':''}">Make a guess</button></div>${state.mode==='ask'?`<p>Choose a card from your hand, then choose the player and question.</p><div class="bm-form"><label>Ask<select data-bm-change="target">${[1,2,3].map(i=>`<option value="${i}" ${state.target===i?'selected':''}>${names[i]}</option>`).join('')}</select></label><label>Question<select data-bm-change="kind"><option value="range" ${state.kind==='range'?'selected':''}>Within ±2 of the rank?</option><option value="match" ${state.kind==='match'?'selected':''}>Same rank or suit?</option></select></label>${state.selected!==null&&rank(state.selected)===1&&state.kind==='range'?`<label>Ace: choose a number<select data-bm-change="center">${Array.from({length:10},(_,i)=>`<option value="${i+1}" ${state.center===i+1?'selected':''}>${i+1}</option>`).join('')}</select></label>`:''}</div><button class="bm-primary bm-wide" data-bm="ask" ${state.selected===null?'disabled':''}>${state.selected!==null?'Ask with '+cn(state.selected):'Select a card to ask'}</button>`:`<p>Select ${Math.min(3,state.players[0].hand.length)} card${Math.min(3,state.players[0].hand.length)===1?'':'s'} to pay (${state.pay.length} selected). ${state.players[0].hand.length<3?'You will skip your next turn if you do not win.':''}</p><div class="bm-form">${[1,2,3].map(t=>`<label>${names[t]}<select data-bm-change="guess-${t}"><option value="">Select card…</option>${deck.slice().sort((a,b)=>rank(a)-rank(b)||suit(a)-suit(b)).map(c=>`<option value="${c}" ${state.guesses[t]===c?'selected':''}>${cn(c)} · ${suitNames[suit(c)]}</option>`).join('')}</select></label>`).join('')}</div><button class="bm-primary bm-wide" data-bm="guess" ${state.pay.length!==Math.min(3,state.players[0].hand.length)||[1,2,3].some(t=>!deck.includes(state.guesses[t]))||new Set(Object.values(state.guesses)).size!==3?'disabled':''}>Make guess</button>`}</div>`;}
- function table(){const s=state,p=s.players[0],interactive=s.phase==='human'||s.phase==='penalty';return `<div class="bm-game"><div class="bm-topline"><span>Round ${s.round}</span><span>v1.9</span><span>${settings.difficulty} AI</span><button data-bm="exit" class="bm-subtle">Title screen</button><a href="#bad-magicians-rules">Rulebook</a></div><div class="bm-stage"><div class="bm-banner ${s.phase==='reveal'?'bm-pending-reveal':''} ${s.banner?'bm-animate bm-'+s.banner.stage:''}" role="status"><strong>${esc(s.banner?.title||(s.phase==='penalty'?'Place one more card':s.phase==='over'?`${names[s.winner]} ${s.winner===0?'win':'wins'}!`:'Your turn'))}</strong><span>${esc(s.banner?.detail||(s.phase==='penalty'?'The answer was No. Choose another card to place face up.':s.phase==='over'?'All three secret cards were correctly guessed.':'Choose an action below.'))}</span></div><div class="bm-table"><div class="bm-scene" ><img class="bm-scene-image" src="${BM_SCENE}" alt="Edwardo at left, Gregory opposite you and Roberta at right in a Florida Keys beach house">${s.banner?.stage==='turn'||s.banner?.stage==='skip'?`<div class="bm-turn-flash" aria-hidden="true"><span>${esc(s.banner.title)}</span></div>`:s.banner?.stage==='human-yes'||s.banner?.stage==='human-no'?`<div class="bm-answer-flash ${s.banner.stage}" aria-hidden="true"><span>${esc(s.banner.title)}</span></div>`:''}<div class="bm-opponents">${seat(2)}${seat(1)}${seat(3)}</div>${s.phase==='reveal'?secretReveal():''}</div><div class="bm-you-row">${seat(0)}${s.middle.length?`<div class="bm-center"><small>Middle cards</small><div class="bm-cardrow">${s.middle.map(c=>card(c)).join('')}</div></div>`:''}</div></div></div><section class="bm-own"><div class="bm-own-heading"><h3>${'Your hand'}</h3>${p.secret!==null&&s.phase!=='reveal'?`<span>Secret: ${card(p.secret,{back:s.banner?.stage==='deal'})}</span>`:''}</div><div class="bm-cardrow bm-own-cards">${p.hand.map(c=>card(c,{back:s.banner?.stage==='deal',action:interactive?'hand':null,selected:s.mode==='guess'?s.pay.includes(c):s.selected===c})).join('')||'<span class="bm-dim">No cards remaining.</span>'}</div>${s.phase==='human'?selects():s.phase==='penalty'?'<p>Tap a card to pay the extra card.</p>':s.phase==='over'?`<div class="bm-win"><h2>${s.winner===0?'You win!':names[s.winner]+' wins!'}</h2><p>Secret cards revealed.</p><button class="bm-primary" data-bm="new">Play again</button></div>`:''}</section>${notes()}<section class="bm-history"><h3>Table history</h3>${s.events.map(x=>`<div>${esc(x)}</div>`).join('')||'<p class="bm-dim">No turns played yet.</p>'}</section></div>`;}
+ function table(){const s=state,p=s.players[0],interactive=s.phase==='human'||s.phase==='penalty';return `<div class="bm-game"><div class="bm-topline"><span>Round ${s.round}</span><span>v1.10</span><span>${settings.difficulty} AI</span><button data-bm="exit" class="bm-subtle">Title screen</button><a href="#bad-magicians-rules">Rulebook</a></div><div class="bm-stage"><div class="bm-banner ${s.phase==='reveal'?'bm-pending-reveal':''} ${s.banner?'bm-animate bm-'+s.banner.stage:''}" role="status"><strong>${esc(s.banner?.title||(s.phase==='penalty'?'Place one more card':s.phase==='over'?`${names[s.winner]} ${s.winner===0?'win':'wins'}!`:'Your turn'))}</strong><span>${esc(s.banner?.detail||(s.phase==='penalty'?'The answer was No. Choose another card to place face up.':s.phase==='over'?'All three secret cards were correctly guessed.':'Choose an action below.'))}</span></div><div class="bm-table"><div class="bm-scene" ><img class="bm-scene-image" src="${BM_SCENE}" alt="Edwardo at left, Gregory opposite you and Roberta at right in a Florida Keys beach house">${s.banner?.stage==='turn'||s.banner?.stage==='skip'?`<div class="bm-turn-flash" aria-hidden="true"><span>${esc(s.banner.title)}</span></div>`:s.banner?.stage==='human-yes'||s.banner?.stage==='human-no'?`<div class="bm-answer-flash ${s.banner.stage}" aria-hidden="true"><span>${esc(s.banner.title)}</span></div>`:''}<div class="bm-opponents">${seat(2)}${seat(1)}${seat(3)}</div>${s.phase==='reveal'?secretReveal():''}</div><div class="bm-you-row">${seat(0)}${s.middle.length?`<div class="bm-center"><small>Middle cards</small><div class="bm-cardrow">${s.middle.map(c=>card(c)).join('')}</div></div>`:''}</div></div></div><section class="bm-own"><div class="bm-own-heading"><h3>${'Your hand'}</h3>${p.secret!==null&&s.phase!=='reveal'?`<span>Secret: ${card(p.secret,{back:s.banner?.stage==='deal'})}</span>`:''}</div><div class="bm-cardrow bm-own-cards">${p.hand.map(c=>card(c,{back:s.banner?.stage==='deal',action:interactive?'hand':null,selected:s.mode==='guess'?s.pay.includes(c):s.selected===c})).join('')||'<span class="bm-dim">No cards remaining.</span>'}</div>${s.phase==='human'?selects():s.phase==='penalty'?'<p>Tap a card to pay the extra card.</p>':s.phase==='over'?`<div class="bm-win"><h2>${s.winner===0?'You win!':names[s.winner]+' wins!'}</h2><p>Secret cards revealed.</p><button class="bm-primary" data-bm="new">Play again</button></div>`:''}</section>${notes()}<section class="bm-history"><h3>Table history</h3>${s.events.map(x=>`<div>${esc(x)}</div>`).join('')||'<p class="bm-dim">No turns played yet.</p>'}</section></div>`;}
  function secretReveal(){return `<div class="bm-secret-overlay" role="dialog" aria-modal="true" aria-labelledby="bm-secret-title"><div class="bm-secret-reveal"><h2 id="bm-secret-title">This is your secret card</h2><div class="bm-secret-display">${card(state.players[0].secret)}</div><button class="bm-primary" data-bm="secret-ok">OK</button></div></div>`;}
  function view(){if(page==='game'&&state)return table();if(page==='settings')return `<section class="bm-title bm-settings"><h1>Settings</h1><label>AI difficulty<select data-bm-change="difficulty">${['Easy','Medium','Hard'].map(d=>`<option ${settings.difficulty===d?'selected':''}>${d}</option>`).join('')}</select></label><p>Easy opponents make more casual choices. Hard opponents weigh clues and card costs more carefully.</p><label class="bm-check"><input type="checkbox" data-bm-change="notes" ${settings.notes?'checked':''}> Automatic Note Taking</label><p>Records answers and revealed guess results.</p><label class="bm-check"><input type="checkbox" data-bm-change="sound" ${settings.sound?'checked':''}> Sound effects</label><p>Play card, turn and result sounds.</p><label class="bm-check"><input type="checkbox" data-bm-change="voices" ${settings.voices?'checked':''}> Character voices</label><p>Spoken dialogue. Voice availability depends on your device.</p><button class="bm-primary" data-bm="title">Back</button></section>`;return `<section class="bm-title"><div class="bm-title-art"><img src="${BM_SCENE}" alt="Edwardo, Gregory and Roberta seated around a green card table in a Florida Keys beach house"></div><h1>Bad Magicians</h1><div class="bm-version">Version 1.9</div><p>Four players. Three secrets to uncover.</p><div class="bm-title-actions"><button class="bm-primary" data-bm="new">New Game</button><button data-bm="settings">Settings</button></div></section>`;}
  function action(a,c){if(!active)return;unlockSound();if(a==='new'){start();return;}if(a==='settings'){page='settings';draw();return;}if(a==='title'||a==='exit'){if(a==='exit'&&state?.phase!=='over'&&!confirm('Leave this match?'))return;cancel();state=null;page='title';draw();return;}if(!state)return;if(a==='secret-ok'){acknowledgeSecret();return;}if(a==='hand'){sound('pick');if(state.phase==='penalty'){discardPenalty(0,c);return;}if(state.phase!=='human')return;if(state.mode==='ask')state.selected=state.selected===c?null:c;else{if(state.pay.includes(c))state.pay=state.pay.filter(x=>x!==c);else if(state.pay.length<Math.min(3,state.players[0].hand.length))state.pay.push(c);}draw();return;}if(state.phase!=='human')return;if(a==='mode-ask'&&state.players[0].hand.length){state.mode='ask';draw();}if(a==='mode-guess'){state.mode='guess';prefillGuesses();draw();}if(a==='ask'&&state.selected!==null)ask(0,state.target,state.selected,state.kind,state.center);if(a==='guess')guess(0,state.guesses,state.pay);}
@@ -997,7 +993,7 @@ function gamesView(){return `<div class="page-heading"><div><span class="eyebrow
 <a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">AUCTION</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Outbid your opponents, choose a zero-value suit and flip your way to 15 without busting.</p></a>
 <a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>No More Fours <small>v1.2</small></h3><p>Roll five dice, collect extraordinary special dice, and survive escalating HP drain to reach a worldwide high score.</p></a>
 <a href="#hmr" class="game-tile hmr-tile"><div class="tile-art hmr-tile-art"><img class="hmr-cover-image" src="${HMR_COVER}" alt="Gothic ruined citadel with armored dark-fantasy heroes and a treasure chest"></div><div class="tile-bottom"><span class="tag">RPG</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>Honorable Man of Restraint <small>v2.1</small></h3><p>Spare your enemies or sacrifice blood for better loot. Survive twenty deadly encounters and unlock New Game+.</p></a>
-<a href="#bad-magicians" class="game-tile"><div class="tile-art bm-tile-art"><img src="${BM_TILE}" alt="Gregory, Edwardo and Roberta at the card table"></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">DEDUCTION</span><span class="tile-arrow">↗</span></div><h3>Bad Magicians <small>v1.9</small></h3><p>Question three elderly card players, uncover their secret cards and make the winning guess.</p></a>
+<a href="#bad-magicians" class="game-tile"><div class="tile-art bm-tile-art"><img src="${BM_TILE}" alt="Gregory, Edwardo and Roberta at the card table"></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">DEDUCTION</span><span class="tile-arrow">↗</span></div><h3>Bad Magicians <small>v1.10</small></h3><p>Question three elderly card players, uncover their secret cards and make the winning guess.</p></a>
 </section>`;}
 function setupView(){return `<div class="page-heading"><div><span class="eyebrow">CARD GAME</span><h1>Race to <span class="accent">15.</span></h1><p>A turn-based auction and card-flipping game.</p></div><a class="btn ghost" href="#rules">Full rulebook ↗</a></div><div class="setup-layout"><section class="surface setup-pane"><span class="tag">SINGLE PLAYER VS. COMPUTERS</span><h2 style="margin-top:20px">Game setup</h2><p>Face computer opponents at a fully simulated card table. Uses two complete shuffled decks and the Race to 15 rules.</p><div class="setup-field"><label>Total players (including you)</label><div class="player-buttons">${[2,3,4,5,6].map(n=>`<button class="player-num ${cfg.count===n?'selected':''}" data-action="player-count" data-num="${n}" aria-pressed="${cfg.count===n}">${n}</button>`).join('')}</div></div><button class="btn wide" data-action="new-game">DEAL THE CARDS <span>→</span></button><div class="setup-note">Your first hand starts with 3 cards, plus the opening-round bonus. The dealer (you) opens the first clockwise auction.</div></section><aside class="surface setup-benefits"><div><span class="eyebrow">RACE TO 15</span><h2 style="font-size:2rem;margin-top:9px">Game rules</h2></div><div class="setup-benefit"><span class="benefit-mark">♠</span><span>Keep your flipped-card total at or below the value of your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♥</span><span>One suit counts as zero. Aces can erase a flipped card's value.</span></div><div class="setup-benefit"><span class="benefit-mark">♦</span><span>Each successful shorter bid lets you keep up to two flipped cards, growing your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♣</span><span>Safely complete a bid of <strong style="color:#ffdda0">15 or more flips</strong> in one attempt.</span></div></aside></div>`;}
   function playerPanel(){return `<aside class="surface players-panel"><div class="panel-title">AT THE TABLE · ${g.players.length} PLAYERS</div><div class="player-list">${g.players.map((p,i)=>`<div class="player-row ${i===0?'me':''} ${currentActor()===i?'active':''}"><div class="avatar">${i===0?'YOU':escaped(p.name).slice(0,1)}</div><div class="player-detail"><div class="player-name">${escaped(p.name)} ${currentActor()===i?'· TURN':''}</div><div class="player-stats">${p.hand.length} cards · best ${p.best} flips</div><div class="player-stats">${p.hailUsed?'Hail Mary used':'Hail Mary ready'}</div></div><strong class="player-stat-num">${p.hand.length}</strong></div>`).join('')}</div><div class="small-status"><span class="status-dot"></span> Opponent hands stay hidden</div></aside>`;}
