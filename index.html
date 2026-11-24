@@ -1056,6 +1056,17 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
     .feedback-callout strong{color:#ecffff}
     .feedback-callout p{font-size:.79rem;margin:2px 0 0}
     @media(max-width:600px){.feedback-page{margin-top:0}.feedback-panel{padding:18px}.feedback-form textarea{min-height:175px}.feedback-form .feedback-submit{width:100%}.feedback-callout{margin-top:18px}}
+
+/* Stack Squad: three-second first-player announcement, independently skippable. */
+.ss-first-reveal .ss-first-inner{border:2px solid #9af4f0;text-align:center;max-width:580px;box-shadow:0 12px 65px #061d2fcf,0 0 32px #43e8db66;animation:ssFirstEnter .6s cubic-bezier(.2,1.4,.5,1) both}
+.ss-first-star{font-size:4.7rem;color:#ffe08c;text-shadow:0 0 40px #fddd71;animation:ssFirstPulse 1.05s ease-in-out infinite alternate}
+.ss-first-inner h2{font-size:clamp(2rem,7vw,3.6rem);color:#fff6be;margin:.15em 0 .35em}
+.ss-first-inner p{margin:8px auto;max-width:440px}
+.ss-first-progress{height:6px;max-width:340px;margin:22px auto 0;background:#1b6473;border-radius:20px;overflow:hidden}
+.ss-first-progress:after{content:'';display:block;width:100%;height:100%;background:linear-gradient(90deg,#80f4e7,#ffe3a3);transform-origin:left;animation:ssFirstFill 3s linear forwards}
+@keyframes ssFirstEnter{from{opacity:0;transform:translateY(26px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ssFirstPulse{from{transform:scale(.9) rotate(-10deg)}to{transform:scale(1.1) rotate(10deg)}}
+@keyframes ssFirstFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 </style>
 </head>
 <body>
@@ -1087,7 +1098,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '1.8',
+    stackSquad: '1.9',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1862,10 +1873,10 @@ const CH=[
 ];
 const ORDER=['stan','hein','nun','darell','tony'];
 const VENUES={
-  3:{title:'Antarctic Storm Camp',tag:'Antarctica · Blizzard',alt:'First-person view at an Antarctic expedition camp with Stanisław and Heinrich across the table'},
-  4:{title:'The Opium Den',tag:'China · 1800s',alt:'First-person view at a lantern-lit Chinese opium den with Stanisław, Heinrich, and Sister Guadalupe across the table'},
-  5:{title:'Plaza de España',tag:'Seville · Sunset',alt:'First-person view in Seville with Stanisław, Sister Guadalupe, Heinrich, and Darell around the table'},
-  6:{title:'Back Alley in Belgrade',tag:'Serbia · Night',alt:'First-person view in a Belgrade back alley with Stanisław, Sister Guadalupe, Heinrich, Darell, and Tony around the table while Serbs shoot dice behind them'}
+  3:{title:'Antarctica - Research Camp',tag:'Antarctica - Research Camp',alt:'Antarctic research camp with Stanisław, Heinrich and penguins'},
+  4:{title:'China - 1800s',tag:'China - 1800s',alt:'Lantern-lit nineteenth-century Chinese opium den with Sister Guadalupe, Heinrich and Stanisław'},
+  5:{title:'Seville - Plaza de España',tag:'Seville - Plaza de España',alt:'Plaza de España at sunset with Darell, Stanisław, Sister Guadalupe and Heinrich'},
+  6:{title:'Serbia - Belgrade Back Alleys',tag:'Serbia - Belgrade Back Alleys',alt:'Belgrade back alley with Stanisław, Sister Guadalupe, Heinrich, Darell, and Tony, and dice players in the background'}
 };
 const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
@@ -1892,14 +1903,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!left&&speechDone){tryEndHold();return;}
     holdTimer=setTimeout(checkHoldVoice,left);
   }
-  // Match Bad Magicians' narration-first progression. A short or prematurely ended
-  // browser utterance must not dismiss the dialogue before it can be heard/read.
-  function dialogueMinimumMs(line){
-    if(!line?.text)return 3000;
-    const words=(line.text.trim().match(/\S+/g)||[]).length;
-    const pace=line.speaker==='hein'?2.95:line.speaker==='nun'?2.45:2.65;
-    return Math.max(3000,Math.min(35000,Math.ceil((words/pace+1.2)*1000)));
-  }
+  // A turn shows at least three seconds of animation, and never extends past
+  // whichever is later: that minimum or the *actual* end of speech.
+  // Do not estimate reading time; it caused long silent holds after narration.
+  function dialogueMinimumMs(){return 3000;}
   function beginHold(next,title,detail,who){
     turnHold={next,title,detail,who};
     holdDeadline=Date.now()+dialogueMinimumMs(ss?.speechLine);
@@ -2118,30 +2125,111 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     'tony|stan':['Stan, your wife and my Vicky should meet. Actually, that is a terrible idea.','They got scratch tickets where you live? I deliver coupons for them.']
   };
   const topicAdd=['I have considered the matter carefully, though the consequences remain unclear.','Perhaps there is an easier way to preserve everybody’s dignity.','There is an unsettling amount of confidence at this table.','I shall remember this when someone claims they had a flawless plan.','For now, let us keep our ambitions reasonably small.','History may judge us harshly, but I will wait until tomorrow.','I see the danger, but I also see one very stubborn glimmer of hope.','This has become much more dramatic than the invitation suggested.','A clever answer is worth nothing unless it survives reality.','I am trying very hard not to make this situation worse.','Our next decision matters more than the explanation of the last one.','At least we can all agree the evening has been memorable.'];
+  // Each line is ONE coherent thought. Non-English characters say roughly 80%
+  // English plus 20% of their own language in each utterance. No random
+  // unrelated second sentence is appended. Darell uses only English.
+  const ACTION_LINES={
+    stan:{
+      dealt:['Zuzanna thinks I am buying groceries. I spent the money on scratch tickets.','If we lose, Zuzanna will know before I can invent an excuse.','I trust these cards about as much as I trust my lottery dealer.'],
+      correct:['A winning card! Zuzanna would call this my first sensible gamble.','I should buy a scratch ticket before this lucky streak ends.','Perhaps my lottery system is finally working, for once.'],
+      wrong:['That is one less HP and another reason to fear Zuzanna.','My scratch tickets are less disappointing than that move.','Zuzanna will kill me if she hears about this mistake.'],
+      clue:['A useful clue. Zuzanna says I never listen to advice.','I wish scratch tickets came with clues this honest.','I understand the clue. Whether I use it wisely is another question.'],
+      accusation:['I look suspicious? You should meet my lottery dealer.','Please do not accuse me. Zuzanna already interrogates me daily.','A traitor? I know three men who could help, for a fee.'],
+      danger:['Two HP left? My last scratch ticket had better odds.','Do not tell Zuzanna we are one mistake from disaster.','I need a cigarette, a miracle, and one winning lottery ticket.'],
+      victory:['We actually won! Zuzanna will never believe this story.','I should retire from scratch tickets while my luck is good.'],
+      defeat:['This feels exactly like checking my last losing lottery ticket.','Zuzanna will be furious. I am staying in this room.']
+    },
+    hein:{
+      dealt:['Ja, stack the cards like speakers at Berghain!','First the cards, then the rave. That is my plan.','KitKat has stranger rules, but I cannot explain those.'],
+      correct:['That card was a perfect techno drop!','Ja, we have found the rhythm. More bass!','A clean play! Berghain would approve of this precision.'],
+      wrong:['Nein! That was an ugly drop, not techno.','Our beat is broken. Someone call the DJ!','That card crashed harder than my last club night.'],
+      clue:['A clue is like the bassline. Follow it!','Ja, we finally have a rhythm to dance to.','One good hint can save the whole set.'],
+      accusation:['A traitor? Berghain rejects people for less.','I trust everyone except whoever killed the vibe.','You want secrets? Ask the KitKat bouncer, not me.'],
+      danger:['The bass is pumping, but our HP is collapsing!','I need a miracle and a very loud techno track.','One more mistake and the rave is over.'],
+      victory:['Ja! This victory deserves a three-day rave!','We won! Meet me at Berghain tonight.'],
+      defeat:['The party is over. Even the DJ cannot save us.','Nein! This is the worst club exit ever.']
+    },
+    nun:{
+      dealt:['Dear friends, we can succeed with patience and compassion.','Every heart deserves kindness, even at a suspicious table.','I shall pray for calm decisions from all of you.'],
+      correct:['Well done, sweetheart. Your patience is a blessing.','I am proud of you, dear. Kindness wins again.','Thank you for helping our little team, my friends.'],
+      wrong:['It is okay, dear. We can forgive that mistake.','Please be gentle with yourself. We are still together.','Every mistake teaches us how to help each other.'],
+      clue:['Thank you for sharing the truth, darling.','That was a thoughtful clue. Bless your kind heart.','Let us use this good advice with patience.'],
+      accusation:['Please remember, dear, an accusation can hurt an innocent heart.','I forgive you, but we must choose our words carefully.','Even a suspect deserves kindness and a fair vote.'],
+      danger:['Stay calm, children. There is still hope.','I shall pray for wisdom in this difficult moment.','We must look after each other now, dear friends.'],
+      victory:['Our teamwork was beautiful. God bless you all.','I am grateful for every kind soul at this table.'],
+      defeat:['I forgive every one of you. We tried together.','There will be another chance to show kindness.']
+    },
+    darell:{
+      dealt:['Why am I stuck with a whole international conference?','If anyone speaks foreign, I am gonna be real mad.','This is America, so speak English. Wait, where are we?'],
+      correct:['Well, even foreigners get one thing right sometimes.','Now THAT is how you play cards in America!','See? Should have listened to me from the start.'],
+      wrong:['Who messed that up? Probably somebody speaking foreign.','I knew this international team was gonna be trouble.','Y’all lost HP! We need some good American common sense.'],
+      clue:['Can somebody give that clue in plain American English?','I do not need no foreign words to understand a hint.','Fine, that clue made sense. Do not get used to it.'],
+      accusation:['I say deport the traitor. Where are we, anyway?','Everybody here looks suspicious except me, obviously.','You want my vote? Just tell me who is American.'],
+      danger:['We got no HP and nobody listens to me!','If we lose, I am blaming this whole foreign delegation.','Someone call an American. I need backup!'],
+      victory:['USA! I mean, uh, our team won!','We won because I kept everybody in line.'],
+      defeat:['This is why I never trust an international card table.','Y’all can keep your game. I am going home.']
+    },
+    tony:{
+      dealt:['Vicky called again. I should be watching the football game.','I deliver mail, not miracles. Let us get this over with.','My Italian blood deserves respect, not another missed touchdown.'],
+      correct:['Beautiful play. Now can I watch the Giants?','That is how a real Italian handles business.','Even Vicky cannot complain about that one.'],
+      wrong:['Unbelievable. Vicky will hear about this all night.','I missed a touchdown for THAT move?','I deliver bad news for a living, but this is ridiculous.'],
+      clue:['Just give me the clue. The game is still on.','Finally some useful information. Vicky never gives me that.','Nice clue. A real family operation, you understand?'],
+      accusation:['A traitor? My route has people I trust even less.','You better have proof before you accuse my family.','Vicky thinks I am the traitor for missing dinner.'],
+      danger:['We are almost dead and I still missed the game.','I need one good play and a television.','Vicky is calling again. We gotta finish.'],
+      victory:['We won! Tell Vicky I was handling business.','A victory worthy of my Italian blood. Now football!'],
+      defeat:['I missed the whole game for this disaster.','Vicky is gonna kill me. And for what?']
+    }
+  };
+  const SCENE_QUIPS={
+    stan:{3:['These penguins look luckier than my scratch tickets.'],4:['Even this opium den cannot hide me from Zuzanna.'],5:['I wonder if Seville sells scratch tickets near this plaza.'],6:['My fellow Slavs are playing dice. I should join them!']},
+    hein:{3:['Even penguins could rave to my techno tonight.'],4:['These Chinese lanterns need a proper Berlin bassline.'],5:['Seville is beautiful. Let us turn the plaza into Berghain!'],6:['The Belgrade dice players move like a dance floor!']},
+    nun:{4:['Even here, dear friends, kindness matters more than temptation.'],5:['Seville reminds me of the beauty in every soul.'],6:['Those dice players need peace and a good prayer.']},
+    darell:{5:['Why is everybody speaking foreign in Spain? This is ridiculous.'],6:['Belgrade? I demand English, and I want an American flag.']},
+    tony:{6:['I came to Belgrade and missed the game. Thanks, Vicky.']}
+  };
+  const NATIVE_ENDINGS={
+    stan:['Kurwa mać!','O cholera!','Wielki pech!','Kurwa, co za los!','Zuzanna mnie zabije!','Co za koszmar!','To nie jest żart!','Nie mam szczęścia!','O matko, co dalej?','To moja ostatnia szansa!','Dajcie mi spokój!','Co za pech!','Nie ufajcie mi!','Cholera, znowu problemy!'],
+    hein:['Sehr gut!','Weiter tanzen!','Wunderbar, Leute!','Ja, los geht’s!','Mehr Bass, bitte!','Das ist verrückt!','Jetzt wird getanzt!','Was für ein Abend!','Nein, nicht aufgeben!','Wir schaffen das!','Alle zusammen, bitte!','Das ist Techno!','Los, meine Freunde!','So ein Wahnsinn!'],
+    nun:['¡Pinches idiotas!','¡Malditos imbéciles!','¡Vaya mierda!','¡Pinches idiotas, carajo!','¡Qué malditos inútiles!','¡Me tienen harta!','¡No sean pendejos!','¡Qué puta vergüenza!','¡Maldita sea, cabrones!','¡Qué chingadera!','¡Bola de inútiles!','¡No me jodan!','¡Putos tramposos, carajo!'],
+    tony:['Mamma mia!','Che palle!','Porca miseria!','Mamma mia, che casino!','Basta, voglio la partita!','Che palle, ragazzi!','Madonna mia, basta!','Non ci credo!','Andiamo, ragazzi!','Porca miseria!','Basta con questo!','Che brutto affare!','Ma che disastro!']
+  };
   let voiceCount={};
   function lineFor(id,context='dealt'){
-    const index=CH.find(c=>c.id===id),f=fields[id],counter=(voiceCount[id]||0)+1;voiceCount[id]=counter;
-    const native=id!=='darell'&&id!=='you'&&counter%5===0;
-    const locale=native?index.native:'en-US';
-    const options=[];
-    if(native)options.push(...f.native);
-    else{
-      options.push(...f.en);
-      if(reactions[context])options.push(...reactions[context]);
-      for(const target of (ss?.players||[]).map(p=>p.character?.id).filter(Boolean)){
-        if(target!==id&&relationships[`${id}|${target}`])options.push(...relationships[`${id}|${target}`]);
+    const c=CH.find(x=>x.id===id);
+    const general=(fields[id]?.en||[]).filter(x=>{
+      const n=x.trim().split(/\s+/).length;
+      return n>=8&&n<=18;
+    });
+    const event=ACTION_LINES[id]?.[context]||[];
+    const local=SCENE_QUIPS[id]?.[config.count]||[];
+    const relationship=[];
+    for(const other of (ss?.players||[]).map(x=>x.character?.id).filter(Boolean)){
+      if(other===id)continue;
+      for(const quote of (relationships[`${id}|${other}`]||[])){
+        if(quote.trim().split(/\s+/).length<=18)relationship.push(quote);
       }
     }
-    if(!options.length)options.push('We should think carefully.');
-    const all=options.length,candidateCount=ss?.players?.length||config.count;
-    for(let attempts=0;attempts<Math.min(180,all*4);attempts++){
-      const s=pick(options),where=pick(places[config.count]),additional=pick(topicAdd);
-      // A 3-part authored-idea combination creates a large diverse dialogue bank,
-      // with a strict no-repetition set covering the entire session.
-      const line=native?s:(Math.random()<0.45?`${s} ${where}`:`${s} ${additional}`);
-      if(!seen.has(`${id}|${line}`)){seen.add(`${id}|${line}`);return {speaker:id,text:line,locale};}
+    // Most lines address the current action; occasional lines reference the
+    // character's established personality, cast relationships, or location.
+    const roll=Math.random();
+    const pool=roll<.67&&event.length?event:roll<.82&&general.length?general:roll<.94&&local.length?local:relationship.length?relationship:event.length?event:general;
+    let english=pick(pool)||'We must be careful with the next move.';
+    const endings=NATIVE_ENDINGS[id];
+    let nativeText='';
+    if(endings&&endings.length){
+      const eWords=english.trim().split(/\s+/).length;
+      const suitable=endings.filter(x=>{const w=x.trim().split(/\s+/).length;return w/(eWords+w)>=.16&&w/(eWords+w)<=.235;});
+      nativeText=pick(suitable.length?suitable:endings);
     }
-    const fallback=pick(options);return {speaker:id,text:fallback,locale};
+    let result={speaker:id,english,nativeText,nativeLocale:c.native,locale:'en-US',text:english+(nativeText?' '+nativeText:'')};
+    // Avoid repeating any complete spoken line in the same session.
+    for(let attempts=0;attempts<36&&seen.has(`${id}|${result.text}`);attempts++){
+      english=pick(attempts%3===0?event.length?event:general:attempts%3===1?general:event.length?event:local.length?local:general)||english;
+      if(endings){const w=english.split(/\s+/).length;const filtered=endings.filter(x=>{const n=x.split(/\s+/).length;return n/(n+w)>=.16&&n/(n+w)<=.235;});nativeText=pick(filtered.length?filtered:endings);}
+      result={...result,english,nativeText,text:english+(nativeText?' '+nativeText:'')};
+    }
+    seen.add(`${id}|${result.text}`);voiceCount[id]=(voiceCount[id]||0)+1;
+    return result;
   }
   function quote(context='dealt',speaker){
     if(!ss)return;
@@ -2162,12 +2250,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   // Four independent ORIGINAL instrumental themes; synthesized live without copyrighted samples.
   // 3: expansive arctic electronic score; 4: Chinese pentatonic guzheng/flute;
-  // 5: Andalusian flamenco-inspired Phrygian guitar/palmas; 6: Serbian kolo accordion/bass.
+  // 5: Andalusian flamenco-inspired Phrygian guitar/palmas; 6: original fast Romanian-suite-style accordion. This does not include any commercial recording of Rumunska Svita.
   const SS_SCORE={
     3:{beat:300,root:146.83,mel:[0,7,12,14,10,7,5,2,0,-3,5,7,12,14,17,12],bass:[0,-5,-3,-7]},
     4:{beat:330,root:261.63,mel:[0,2,4,7,9,12,9,7,4,2,0,-3,0,4,7,4],bass:[0,-5,-3,-7]},
     5:{beat:245,root:329.63,mel:[0,1,4,5,4,1,0,-2,0,1,4,1,-2,-4,-5,-4],bass:[0,-2,-4,-5]},
-    6:{beat:208,root:293.66,mel:[0,2,4,7,9,7,4,2,0,4,7,11,9,7,4,2],bass:[0,-5,-7,-5]}
+    6:{beat:176,root:293.66,mel:[0,1,3,5,7,8,10,12,10,8,7,5,3,1,0,3,7,8,10,8,7,5,3,1,0,-2,0,3],bass:[0,-5,-2,-7]}
   };
   let musicStep=0;
   function musicPulse(){
@@ -2212,11 +2300,18 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       if(part===1||part===3||part===6)noiseDrum(.19,.052,'clap');
       if(part===5||part===7)noiseDrum(.07,.026,'castanet');
       if(part===0)tone(hz(bass,-1),'sine',beat*4,.15,.007,.25);
-    }else{ // brisk Balkan kolo dance: reedy accordion chords, oom-pah bass, driving 2/4
-      accordion(hz(m,0),.17,.13);
-      if(part%2===0){tone(hz(bass,-1),'triangle',.16,.24,.012,.09);tone(hz(bass,-2),'sine',.12,.17,.012,.09);}
-      else{[0,4,7].forEach(n=>accordion(hz(bass+n,0),.058,.095));}
-      if(part===2||part===6)noiseDrum(.08,.04,'clap');
+    }else{ // ORIGINAL virtuoso Romanian-suite / Balkan accordion motif,
+             // with quick ornamental runs and syncopated kolo-style dance pulses.
+      const pulse=step%7,anchor=score.bass[Math.floor(step/7)%score.bass.length];
+      accordion(hz(m,1),.18,.14);
+      if(pulse===0||pulse===3||pulse===5){
+        tone(hz(anchor,-1),'triangle',.17,.24,.008,.09);
+        tone(hz(anchor,-2),'sine',.13,.18,.006,.08);
+      }else{
+        [0,3,7].forEach(n=>accordion(hz(anchor+n,0),.055,.09));
+      }
+      if(pulse===2||pulse===5)noiseDrum(.075,.04,'clap');
+      if(step%7===6){accordion(hz(m+1,1),.065,.08);}
     }
   }
   let voiceWatchdog=null,activeVoiceUtterance=null,voicePendingOnResume=null;
@@ -2248,15 +2343,17 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!config.voices||!('speechSynthesis' in window)||!window.SpeechSynthesisUtterance||!line||paused)return;
     try{
       const engine=window.speechSynthesis;
-      const chunks=speechChunks(line.text);
+      const segments=line.nativeText?[{text:line.english,locale:'en-US'},{text:line.nativeText,locale:line.nativeLocale}]:[{text:line.text,locale:line.locale||'en-US'}];
+      const chunks=segments.flatMap(seg=>speechChunks(seg.text).map(text=>({text,locale:seg.locale})));
       const voices=engine.getVoices();
-      const locale=line.locale||'en-US';
-      const same=voices.filter(v=>v.lang?.toLowerCase()===locale.toLowerCase());
-      const fallback=voices.filter(v=>v.lang?.toLowerCase().startsWith(locale.slice(0,2).toLowerCase()));
-      const selected=same.length?same:fallback;
       const wantFemale=line.speaker==='nun';
       const genderHint=wantFemale?/(female|woman|samantha|zira|karen|moira|fiona|amelia|sofia|paulina|maria)/i:/(male|man|daniel|alex|david|thomas|mark|james|pavel|adam)/i;
-      const voice=selected.find(v=>genderHint.test(v.name))||selected[0]||null;
+      function voiceFor(locale){
+        const same=voices.filter(v=>v.lang?.toLowerCase()===locale.toLowerCase());
+        const fallback=voices.filter(v=>v.lang?.toLowerCase().startsWith(locale.slice(0,2).toLowerCase()));
+        const options=same.length?same:fallback;
+        return options.find(v=>genderHint.test(v.name))||options[0]||null;
+      }
       let index=0;
       speechDone=false;
       const complete=()=>{
@@ -2268,11 +2365,13 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         if(serial!==speechSerial||speechDone)return;
         if(paused){voicePendingOnResume=speakNext;return;}
         if(index>=chunks.length){complete();return;}
-        const u=new SpeechSynthesisUtterance(chunks[index++]);
-        u.lang=locale;
+        const chunk=chunks[index++];
+        const u=new SpeechSynthesisUtterance(chunk.text);
+        u.lang=chunk.locale;
         u.rate=line.speaker==='hein'?1.12:line.speaker==='nun'?.91:1;
         u.pitch=line.speaker==='nun'?1.25:line.speaker==='tony'?.8:line.speaker==='stan'?.79:1;
         u.volume=Math.max(0,Math.min(1,config.fxVolume));
+        const voice=voiceFor(chunk.locale);
         if(voice)u.voice=voice;
         // Store the utterance as a live object until the engine finishes it.
         activeVoiceUtterance=u;
@@ -2317,7 +2416,11 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function described(slot){if(!ss)return '';const cl=ss.players[0].clues.filter(q=>q.slot===slot);if(!cl.length)return 'No clues yet';return cl.map(x=>x.type==='higher'?`>${x.top.r}`:x.type==='lower'?`<${x.top.r}`:x.type==='sameSuit'?`Same ${GL[x.top.s]}`:`Not ${GL[x.top.s]}`).join(' · ');}
   function record(text,kind='move'){if(!ss)return;ss.log.unshift({turn:ss.move,text,kind});if(ss.log.length>120)ss.log.length=120;}
-  function openingDialogue(){quote('dealt');beginHold(()=>{},'THE TABLE IS READY',getActor(ss.first).name+' takes the first turn. Everyone else follows clockwise.',ss.first);}
+  function openingDialogue(){
+    ss.mode='first';ss.speechLine=null;speechDone=true;
+    record(`${getActor(ss.first).name} was randomly selected to play first.`,'system');
+    beginHold(()=>{ss.mode='ready';},`FIRST PLAYER: ${getActor(ss.first).name.toUpperCase()}`, 'Randomly selected! Play continues clockwise from left to right.',ss.first);
+  }
   function start(){
     clearTimeout(aiTick);disarmHold();speechSerial++;stopSpeech();speechDone=true;turnHold=null;ss=null;seen=new Set();chatter=[];voiceCount={};spoken=0;pane=null;paused=false;peekDismissed=false;musicStep=0;musicLastPulse=0;
     const playable=shuffle(deck()),n=config.count,opponents=chars(),groups=n===3?[8,8,8]:n===4?[6,6,6,6]:n===5?[5,5,5,5,4]:[4,4,4,4,4,4];
@@ -2451,7 +2554,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!ss||screen!=='game'||ss.over||paused)return;
     saveSession();
     if(turnHold)armHold();
-    else if(!['role','peek','lucky'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,3100);
+    else if(!['role','peek','lucky','first'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,350);
     if(config.music&&config.musicVolume>0&&!['role','peek','lucky'].includes(ss.mode)){musicPulse();musicTick=setInterval(musicPulse,SS_SCORE[config.count].beat);}
   }
   function enter(active){if(!active){clearTimeout(aiTick);clearInterval(musicTick);disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
@@ -2484,7 +2587,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}>Scene music</label>
       <label class="ss-bm-range">Music volume · ${Math.round(config.musicVolume*100)}%<input type="range" data-ss-change="musicVolume" min="0" max="1" step="0.05" value="${config.musicVolume}"></label>
       <label class="ss-bm-range">Sound effects &amp; voices volume · ${Math.round(config.fxVolume*100)}%<input type="range" data-ss-change="fxVolume" min="0" max="1" step="0.05" value="${config.fxVolume}"></label></div>
-      <p class="ss-bm-settings-help">Music is an original synthesized theme for each location. Native-language voices depend on your device's available speech voices.</p>
+      <p class="ss-bm-settings-help">Music is synthesized in your browser. Belgrade uses an original Romanian-suite-style accordion arrangement; no commercial recording is embedded. Native-language voices depend on your device.</p>
       <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">Start Game</button><button class="ss-btn alt" data-ss="back">Back</button></div>
     </section>`;
   }
@@ -2548,6 +2651,14 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function showRole(){const traitor=ss.traitor===0&&!config.pure;
     return `<div class="ss-rolepeek ss-role-start" role="dialog" aria-modal="true" aria-label="Secret role reveal"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">YOUR SECRET ROLE</div><div class="ss-role-card ${traitor?'is-traitor':'is-loyal'}"><span class="ss-role-seal">${config.pure?'✦':traitor?'♠':'♥'}</span><h2>${config.pure?'PURE CO-OP':traitor?'YOU ARE THE TRAITOR':'YOU ARE LOYAL'}</h2></div><p>${config.pure?'No hidden traitor. Work together to stack all 24 cards.':traitor?'Sabotage the team without giving false clues. You will have one chance to memorize your cards.':'Protect the team, share truthful clues, and watch for the hidden traitor.'}</p><p><strong>First turn:</strong> ${esc(getActor(ss.first).name)}. Play continues clockwise: you, then each opponent from left to right.</p><button class="ss-btn" data-ss="revealrole">${traitor?'Reveal my cards':'Begin game'}</button></div></div>`;
   }
+  function showFirst(){
+    const name=getActor(ss.first).name, human=ss.first===0;
+    return `<div class="ss-rolepeek ss-first-reveal" role="status" aria-live="polite"><div class="ss-rolepeek-inner ss-surface ss-first-inner">
+      <div class="ss-kicker">RANDOMLY SELECTED FIRST PLAYER</div><div class="ss-first-star">✦</div>
+      <h2>${esc(name.toUpperCase())}</h2><p>${human?'You play first!':esc(name)+' plays first!'}</p>
+      <p>Turns continue clockwise: you, then the opponents from left to right.</p><div class="ss-first-progress"></div>
+    </div></div>`;
+  }
   function showPeek(){const p=ss.players[0];return `<div class="ss-rolepeek"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">SECRET ROLE · PRIVATE SETUP</div><h2>You are the TRAITOR</h2><p>In the physical game, the traitor gets one private look at their cards. Memorize these positions now; after you close this screen you can no longer see your hand. Your goal is to make the team lose its HP or convict an innocent person.</p><div class="ss-yourcards">${p.hand.map((x,i)=>`<div><div class="ss-meta">Card ${i+1}</div>${card(x.card)}</div>`).join('')}</div><button class="ss-btn" data-ss="hidepeek">I’ve memorized my cards — hide them</button></div></div>`;}
   function showLucky(){const lucky=ss.lucky,person=getActor(lucky).name,own=lucky===0;
     return `<div class="ss-rolepeek ss-goose-reveal" role="dialog" aria-modal="true" aria-label="Lucky Goose reveal"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">SPECIAL FIVE-PLAYER SETUP</div>
@@ -2571,7 +2682,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       </div></div></div>`;
   }
 
-  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():'');}
+  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():ss.mode==='first'?showFirst():'');}
 
   function rules(){
     const ex=(r,s)=>card(cdef(r,s));
