@@ -751,6 +751,8 @@
 .ss-bm-rulebook .ss-rule-cards .ss-card .ss-pip{font:700 29px Arial,sans-serif;color:inherit}
 .ss-bm-rulebook .ss-rule-cards .ss-card .ss-corner i{font:13px Arial,sans-serif;font-style:normal;display:block}
 .ss-bm .ss-bm-speech{left:clamp(17%,var(--ss-speech-x,50%),83%)!important}
+.ss-bm .ss-bm-speech-still{animation:none!important;translate:none!important;opacity:1!important}
+
 
 .ss-bm-control-pair{display:inline-flex;flex:0 0 auto;align-items:center;gap:5px;white-space:nowrap}
 .ss-bm .ss-card.sm{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:space-between!important;padding:3px 4px!important;gap:0!important}
@@ -1098,7 +1100,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '2.2',
+    stackSquad: '2.3',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1841,7 +1843,7 @@ const SS_SCENES = Object.freeze({
 
 
 /*
- * STACK SQUAD v1.3 — Moonin Ya Games single-source module.
+ * STACK SQUAD v2.3 — Moonin Ya Games single-source module.
  * DESIGN INVARIANTS (DO NOT REGRESS):
  * - Exactly 24 playable unique cards A..6 in four suits, all dealt across 3–6 players.
  * - Players never see THEIR OWN hand after setup; ONLY a traitor receives one private setup peek.
@@ -1885,6 +1887,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   try{const x=JSON.parse(localStorage.getItem('mooninya-stack-squad-settings')||'null');if(x){Object.assign(config,x);delete config.seat;if(typeof x.musicVolume!=='number')config.musicVolume=.72;if(typeof x.fxVolume!=='number')config.fxVolume=.8;config.count=Math.max(3,Math.min(6,Number(config.count)||4));}}catch(e){}
   let ss=null,screen='title',pane=null,selectedCard=null,selectedPlayer=null,clueTarget=null,clueIndex=null,peekDismissed=false,paused=false,aiTick=null,musicTick=null,audio=null,spoken=0,seen=new Set(),chatter=[],localOnly=false;
   let turnHold=null,holdTimer=null,holdDeadline=0,speechDone=true,speechSerial=0;
+  // Stable IDs make animation replay a real event, not a side effect of re-rendering.
+  let speechVisualId=0,lastPaintedSpeechId=null,lastPaintedPileKey=null;
   const SESSION_KEY='mooninya-stack-squad-save-v16';
   function saveSession(){try{if(ss&&!ss.over&&!turnHold)localStorage.setItem(SESSION_KEY,JSON.stringify({ss,chatter,selectedCard,pane,peekDismissed,config}));else if(ss?.over)localStorage.removeItem(SESSION_KEY);}catch(e){}}
   function restoreSession(){try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;const x=JSON.parse(raw);if(!x.ss?.players||x.ss.over||x.ss.players.length<3||x.ss.players.length>6)return;ss=x.ss;chatter=x.chatter||[];selectedCard=x.selectedCard||null;pane=x.pane||null;peekDismissed=!!x.peekDismissed;Object.assign(config,x.config||{});if(typeof config.musicVolume!=='number')config.musicVolume=.72;if(typeof config.fxVolume!=='number')config.fxVolume=.8;config.count=ss.players.length;ss.mode=ss.mode||'ready';}catch(e){}}
@@ -1892,7 +1896,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function disarmHold(){clearTimeout(holdTimer);holdTimer=null;}
   function tryEndHold(force=false){if(!turnHold||paused||screen!=='game')return;
     if(!force&&(Date.now()<holdDeadline||!speechDone))return;
-    const next=turnHold.next;turnHold=null;disarmHold();if(force){speechSerial++;stopSpeech();speechDone=true;}
+    const next=turnHold.next;turnHold=null;disarmHold();
+    // The line belongs to the action we are completing; never reshow it on the next turn.
+    if(ss)ss.speechLine=null;
+    if(force){speechSerial++;stopSpeech();speechDone=true;}
     if(next)next();saveSession();render();
   }
   function checkHoldVoice(){if(!turnHold||paused||screen!=='game')return;
@@ -2307,6 +2314,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const line=lineFor(target,context);
     chatter.unshift(line);if(chatter.length>32)chatter.length=32;
     if(ss&&ss.log)ss.log.unshift({turn:ss.move,text:`${CH.find(c=>c.id===target).name}: “${line.text}”`,kind:'banter'});
+    line.visualId=++speechVisualId;
     ss.speechLine=line;soundSpeech(line);
   }
   function getAudio(){try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});return audio;}catch(e){return null;}}
@@ -2406,24 +2414,38 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     }
     return chunks.filter(Boolean);
   }
+  // Web Speech has no standard "gender" flag. Avoid substring checks:
+  // "male" occurs inside "female", and "man" inside "woman".
+  const SS_MALE_VOICE_NAMES=/\b(?:male|man|alex|fred|daniel|david|thomas|mark|james|pavel|pawel|adam|marek|jacek|maciej|mateusz|jakub|piotr|krzysztof|jan|stefan|hans|ralf|conrad|martin|jonas|moritz|eddy|lars|felix|michael|guy|christopher|eric|andrew|brian|ryan|roger|brandon|aaron|albert|rishi|arthur|oliver|george|tom|gordon|evan|junior|paul|peter|joey|reed|magnus|oskar|klaus|niklas)\b/i;
+  const SS_FEMALE_VOICE_NAMES=/\b(?:female|woman|samantha|zira|karen|moira|fiona|amelia|sofia|paulina|maria|monica|tessa|kate|catherine|eva|joana|victoria|allison|susan|nora|anna|katja|ingrid|shelley|emma|natalie|flo|lana|helena|frida|siri|alice|elsa|greta|clara|ava|allison|sara|sonia|lea|sabrina|vicki|vicky|angelica|martha|lisa|lucy|olivia|sarah|hannah)\b/i;
+  function ssVoiceGender(v){
+    const named=String(v?.name||'');
+    const flagged=String(v?.gender||'').toLowerCase();
+    if(flagged==='female'||SS_FEMALE_VOICE_NAMES.test(named))return 'female';
+    if(flagged==='male'||SS_MALE_VOICE_NAMES.test(named))return 'male';
+    return 'unknown';
+  }
+  function ssSelectVoice(voices,locale,speaker){
+    const gender=speaker==='nun'?'female':'male',language=locale.slice(0,2).toLowerCase();
+    const exact=voices.filter(v=>String(v.lang||'').toLowerCase()===locale.toLowerCase());
+    const related=voices.filter(v=>String(v.lang||'').slice(0,2).toLowerCase()===language);
+    const english=voices.filter(v=>/^en/i.test(String(v.lang||'')));
+    const gendered=list=>list.find(v=>ssVoiceGender(v)===gender);
+    const neutral=list=>list.find(v=>ssVoiceGender(v)==='unknown');
+    // Correct gender always wins over a voice explicitly marked as the wrong gender.
+    // Prioritize the correct language when a matching male/female voice exists.
+    return gendered(exact)||gendered(related)||gendered(english)||gendered(voices)||
+      neutral(exact)||neutral(related)||neutral(english)||neutral(voices)||
+      exact[0]||related[0]||english[0]||voices[0]||null;
+  }
   function soundSpeech(line){
     const serial=++speechSerial;
     stopSpeech();speechDone=true;
     if(!config.voices||!('speechSynthesis' in window)||!window.SpeechSynthesisUtterance||!line||paused)return;
     try{
       const engine=window.speechSynthesis;
-      const segments=[{text:line.text,locale:line.locale||'en-US'}];
-      const chunks=segments.flatMap(seg=>speechChunks(seg.text).map(text=>({text,locale:seg.locale})));
-      const voices=engine.getVoices();
-      const wantFemale=line.speaker==='nun';
-      const genderHint=wantFemale?/(female|woman|samantha|zira|karen|moira|fiona|amelia|sofia|paulina|maria)/i:/(male|man|daniel|alex|david|thomas|mark|james|pavel|adam)/i;
-      function voiceFor(locale){
-        const same=voices.filter(v=>v.lang?.toLowerCase()===locale.toLowerCase());
-        const fallback=voices.filter(v=>v.lang?.toLowerCase().startsWith(locale.slice(0,2).toLowerCase()));
-        const options=same.length?same:fallback;
-        return options.find(v=>genderHint.test(v.name))||options[0]||null;
-      }
-      let index=0;
+      const chunks=speechChunks(line.text).map(text=>({text,locale:line.locale||'en-US'}));
+      let index=0,voiceLoadAttempts=0;
       speechDone=false;
       const complete=()=>{
         if(serial!==speechSerial)return;
@@ -2434,27 +2456,32 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         if(serial!==speechSerial||speechDone)return;
         if(paused){voicePendingOnResume=speakNext;return;}
         if(index>=chunks.length){complete();return;}
+        // Voice lists often populate asynchronously, particularly on mobile browsers.
+        const voices=engine.getVoices();
+        if(!voices.length&&voiceLoadAttempts++<6){setTimeout(speakNext,140);return;}
         const chunk=chunks[index++];
         const u=new SpeechSynthesisUtterance(chunk.text);
-        u.lang=chunk.locale;
-        u.rate=line.speaker==='hein'?1.12:line.speaker==='nun'?.91:1;
-        u.pitch=line.speaker==='nun'?1.25:line.speaker==='tony'?.8:line.speaker==='stan'?.79:1;
-        u.volume=Math.max(0,Math.min(1,config.fxVolume));
-        const voice=voiceFor(chunk.locale);
+        const voice=ssSelectVoice(voices,chunk.locale,line.speaker);
+        u.lang=voice?.lang||chunk.locale;
         if(voice)u.voice=voice;
-        // Store the utterance as a live object until the engine finishes it.
+        u.rate=line.speaker==='hein'?1.1:line.speaker==='nun'?.91:.97;
+        u.pitch=line.speaker==='nun'?1.18:line.speaker==='tony'?.73:line.speaker==='stan'?.73:line.speaker==='darell'?.70:.78;
+        u.volume=Math.max(0,Math.min(1,config.fxVolume));
         activeVoiceUtterance=u;
-        u.onend=()=>{if(serial===speechSerial)speakNext();};
+        let settled=false;
+        const onDone=()=>{if(settled||serial!==speechSerial)return;settled=true;speakNext();};
+        u.onend=onDone;
         u.onerror=()=>{
-          if(serial!==speechSerial)return;
-          // Speech errors are NOT proof that the player heard the sentence.
-          // Keep the speech bubble open for its full reading time instead.
-          complete();
+          if(settled||serial!==speechSerial)return;
+          settled=true;
+          // A platform speech failure is not an excuse to repeat or flash the bubble.
+          // Proceed to remaining chunks without redisplaying the whole line.
+          speakNext();
         };
-        try{engine.speak(u);}catch(e){complete();}
+        try{engine.speak(u);}catch(e){onDone();}
       };
       speakNext();
-      // A safety fallback for a truly hung platform speech engine, not a turn timer.
+      // Only guards against an actual platform hang, not normal narration length.
       voiceWatchdog=setTimeout(()=>{
         if(serial!==speechSerial||speechDone)return;
         try{engine.cancel();}catch(e){}
@@ -2492,6 +2519,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function start(){
     clearTimeout(aiTick);disarmHold();speechSerial++;stopSpeech();speechDone=true;turnHold=null;ss=null;seen=new Set();chatter=[];voiceCount={};spoken=0;pane=null;paused=false;peekDismissed=false;musicStep=0;musicLastPulse=0;
+    lastPaintedSpeechId=null;lastPaintedPileKey=null;
     const playable=shuffle(deck()),n=config.count,opponents=chars(),groups=n===3?[8,8,8]:n===4?[6,6,6,6]:n===5?[5,5,5,5,4]:[4,4,4,4,4,4];
     if(n===5){const ix=Math.floor(Math.random()*5);[groups[ix],groups[4]]=[groups[4],groups[ix]];}
     const players=[{character:CH[0]},...opponents.map(x=>({character:x}))]; // Human player is always seat 0 and is represented only through UI and scene perspective.
@@ -2656,7 +2684,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}>Scene music</label>
       <label class="ss-bm-range">Music volume · ${Math.round(config.musicVolume*100)}%<input type="range" data-ss-change="musicVolume" min="0" max="1" step="0.05" value="${config.musicVolume}"></label>
       <label class="ss-bm-range">Sound effects &amp; voices volume · ${Math.round(config.fxVolume*100)}%<input type="range" data-ss-change="fxVolume" min="0" max="1" step="0.05" value="${config.fxVolume}"></label></div>
-      <p class="ss-bm-settings-help">Music is synthesized in your browser. Belgrade uses an original upbeat Serbian kolo-style accordion dance; no copyrighted recording or melody is included. Native-language voices depend on your device.</p>
+      
       <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">Start Game</button><button class="ss-btn alt" data-ss="back">Back</button></div>
     </section>`;
   }
@@ -2677,7 +2705,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
     if(pane==='clue'){
-      const p=ss.players[0],top=ss.pile.at(-1)?.card;return `<div class="ss-clue-picker"><p><strong>Give a truthful clue.</strong> Spend 1 clue token to identify another player’s card relative to ${vcard(top)}. Tap an opponent’s face-up card above.</p>${clueTarget!==null?`<p>Selected: ${esc(getActor(clueTarget).name)} · card ${ss.players[clueTarget].hand.findIndex(x=>x.id===clueIndex)+1}</p><div class="ss-actions">${clueValid(ss.players[clueTarget].hand.find(x=>x.id===clueIndex).card,top).map(c=>`<button class="ss-btn sm" data-ss="give" data-to="${clueTarget}" data-slot="${clueIndex}" data-clue="${c.type}">${esc(c.text)}</button>`).join('')}</div>`:'<p>Choose a face-up card from another player.</p>'}<button class="ss-btn alt sm" data-ss="cancel">Cancel</button></div>`;
+      const p=ss.players[0],top=ss.pile.at(-1)?.card;return `<div class="ss-clue-picker"><p><strong>Give a truthful clue.</strong> Spend 1 clue token to identify another player’s card relative to ${vcard(top)}.</p>${clueTarget!==null?`<p>Selected: ${esc(getActor(clueTarget).name)} · card ${ss.players[clueTarget].hand.findIndex(x=>x.id===clueIndex)+1}</p><div class="ss-actions">${clueValid(ss.players[clueTarget].hand.find(x=>x.id===clueIndex).card,top).map(c=>`<button class="ss-btn sm" data-ss="give" data-to="${clueTarget}" data-slot="${clueIndex}" data-clue="${c.type}">${esc(c.text)}</button>`).join('')}</div>`:'<p>Choose a face-up card from another player.</p>'}<button class="ss-btn alt sm" data-ss="cancel">Cancel</button></div>`;
     }
     if(pane==='vote')return `<div class="ss-vote-panel"><p>Accuse one other player. A strict majority must vote YES; a wrong conviction ends the game.</p><div class="ss-actions">${ss.players.map((p,i)=>i?`<button class="ss-btn alt" data-ss="accuse" data-player="${i}">${esc(getActor(i).name)}</button>`:'').join('')}<button class="ss-btn alt" data-ss="cancel">Cancel</button></div></div>`;
     return `<div class="ss-turn-actions"><button class="ss-btn ss-main-action" data-ss="place" ${selectedCard===null||paused?'disabled':''}>Place selected card</button><button class="ss-btn ss-main-action" data-ss="clue" ${ss.players[0].tokens===0||!ss.pile.length||paused?'disabled':''}>Give a clue</button></div>${!config.pure?`<div class="ss-vote-low"><button class="ss-vote-subtle" data-ss="vote" ${paused?'disabled':''}>Suspect a traitor? Call a vote</button></div>`:''}<p class="ss-helper">${selectedCard?'Selected hidden card. Once revealed, your choice is final.':'Select one of your face-down cards.'} ${!ss.pile.length?'Any first card is valid.':'Match the top card’s suit, or be within 1 rank (including the same rank).'}</p>`;
@@ -2686,8 +2714,13 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function live(){
     const t=ss.pile.at(-1),where=VENUES[config.count],activeName=getActor(ss.turn).name;
     const latest=ss.log.find(x=>x.kind!=='banter');
-    const talking=ss.speechLine||chatter[0],talker=talking&&CH.find(c=>c.id===talking.speaker);
+    const talking=ss.speechLine,talker=talking&&CH.find(c=>c.id===talking.speaker);
     const speakerX=talker?(SPEECH_X[config.count]?.[talker.id]??50):50;
+    const speechNew=!!talking&&lastPaintedSpeechId!==talking.visualId;
+    if(talking)lastPaintedSpeechId=talking.visualId;
+    const pileKey=t?`${t.move}|${t.card.id}`:null;
+    const animatePile=!!t&&lastPaintedPileKey!==pileKey;
+    lastPaintedPileKey=pileKey;
     const bannerTitle=turnHold?.title||(ss.mode==='lucky'?'LUCKY GOOSE':ss.mode==='role'?'SECRET ROLE':paused?'GAME PAUSED':ss.turn===0?'YOUR TURN':activeName.toUpperCase()+'’S TURN');
     const bannerDetail=turnHold?.detail||(ss.mode==='lucky'?'A special four-card hand has been dealt.':ss.mode==='role'?'Reveal your role before the game begins.':paused?'The table waits until you resume.':latest?.text||'The cards are dealt. Make your move.');
     return `<div class="ss-shell ss-bm ss-bm-game">
@@ -2698,7 +2731,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           <span>${esc(bannerDetail)}</span></div>
         <div class="ss-bm-scene"><img src="${scene()}" alt="${esc(where.alt)}">
           <span class="ss-bm-scene-place">${esc(where.tag)}</span>
-          ${talking&&talker?`<div class="ss-bm-speech" style="--ss-speech-x:${speakerX}%"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
+          ${talking&&talker?`<div class="ss-bm-speech ${speechNew?'':'ss-bm-speech-still'}" data-ss-line="${talking.visualId||0}" style="--ss-speech-x:${speakerX}%"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
         </div>
         <div class="ss-bm-action-panel ss-bm-actions-first"><h3>${ss.turn===0?'Choose your action':esc(activeName)+' is thinking'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>
       <section class="ss-bm-own"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
@@ -2707,7 +2740,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         <div class="ss-bm-felt">
           <div class="ss-bm-status"><div><small>HEALTH</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp} / ${ss.maxHp}</strong></div><div><small>CARDS STACKED</small><strong>${ss.pile.length} / 24</strong></div><div><small>TURN</small><strong>${ss.move}</strong></div></div>
           ${playerTiles()}
-          <div class="ss-bm-center"><div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${t?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
+          <div class="ss-bm-center"><div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${animatePile?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
             <div class="ss-bm-felt-mark">STACK<br>SQUAD</div>
             <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
         </div>
@@ -2801,7 +2834,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       if(ss&&!ss.over&&!window.confirm('Start a new Stack Squad game? Your current game will be lost.'))return;
       start();return;
     }
-    if(a==='title'){clearTimeout(aiTick);clearInterval(musicTick);if(turnHold)tryEndHold(true);stopSpeech();paused=false;screen='title';saveSession();render();return;}
+    if(a==='title'){clearTimeout(aiTick);clearInterval(musicTick);if(turnHold)tryEndHold(true);stopSpeech();if(ss)ss.speechLine=null;paused=false;screen='title';saveSession();render();return;}
     if(a==='skip'){if(turnHold&&!paused)return tryEndHold(true);if(ss&&!paused&&ss.turn!==0&&ss.mode==='ready'){clearTimeout(aiTick);botChoose();if(turnHold)return tryEndHold(true);}return;}
     if(a==='pause'){paused=!paused;if(paused){freezeHold();clearTimeout(aiTick);clearInterval(musicTick);try{speechSynthesis.pause();}catch(e){}}else{try{speechSynthesis.resume();}catch(e){}if(voicePendingOnResume){const go=voicePendingOnResume;voicePendingOnResume=null;go();}resumeHold();}render();return;}
     if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
