@@ -585,6 +585,115 @@
 @media(max-width:410px){.ss-head h1{font-size:2rem}.ss-players{grid-template-columns:1fr 1fr}.ss-hud{gap:4px}.ss-hud small{font-size:.52rem}.ss-hud strong{font-size:.79rem}.ss-card.sm{width:39px;height:57px}.ss-card.sm .ss-pip{font-size:21px}.ss-hero .ss-scene>img{aspect-ratio:16/11}}
 @media(prefers-reduced-motion:reduce){.ss-shell *{animation:none!important;transition:none!important}}
 
+
+/* STACK SQUAD v1.5 — COMPLETE VISUAL REBUILD based on Bad Magicians v1.21.
+   NEVER make Stack Squad a separate aqua dashboard. Borrow the Bad Magicians title/settings
+   hierarchy, walnut/gold framing, forest-green casino felt, seats, speech, card animations.
+   Preserve 3–6 lineups, unseen human, approved photos, and single-file image embedding.
+   New games belong at the END of the Games list. */
+.ss-bm{--ss-gold:#e5bb73;--ss-cream:#f7e9cb;--ss-wood:#765432;--ss-felt:#254b39;color:var(--ss-cream);font-family:system-ui,-apple-system,Arial,sans-serif}
+.ss-bm button,.ss-bm select{font:inherit}
+.ss-bm .ss-btn{background:linear-gradient(125deg,#ac763d,#e6bb76);color:#221910;border:1px solid #e4bc77;font-weight:850;border-radius:8px;min-height:43px;padding:10px 15px;box-shadow:none;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.ss-bm .ss-btn.alt{background:#27382e;color:#f7e9cb;border:1px solid #957b51;box-shadow:none}
+.ss-bm .ss-btn:hover:not(:disabled){border-color:#ffe2aa;filter:brightness(1.08)}
+.ss-bm .ss-btn:disabled{opacity:.46;filter:grayscale(.45)}
+.ss-bm-menu{max-width:820px;margin:10px auto 25px;padding:clamp(14px,4vw,34px);background:radial-gradient(ellipse at 50% 0,#49372a,#20261e 74%);border:1px solid #806c46;border-radius:18px;text-align:center;box-shadow:0 14px 45px #0006}
+.ss-bm-menu h1,.ss-bm-rulebook h1{font:900 clamp(37px,7vw,65px)/1.05 Georgia,serif;color:#f5d69a;letter-spacing:-.05em;margin:22px 0 8px}
+.ss-bm-cover{position:relative;border:1px solid #ad9065;border-radius:10px;overflow:hidden;background:#13221b}
+.ss-bm-cover img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center 42%}
+.ss-bm-cover-tag{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#09180fe8);color:#f5e2bd;padding:20px 12px 10px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;font-weight:750}
+.ss-bm-version{font-size:12px;color:#c5b396;letter-spacing:.08em;font-weight:800}
+.ss-bm-lead{font-size:15px;color:#d9c9ae;margin:12px auto 19px;max-width:490px}
+.ss-bm-menu-buttons{display:flex;flex-direction:column;gap:10px;width:min(100%,340px);margin:20px auto 0}.ss-bm-menu-buttons .ss-btn{font-size:17px;min-height:51px}
+.ss-bm-menu-note{font-size:12px;color:#b1a38b;margin:15px 0 0}
+.ss-bm-settings-page{max-width:590px;text-align:left}.ss-bm-settings-page h1{margin:0}.ss-bm-settings-page>.ss-bm-lead{margin:8px 0 19px}
+.ss-bm-settings-scene{position:relative;overflow:hidden;border-radius:9px;border:1px solid #947b52;margin-bottom:18px}
+.ss-bm-settings-scene img{display:block;width:100%;aspect-ratio:16/7;object-fit:cover}
+.ss-bm-settings-scene>div{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#0e1c14ef);padding:18px 12px 9px;text-shadow:0 2px 3px #000}
+.ss-bm-settings-scene strong{display:block;color:#f7deb1;font:700 18px Georgia,serif}.ss-bm-settings-scene small{display:block;color:#e7dbc7;font-size:11px}
+.ss-bm-settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.ss-bm-settings-fields>label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#ead8ba;min-width:0}
+.ss-bm-settings-fields select{width:100%;min-width:0;border:1px solid #987b51;border-radius:7px;background:#172a20;color:#f6e4c7;padding:9px;font-size:14px}
+.ss-bm-settings-fields .ss-bm-check{flex-direction:row;gap:9px;align-items:center;font-size:14px}.ss-bm-check input{accent-color:#d8b073;width:19px;height:19px}
+.ss-bm-settings-fields .ss-bm-range{grid-column:1/-1}.ss-bm-range input{width:100%;accent-color:#d6ae6c}
+.ss-disabled-option{opacity:.4}.ss-bm-settings-help{font-size:12px;color:#b7a88e;margin:13px 0}
+.ss-bm-game{max-width:1020px;margin:auto}.ss-bm-topline{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;color:#c7b9a0;margin:0 0 8px}
+.ss-bm-topline>a{margin-left:auto;color:#f2cc8d;text-decoration:none}.ss-bm-topline .ss-bm-text-btn{margin-left:auto}
+.ss-bm-text-btn,.ss-bm-pause{border:0;background:transparent;color:#d5c8b4;font-size:12px;padding:5px;cursor:pointer}
+.ss-bm-pause{font-size:17px;color:#e9ebde;background:transparent;border:1px solid #7b8774;border-radius:7px;min-width:35px;min-height:34px}
+.ss-bm-stage{border:4px solid #67492d;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at center,#285647,#173d33 70%,#132e27);box-shadow:inset 0 0 40px #0005,0 8px 24px #0006}
+.ss-bm-banner{min-height:70px;background:linear-gradient(120deg,#161e1a,#353a2d);border-bottom:1px solid #9c8455;padding:9px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;animation:ss-bm-announcement 2.1s ease both}
+.ss-bm-banner strong{font:900 clamp(19px,4vw,29px) Georgia,serif;color:#f6dba7}.ss-bm-banner span{font-size:12px;color:#e3d8bc;max-width:720px;line-height:1.35}
+@keyframes ss-bm-announcement{0%{opacity:.4;filter:brightness(1.3)}20%{opacity:1}65%{box-shadow:inset 0 0 20px #e6c27e2d}100%{opacity:1}}
+.ss-bm-scene{position:relative;background:#162b25;overflow:hidden}.ss-bm-scene>img{display:block;width:100%;aspect-ratio:3/1.65;object-fit:cover;object-position:center 43%}
+.ss-bm-scene::after{content:'';position:absolute;inset:60% 0 0;background:linear-gradient(transparent,#132821b8);pointer-events:none}
+.ss-bm-scene-place{position:absolute;z-index:2;left:10px;bottom:8px;background:#16271aa8;color:#ffe2ad;border:1px solid #e8ca8052;padding:5px 8px;border-radius:5px;font-size:11px;font-weight:750;letter-spacing:.03em}
+.ss-bm-speech{position:absolute;z-index:3;right:2%;bottom:7%;width:min(48%,350px);padding:10px 12px;border-radius:10px;background:#f4e6cde8;border:1px solid #bfa475;color:#38271a;box-shadow:0 5px 24px #0009;animation:ss-bm-speak .6s ease-out both}
+.ss-bm-speech::after{content:'';position:absolute;right:22px;bottom:-10px;border-left:11px solid transparent;border-right:11px solid transparent;border-top:11px solid #f4e6cd}
+.ss-bm-speech b{display:block;font:700 13px Georgia,serif;color:#503a1d;margin-bottom:4px}.ss-bm-speech span{display:block;font-size:12px;line-height:1.3}
+@keyframes ss-bm-speak{from{opacity:0;transform:scale(.93) translateY(7px)}to{opacity:1;transform:none}}
+.ss-bm-felt{padding:12px;background:radial-gradient(ellipse at center,#315b42,#244835 65%,#1a382b);border-top:3px solid #806544}
+.ss-bm-status{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
+.ss-bm-status>div{background:#102b22b8;border:1px solid #7c815e;border-radius:7px;padding:7px;text-align:center}
+.ss-bm-status small{display:block;color:#d3c6a9;font-size:10px;letter-spacing:.05em}.ss-bm-status strong{display:block;color:#f6e0b2;font:800 19px Georgia,serif;margin-top:3px}
+.ss-bm-opponents{display:grid;grid-template-columns:repeat(var(--ss-opps,3),minmax(0,1fr));gap:8px;align-items:start}
+.ss-bm-opponent{background:linear-gradient(#142f26ec,#11291fc9);border:1px solid #71836b;border-radius:10px;padding:8px;min-width:0;min-height:90px}
+.ss-bm-opponent.active{border:2px solid #f1d397;box-shadow:0 0 18px #ebba64aa;animation:ss-bm-active 2.8s ease-in-out infinite}
+@keyframes ss-bm-active{0%,100%{box-shadow:0 0 10px #eabb6755}50%{box-shadow:0 0 22px #edc16d9c}}
+.ss-bm-op-name{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px;margin-bottom:5px}
+.ss-bm-op-name strong{font:700 clamp(12px,1.9vw,19px) Georgia,serif;color:#ffe3b0}.ss-bm-op-name small{font-size:10px;color:#d2cab4}
+.ss-bm-opponent .ss-player-cards{display:flex;flex-wrap:wrap;gap:3px}.ss-bm-opponent .ss-player-cards button{border:none;background:none;padding:0;cursor:pointer}
+.ss-bm-opponent .ss-player-cards button:hover{transform:translateY(-3px)}.ss-bm-opponent .ss-card.sm{width:clamp(28px,3.5vw,40px);height:clamp(41px,5vw,56px);border-radius:4px;padding:2px}.ss-bm-opponent .ss-card.sm .ss-pip{font-size:clamp(18px,2.5vw,28px)}.ss-bm-opponent .ss-card.sm .ss-corner{font-size:11px}
+.ss-bm-opp-clues{font-size:11px;color:#dbcb99;margin-top:5px}
+.ss-bm-center{display:grid;grid-template-columns:1fr .7fr 1fr;align-items:center;gap:10px;padding:10px 8px;margin:12px 0 0;min-height:133px;border:1px solid #a18a5e6b;border-radius:13px;background:radial-gradient(ellipse,#244b38,#18392d)}
+.ss-bm-topcard,.ss-bm-health{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}.ss-bm-topcard small,.ss-bm-health small{font-size:10px;color:#ddcaa5;letter-spacing:.09em;font-weight:900}
+.ss-bm-topcard span,.ss-bm-health span{font-size:10px;color:#d0c6b5}.ss-bm-topcard .ss-pile{width:65px;height:92px}.ss-bm-topcard .ss-card{width:61px;height:86px}
+.ss-bm-felt-mark{font:900 clamp(13px,2.5vw,26px)/.95 Georgia,serif;letter-spacing:.1em;color:#a0b08c68;text-align:center}
+.ss-bm-health .ss-hp-cards{max-width:180px}.ss-bm-health .ss-hp-cards>span{background:#dbb36e;border-color:#f8d59b}.ss-bm-health .ss-hp-cards>span.off{background:#703738;border-color:#bb7070}
+.ss-bm-own{background:linear-gradient(#1a3629,#142b22);border:1px solid #7b6440;border-radius:0 0 13px 13px;padding:13px;margin-top:10px;box-shadow:0 7px 18px #0005}
+.ss-bm-own>header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}.ss-bm-own h3{font:700 19px Georgia,serif;color:#f7d69c;margin:0 0 8px}.ss-bm-own h3 small{display:block;font:500 11px system-ui;color:#cabca2;margin-top:4px}
+.ss-bm-role{font-size:11px;color:#f6daa6;background:#2c3c2e;border:1px solid #7c754e;border-radius:8px;padding:5px 8px}
+.ss-bm-own .ss-yourcards{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 7px}
+.ss-bm-own .ss-hidden-slot{border:1px solid #857350;background:#183529;min-width:59px;max-width:90px;padding:5px;border-radius:9px}
+.ss-bm-own .ss-hidden-slot.selected{background:#385b41;border-color:#ffd58b;box-shadow:0 0 0 2px #d9b56883}
+.ss-bm-own .ss-hidden-slot .ss-meta{color:#efdcba;font-size:10px}.ss-bm-own .ss-hidden-slot .ss-slot-sub{color:#bbd0be}
+.ss-bm-own .ss-hidden-slot .ss-card{width:48px;height:69px;border:3px solid #dfcba2}.ss-bm-own .ss-hidden-slot .ss-card .ss-pip{font-size:22px}
+.ss-bm-own-clues{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 0;border-top:1px solid #87764e42}.ss-bm-own-clues>span:first-child{font-size:12px;color:#d4c4a2}
+.ss-bm-own-clues .ss-clue-token{display:inline-flex;align-items:center;justify-content:center;width:42px;height:28px;background:#405a3c;border:1px solid #d5b97b;color:#ffe3b1;font-size:12px}.ss-bm-own-clues .ss-clue-token.used{opacity:.35}
+.ss-bm-action-panel{border-top:1px solid #84724f55;padding-top:11px}.ss-bm-action-panel h3{font:700 18px Georgia,serif;margin:0 0 9px;color:#f5d19b}
+.ss-bm .ss-turn-actions{margin:5px 0}.ss-bm .ss-turn-actions .ss-btn{flex:1 1 155px;font-size:14px}
+.ss-bm .ss-helper{color:#c7b9a1;font-size:12px}.ss-bm .ss-clue-picker{background:#20352a;border-color:#85734f}.ss-bm .ss-clue-picker p{color:#ead8b8}.ss-bm .ss-vote-panel{border-color:#a48654;background:#40301fd1}
+.ss-bm-info{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:12px;margin-top:13px}
+.ss-bm-info .ss-surface{background:#182e24;border:1px solid #8d7650;border-radius:12px}.ss-bm-info .ss-panel h3{font:700 20px Georgia,serif;color:#f8d8a2}
+.ss-bm-info .ss-chat{border-left-color:#deb573;background:#26382d;color:#f8edcf}.ss-bm-info .ss-chat .who{color:#edd1a0}.ss-bm-info .ss-chat p{color:#f0e4cb}
+.ss-bm-info .ss-log-entry{color:#d9cbb1;border-bottom-color:#8e805b50}.ss-bm-info .ss-log-entry small{color:#ddb675}
+.ss-bm-bottom-actions{display:flex;justify-content:center;gap:8px;margin:15px 0}
+.ss-bm .ss-card{background:linear-gradient(150deg,#fff9ec,#e8e0cd);border-color:#d2c3a2}.ss-bm .ss-card.back{background:repeating-linear-gradient(45deg,#704735 0px,#704735 5px,#9a684c 5px,#9a684c 9px);border-color:#dfcba3;color:#f6d28c}
+.ss-bm .ss-card.ss-reveal,.ss-bm .ss-pile.ss-reveal .ss-card{animation:ss-bm-card-drop 1s ease-out both}
+@keyframes ss-bm-card-drop{0%{opacity:.4;transform:translateY(-25px) rotate(-12deg) scale(1.13)}45%{opacity:1;transform:translateY(4px) rotate(3deg)}100%{transform:none}}
+.ss-bm-rulebook{background:#1b2922;max-width:900px;margin:auto;border:1px solid #786445;border-radius:16px;padding:10px 20px}
+.ss-bm-rulebook .ss-surface{background:transparent;border:0;border-bottom:1px solid #726247;margin:0;padding:18px 4px;border-radius:0}
+.ss-bm-rulebook .ss-head{background:linear-gradient(135deg,#463426,#1a3127);border-radius:9px;padding:18px}.ss-bm-rulebook .ss-head h1{font:900 clamp(33px,6vw,57px) Georgia,serif;color:#f5d69a}
+.ss-bm-rulebook h2{font:700 24px Georgia,serif;color:#eed09b}.ss-bm-rulebook p,.ss-bm-rulebook li{color:#dfd6c2;line-height:1.6}
+.ss-bm-rulebook th{color:#f2d2a0}.ss-bm-rulebook td,.ss-bm-rulebook th{border-bottom-color:#8874557a}
+.ss-bm .ss-over-burst{background:radial-gradient(#345c3f,#192d23);border-color:#9f8254}.ss-bm .ss-over-burst h2{font-family:Georgia,serif;color:#ffe0a8}
+.ss-bm .ss-rolepeek-inner{background:#1b3127;border-color:#a18451}
+@media(max-width:720px){.ss-bm-scene>img{aspect-ratio:16/9}.ss-bm-opponents{grid-template-columns:repeat(2,minmax(0,1fr))}.ss-bm-info{grid-template-columns:1fr}.ss-bm-speech{width:min(72%,275px);bottom:8%;padding:7px 8px}.ss-bm-speech b{font-size:11px}.ss-bm-speech span{font-size:10px}.ss-bm-felt-mark{display:none}.ss-bm-center{grid-template-columns:1fr 1fr}.ss-bm-settings-page{padding:15px}.ss-bm-menu h1{margin:14px 0 6px}}
+@media(max-width:420px){.ss-bm-topline{gap:7px;font-size:10px}.ss-bm-topline .ss-bm-text-btn{margin-left:0;font-size:10px}.ss-bm-stage{border-width:3px}.ss-bm-scene>img{aspect-ratio:16/9}.ss-bm-opponents{gap:5px}.ss-bm-opponent{padding:5px}.ss-bm-op-name strong{font-size:12px}.ss-bm-opponent .ss-card.sm{width:27px;height:39px}.ss-bm-opponent .ss-card.sm .ss-pip{font-size:18px}.ss-bm-own{padding:10px}.ss-bm-own .ss-yourcards{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:6px;scrollbar-width:thin}.ss-bm-own .ss-hidden-slot{min-width:57px;flex:none}.ss-bm-status strong{font-size:16px}.ss-bm-status small{font-size:8px}.ss-bm-settings-fields{gap:12px}.ss-bm-menu{padding:13px}.ss-bm-banner span{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.ss-bm *{animation:none!important;transition:none!important}}
+
+
+.ss-bm-end{max-width:850px;margin:0 auto 24px}.ss-bm-end-scene{background:#172c21;overflow:hidden}
+.ss-bm-end-scene img{display:block;width:100%;aspect-ratio:16/7.4;object-fit:cover;object-position:center 45%}
+.ss-bm-end-result{text-align:center;position:relative;overflow:hidden;isolation:isolate;padding:clamp(20px,5vw,55px) 18px;background:radial-gradient(ellipse at center,#35543a,#172c23 74%);border-top:2px solid #947a4f}
+.ss-bm-end-result.won{box-shadow:inset 0 0 52px #e4b96725}.ss-bm-end-result.lost{background:radial-gradient(ellipse at center,#513a30,#221e1b 75%)}
+.ss-bm-end-result h1{font:900 clamp(32px,7vw,64px)/1.08 Georgia,serif;color:#ffdf98;text-shadow:0 3px 11px #0007;margin:12px 0 7px;position:relative;z-index:2}
+.ss-bm-end-result h2{font:700 clamp(21px,4vw,31px) Georgia,serif;color:#f4e7d0;margin:0 0 12px;position:relative;z-index:2}
+.ss-bm-end-result p{max-width:650px;margin:8px auto;line-height:1.5;color:#e0d2ba;font-size:14px;position:relative;z-index:2}
+.ss-bm-end-result .ss-bm-end-stats{color:#e7c58e;font-weight:700}
+.ss-bm-end-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:21px auto 0;position:relative;z-index:2}
+.ss-bm-end-actions .ss-btn{min-width:150px}
+
 </style>
 <style id="hmr-affixes-style">.hmr-affix-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px;margin:14px 0}.hmr-affix-table>div{border:1px solid #6a5140;background:#151a25;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}.hmr-affix-table b{color:#edcb94}</style><style>
 /* Bad Magicians — warm, illustrated card-table style */
@@ -901,7 +1010,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '1.4',
+    stackSquad: '1.5',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1642,6 +1751,9 @@ const SS_SCENES = Object.freeze({
  * - Pure cooperative mode has no traitor or voting; human traitors can be selected randomly.
  * - Never hardcode displayed version numbers: use GAME_VERSIONS.stackSquad everywhere.
  * - Player modes are ONLY 3–6. Scene order: 3 Antarctica, 4 China, 5 Seville, 6 Belgrade.
+ * - UI MUST follow Bad Magicians: title screen -> settings page -> framed photo/felt table,
+ *   speech bubbles, live turn announcements, animations, and human hand below the table.
+ * - Stack Squad must be LAST in the Games listing (new games append, never prepend).
  * - Stack Squad artwork is always shown from the player's perspective: the human player is never visible in the scene art.
  * - Scene character rosters: three players: Stanislaw/Heinrich; four: add Sister; five: add Darell; six: add Tony.
  * - The human is an unseen seat, never a speaking NPC. The deleted samurai and Florida venue are excluded.
@@ -1907,7 +2019,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!ss)return;
     const eligible=ss.players.filter((p,i)=>i>0&&p.character).map(p=>p.character.id);
     if(!eligible.length)return;
-    const target=speaker||pick(eligible);
+    const target=speaker&&eligible.includes(speaker)?speaker:pick(eligible);
     const line=lineFor(target,context);
     chatter.unshift(line);if(chatter.length>32)chatter.length=32;
     if(ss&&ss.log)ss.log.unshift({turn:ss.move,text:`${CH.find(c=>c.id===target).name}: “${line.text}”`,kind:'banter'});
@@ -2083,9 +2195,47 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function enter(active){if(!active){clearTimeout(aiTick);clearInterval(musicTick);stopSpeech();}else if(ss&&screen==='game'){afterRender();}}
   function setCfg(k,v){if(k==='count'){config.count=Math.max(3,Math.min(6,Number(v)||3));}else if(['voices','sfx','music','pure'].includes(k))config[k]=!!v;else if(k==='volume')config.volume=Number(v);else if(k==='hp')config.hp=Number(v);else if(['team','traitor'].includes(k)&&INTEL.includes(v))config[k]=v;saves();render();}
   const celebration=()=>Array.from({length:65},(_,i)=>`<i class="ss-confetti" style="--x:${(i*47)%100}%;--c:${['#62ffed','#fa85c1','#f8da83','#a58dff','#7beb94'][i%5]};--dur:${2+(i%4)*.63}s;--delay:-${(i%9)*.4}s;--w:${5+i%8}px;--h:${8+i%10}px"></i>`).join('');
-  function intro(){const m=VENUES[config.count],c=chars();return `<div class="ss-shell ss-hero"><div class="ss-head"><div><div class="ss-kicker">HIDDEN HANDS · CO-OP OR TRAITOR</div><h1>Stack Squad</h1><div class="ss-meta">Version ${GAME_VERSIONS.stackSquad} · 3–6 players</div></div><div class="ss-actions"><a class="ss-btn alt sm" href="#stack-squad-rules">Rulebook</a></div></div><div class="ss-scene"><img src="${scene()}" alt="${esc(m.alt)}"><div class="ss-title-overlay"><span>${esc(m.tag)}</span><h2>STACK<br>SQUAD</h2></div></div><div class="ss-intro"><section class="ss-surface"><h3>One team. Hidden hands. A possible traitor.</h3><p>You can see everyone’s cards except your own. Share clues, make bold plays and stack all 24 cards before your health is gone.</p><p><strong>Location:</strong> ${esc(m.title)} · <strong>Visible opponents:</strong> ${c.map(x=>esc(x.name)).join(' · ')}. The artwork is always shown from your perspective at the table.</p><div class="ss-chars">${['You',...c.map(x=>x.name)].map(x=>`<span class="ss-chip">${esc(x)}</span>`).join('')}</div><div class="ss-intro-actions ss-start"><button class="ss-btn" data-ss="start">Start game</button><a class="ss-btn alt" href="#stack-squad-rules">How to play</a></div></section><section class="ss-surface ss-settings"><h3>Table settings</h3><div class="ss-grid-settings"><label>Players<select data-ss-change="count">${[3,4,5,6].map(n=>`<option value="${n}" ${config.count===n?'selected':''}>${n} players</option>`).join('')}</select></label><label>Health<select data-ss-change="hp"><option value="10" ${config.hp===10?'selected':''}>Baby Mode · 10 HP</option><option value="5" ${config.hp===5?'selected':''}>Normal · 5 HP</option><option value="2" ${config.hp===2?'selected':''}>NIGHTMARE · 2 HP</option></select></label><label>Team intelligence<select data-ss-change="team">${INTEL.map(x=>`<option ${config.team===x?'selected':''}>${x}</option>`).join('')}</select></label><label style="${config.pure?'opacity:.4':''}">Traitor intelligence<select data-ss-change="traitor" ${config.pure?'disabled':''}>${INTEL.map(x=>`<option ${config.traitor===x?'selected':''}>${x}</option>`).join('')}</select></label></div><label class="ss-checkbox"><input type="checkbox" data-ss-change="pure" ${config.pure?'checked':''}> Pure co-op (no traitor or votes)</label><div class="ss-grid-settings"><label class="ss-checkbox"><input type="checkbox" data-ss-change="voices" ${config.voices?'checked':''}> Character voices</label><label class="ss-checkbox"><input type="checkbox" data-ss-change="sfx" ${config.sfx?'checked':''}> Sound effects</label></div><label class="ss-checkbox"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}> Scene music</label><label>Volume: ${Math.round(config.volume*100)}%<input type="range" data-ss-change="volume" min="0" max="1" step="0.05" value="${config.volume}"></label><div class="ss-descr">Voices use your browser’s installed language packs; native-language voices are selected when available. Original synthesized background melodies.</div></section></div></div>`;}
+  function intro(){
+    const m=VENUES[config.count],c=chars();
+    return `<section class="ss-shell ss-bm ss-bm-menu">
+      <div class="ss-bm-cover"><img src="${scene()}" alt="${esc(m.alt)}"><div class="ss-bm-cover-tag">${esc(m.tag)} · ${config.count} players</div></div>
+      <h1>Stack Squad</h1>
+      <div class="ss-bm-version">Version ${GAME_VERSIONS.stackSquad}</div>
+      <p class="ss-bm-lead">Twenty-four cards. Hidden hands. One team. Perhaps one traitor.</p>
+      <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">New Game</button><button class="ss-btn alt" data-ss="settings">Settings</button><a class="ss-btn alt" href="#stack-squad-rules">Rulebook</a></div>
+      <p class="ss-bm-menu-note">${config.pure?'Pure co-op':'Hidden traitor'} · ${config.count} players · ${config.hp} HP</p>
+    </section>`;
+  }
+  function settings(){
+    const m=VENUES[config.count],c=chars();
+    return `<section class="ss-shell ss-bm ss-bm-menu ss-bm-settings-page">
+      <h1>Settings</h1><p class="ss-bm-lead">Choose your table before the game begins.</p>
+      <div class="ss-bm-settings-scene"><img src="${scene()}" alt="${esc(m.alt)}"><div><strong>${esc(m.title)}</strong><small>${config.count} players · You, ${c.map(x=>esc(x.name)).join(', ')}</small></div></div>
+      <div class="ss-bm-settings-fields"><label>Players<select data-ss-change="count">${[3,4,5,6].map(n=>`<option value="${n}" ${config.count===n?'selected':''}>${n} players</option>`).join('')}</select></label>
+      <label>Health<select data-ss-change="hp"><option value="10" ${config.hp===10?'selected':''}>Baby Mode · 10 HP</option><option value="5" ${config.hp===5?'selected':''}>Normal · 5 HP</option><option value="2" ${config.hp===2?'selected':''}>NIGHTMARE · 2 HP</option></select></label>
+      <label>Team intelligence<select data-ss-change="team">${INTEL.map(x=>`<option ${config.team===x?'selected':''}>${x}</option>`).join('')}</select></label>
+      <label class="${config.pure?'ss-disabled-option':''}">Traitor intelligence<select data-ss-change="traitor" ${config.pure?'disabled':''}>${INTEL.map(x=>`<option ${config.traitor===x?'selected':''}>${x}</option>`).join('')}</select></label>
+      <label class="ss-bm-check"><input type="checkbox" data-ss-change="pure" ${config.pure?'checked':''}>Pure co-op mode (no traitor)</label>
+      <label class="ss-bm-check"><input type="checkbox" data-ss-change="voices" ${config.voices?'checked':''}>Character voices</label>
+      <label class="ss-bm-check"><input type="checkbox" data-ss-change="sfx" ${config.sfx?'checked':''}>Sound effects</label>
+      <label class="ss-bm-check"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}>Scene music</label>
+      <label class="ss-bm-range">Volume · ${Math.round(config.volume*100)}%<input type="range" data-ss-change="volume" min="0" max="1" step="0.05" value="${config.volume}"></label></div>
+      <p class="ss-bm-settings-help">Native-language voices depend on your device's available speech voices.</p>
+      <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">Start Game</button><button class="ss-btn alt" data-ss="back">Back</button></div>
+    </section>`;
+  }
+
   function hpHTML(){return `<div class="ss-hp-cards">${Array.from({length:ss.maxHp},(_,j)=>`<span class="${j>=ss.hp?'off':''}" title="${j>=ss.hp?'Lost HP':'Remaining HP'}"></span>`).join('')}</div>`;}
-  function playerTiles(){return `<div class="ss-team"><div class="ss-players">${ss.players.map((p,i)=>{const you=i===0;return `<div class="ss-player ${ss.turn===i&&!ss.over?'turn':''}"><div class="ss-player-name"><span>${i===0?'You · ':''}${esc(getActor(i).name)}${p.lucky?' · Lucky goose':''}</span><small>${p.hand.length} card${p.hand.length===1?'':'s'}</small></div><div class="ss-player-cards">${you?`<span class="ss-meta">Your cards are hidden below</span>`:p.hand.map((x,k)=>`<button type="button" title="Card ${k+1}: ${esc(full(x.card))}" ${ss.turn===0&&pane==='clue'?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}</button>`).join('')||'<small>Hand empty</small>'}</div><div class="ss-meta">Clues: ${p.clueCards.map(x=>x.up?'◆':'◇').join(' ')}${you&&!config.pure?' · Your role: '+(ss.traitor===0?'TRAITOR':'Loyal'):''}</div></div>`;}).join('')}</div></div>`;}
+  function playerTiles(){
+    return `<div class="ss-bm-opponents">${ss.players.slice(1).map((p,j)=>{const i=j+1,active=ss.turn===i&&!ss.over;
+      return `<section class="ss-bm-opponent ${active?'active':''}" aria-label="${esc(getActor(i).name)}">
+        <div class="ss-bm-op-name"><strong>${esc(getActor(i).name)}</strong><small>${p.hand.length} cards${p.lucky?' · Lucky goose':''}</small></div>
+        <div class="ss-player-cards">${p.hand.map((x,k)=>`<button type="button" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${ss.turn===0&&pane==='clue'?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}</button>`).join('')||'<small>Hand empty</small>'}</div>
+        <div class="ss-bm-opp-clues" aria-label="${p.tokens} clues remaining">${p.clueCards.map(x=>x.up?'◆':'◇').join(' ')}</div>
+      </section>`;
+    }).join('')}</div>`;
+  }
+
   function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||'<span class="ss-meta">Your hand is empty. You can still give clues or call votes.</span>'}</div>`;}
   function humanPane(){if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
@@ -2097,14 +2247,59 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     return `<div class="ss-turn-actions"><button class="ss-btn" data-ss="place" ${selectedCard===null||paused?'disabled':''}>Place selected card</button><button class="ss-btn alt" data-ss="clue" ${ss.players[0].tokens===0||!ss.pile.length||paused?'disabled':''}>Give a clue</button>${!config.pure?`<button class="ss-btn alt" data-ss="vote" ${paused?'disabled':''}>Call a vote</button>`:''}</div><p class="ss-helper">${selectedCard?'Selected hidden card. Once revealed, your choice is final.':'Select one of your face-down cards.'} ${!ss.pile.length?'Any first card is valid.':'Match the top card’s suit, or be within 1 rank (including the same rank).'}</p>`;
   }
   function chatView(){return `<section class="ss-surface ss-panel"><h3>Table chatter</h3>${chatter.length?`<div class="ss-chat"><span class="who">${esc(CH.find(c=>c.id===chatter[0].speaker).name)}</span><p>${esc(chatter[0].text)}</p></div>`:'<p class="ss-meta">The table is quiet for now.</p>'}<div class="ss-chat-list">${chatter.slice(1,8).map(l=>`<div class="ss-chat"><span class="who">${esc(CH.find(c=>c.id===l.speaker).name)}</span><p>${esc(l.text)}</p></div>`).join('')}</div></section>`;}
-  function live(){const t=ss.pile.at(-1),where=VENUES[config.count];return `<div class="ss-shell"><div class="ss-head"><div><div class="ss-kicker">STACK SQUAD · v${GAME_VERSIONS.stackSquad}</div><h1>${esc(where.title)}</h1><div class="ss-meta">${config.pure?'Pure cooperative':'Hidden traitor'} · ${esc(config.team)} team intelligence</div></div><div class="ss-actions"><a class="ss-btn alt sm" href="#stack-squad-rules">Rules</a><button class="ss-pause-button" data-ss="pause" aria-label="${paused?'Resume game':'Pause game'}">${paused?'▶':'⏸'}</button><button class="ss-btn alt sm" data-ss="restart">New game</button><button class="ss-btn alt sm" data-ss="title">Settings</button></div></div><div class="ss-hud"><div><small>Health</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp}/${ss.maxHp} HP</strong></div><div><small>Stack</small><strong>${ss.pile.length}/24</strong></div><div><small>Move</small><strong>${ss.move}</strong></div><div><small>Current</small><strong>${esc(getActor(ss.turn).name)}</strong></div></div><div class="ss-game-layout"><div class="ss-left"><div class="ss-scene ss-playing"><img src="${scene()}" alt="${esc(where.alt)}"><div class="ss-scene-label"><span>CHAPTER ${config.count-2}</span> · ${esc(where.tag)}</div></div><div class="ss-board"><div class="ss-stack"><small>Top card</small><div class="ss-pile">${t?card(t.card):card(null,false,true)}</div><small>${t?'Played by '+esc(getActor(t.who).name):'Any card starts'}</small></div><div class="ss-stack"><small>Team HP</small>${hpHTML()}<small>${ss.hp} remaining</small></div><div class="ss-stack"><small>Remaining cards</small><strong style="font-size:2rem;color:#c6fffa">${24-ss.pile.length}</strong><small>${ss.pile.length} stacked</small></div></div><div class="ss-table-sub">Played cards stay in a single pile. Covered cards cannot be inspected.</div>${playerTiles()}<div class="ss-surface ss-yourturn" style="margin-top:12px"><h3>${ss.turn===0?'Your turn · choose an action':getActor(ss.turn).name+' is playing'}${paused?' <span class="ss-pause-badge">PAUSED</span>':''}</h3>${humanCards()}<div class="ss-clues">${ss.players[0].clueCards.map((x,i)=>`<div class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} <span style="font-size:.6rem;margin-left:3px">${i+1}</span></div>`).join('')}</div>${humanPane()}</div></div><div class="ss-right">${chatView()}<section class="ss-surface ss-panel" style="margin-top:12px"><h3>Recent actions</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>#${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Your private card notes show only formal clues. AI players are not told your role.</p></section></div></div></div>`;}
+  function live(){
+    const t=ss.pile.at(-1),where=VENUES[config.count],activeName=getActor(ss.turn).name;
+    const latest=ss.log.find(x=>x.kind!=='banter');
+    const talking=chatter[0],talker=talking&&CH.find(c=>c.id===talking.speaker);
+    return `<div class="ss-shell ss-bm ss-bm-game">
+      <div class="ss-bm-topline"><span>STACK SQUAD</span><span>v${GAME_VERSIONS.stackSquad}</span><span>${config.count} players · ${config.pure?'Pure co-op':'Traitor game'}</span>
+        <button class="ss-bm-text-btn" data-ss="title">Title screen</button><a href="#stack-squad-rules">Rules</a><button type="button" class="ss-bm-pause" data-ss="pause" aria-label="${paused?'Resume game':'Pause game'}">${paused?'▶':'⏸'}</button></div>
+      <div class="ss-bm-stage">
+        <div class="ss-bm-banner"><strong>${paused?'GAME PAUSED':ss.turn===0?'YOUR TURN':esc(activeName.toUpperCase()+'’S TURN')}</strong>
+          <span>${paused?'The table waits until you resume.':esc(latest?.text||'The cards are dealt. Make your move.')}</span></div>
+        <div class="ss-bm-scene"><img src="${scene()}" alt="${esc(where.alt)}">
+          <span class="ss-bm-scene-place">CHAPTER ${config.count-2} · ${esc(where.tag)}</span>
+          ${talking&&talker?`<div class="ss-bm-speech"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
+        </div>
+        <div class="ss-bm-felt">
+          <div class="ss-bm-status"><div><small>HEALTH</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp} / ${ss.maxHp}</strong></div><div><small>CARDS STACKED</small><strong>${ss.pile.length} / 24</strong></div><div><small>TURN</small><strong>${ss.move}</strong></div></div>
+          ${playerTiles()}
+          <div class="ss-bm-center"><div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${t?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
+            <div class="ss-bm-felt-mark">STACK<br>SQUAD</div>
+            <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
+        </div>
+      </div>
+      <section class="ss-bm-own"><header><h3>YOUR HAND <small>Cards face down — even to you</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
+        ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
+        <div class="ss-bm-action-panel"><h3>${ss.turn===0?'Choose your action':esc(activeName)+' is thinking'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>
+      </section>
+      <div class="ss-bm-info"><div>${chatView()}</div><section class="ss-surface ss-panel"><h3>Table history</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>Turn ${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Only the current top card may be examined. Clues are the only way to communicate card information.</p></section></div>
+      <div class="ss-bm-bottom-actions"><button class="ss-btn alt sm" data-ss="restart">New game</button><button class="ss-btn alt sm" data-ss="title">Exit to title</button></div>
+    </div>`;
+  }
+
   function showPeek(){const p=ss.players[0];return `<div class="ss-rolepeek"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">SECRET ROLE · PRIVATE SETUP</div><h2>You are the TRAITOR</h2><p>In the physical game, the traitor gets one private look at their cards. Memorize these positions now; after you close this screen you can no longer see your hand. Your goal is to make the team lose its HP or convict an innocent person.</p><div class="ss-yourcards">${p.hand.map((x,i)=>`<div><div class="ss-meta">Card ${i+1}</div>${card(x.card)}</div>`).join('')}</div><button class="ss-btn" data-ss="hidepeek">I’ve memorized my cards — hide them</button></div></div>`;}
   const nativeEnd=(id,win)=>{
     const n={stan:['Zwycięstwo!','Przegraliśmy!'],hein:['Sieg!','Wir haben verloren!'],nun:['¡Victoria!','¡Hemos perdido!'],darell:['VICTORY!','WE LOST!'],tony:['Vittoria!','Abbiamo perso!'],you:['CONGRATULATIONS!','YOU LOSE!']};return (n[id]||n.you)[win?0:1];};
-  function overView(){const z=ss.over,actor=getActor(z.actor),label=nativeEnd(actor.id,z.humanWon),where=VENUES[config.count];return `<div class="ss-shell ss-over"><div class="ss-scene"><img src="${scene()}" alt="${esc(where.alt)}"></div><div class="ss-over-burst ${z.humanWon?'':'lost'}">${z.humanWon?celebration():''}<div class="ss-kicker">STACK SQUAD · ${esc(where.title)}</div><h2>${esc(label)}</h2><h3>${z.humanWon?'Congratulations!':'You lose!'}</h3><p>${esc(z.why)}. ${z.teamSuccess?'The team succeeded.':'The team failed.'} ${config.pure?'Pure co-op round.':ss.traitor===0?'You were the traitor.':`The traitor was ${esc(getActor(ss.traitor).name)}.`}</p><p>Final move: ${esc(actor.name)} · ${ss.pile.length}/24 stacked · ${ss.hp} HP left</p><div class="ss-actions" style="justify-content:center"><button class="ss-btn" data-ss="restart">Play again</button><button class="ss-btn alt" data-ss="title">Settings</button><a class="ss-btn alt" href="#games">All games</a></div></div></div>`;}
-  function view(){if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='peek'?showPeek():'');}
-  function rules(){return `<div class="ss-shell ss-rules"><div class="ss-head"><div><div class="ss-kicker">OFFICIAL RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>Stack Squad</h1></div><a class="ss-btn" href="#stack-squad">Play game</a></div><section class="ss-surface"><h2>The objective</h2><p>Each player sees everyone else’s hand, but not their own. Cooperate to place all <strong>24 cards</strong> (A, 2, 3, 4, 5, 6 in all four suits) on one face-up stack before running out of health. You may enable a single secret traitor or play purely cooperatively.</p></section><section class="ss-surface"><h2>Setup</h2><table><thead><tr><th>Players</th><th>Cards per player</th></tr></thead><tbody><tr><td>3</td><td>8 each</td></tr><tr><td>4</td><td>6 each</td></tr><tr><td>5</td><td>5 each except one lucky goose with 4</td></tr><tr><td>6</td><td>4 each</td></tr></tbody></table><p>The deck’s remaining high cards (7 through King) fund role cards, clue tokens and HP; unused cards are set aside. Each player receives three face-up clue cards. Each player draws one face-down role card from a selection of face cards containing exactly one <strong>Queen of Spades</strong>: the Queen of Spades holder is the traitor. They may privately inspect and memorize their own hand once during setup. The digital version handles the private peek automatically.</p><p>The group starts with 5 HP by default; selectable Baby Mode is 10 HP, and NIGHTMARE is 2 HP. For six players, a Joker supplies the fifth physical HP card. Extra selected health in Baby Mode uses digital counters.</p></section><section class="ss-surface"><h2>On your turn — choose exactly ONE action</h2><ol><li><strong>Place a card.</strong> Commit one of your own unknown cards. The first card is automatically valid; afterward the played card must match the top card’s suit, OR be within ±1 rank (including the same rank). A valid card restores all 3 of your clue tokens. An invalid card <strong>stays on top</strong> and removes 1 team HP. You cannot undo a placement after reveal.</li><li><strong>Give a clue.</strong> Spend one face-up clue token and point to an exact card in another player’s hand. Say truthfully only that the card’s rank is higher, rank is lower, suit is the same or suit is different from the <em>current</em> top card. You may not say it is the same rank. There is no clue before the first play or when your clue tokens are exhausted. Even a traitor <strong>must tell the truth</strong>.</li><li><strong>Call a traitor vote.</strong> Accuse another player; after discussion, all players may vote. A strict majority of all players is required to convict. If the vote fails, the calling player’s turn is consumed. A correct conviction wins for the team; convicting an innocent player loses immediately. Voting is unavailable in pure co-op.</li></ol></section><section class="ss-surface"><h2>Communication, memory and victory</h2><p><strong>Card information may ONLY be conveyed via the formal Give a clue action.</strong> Players must not name or hint at anyone’s hidden card through ordinary speech. Only the top card remains visible; the stack cannot be searched or spread out. Remember earlier reveals yourself.</p><p>If the 24th card reduces HP to zero, the team loses; otherwise placing all 24 wins. A traitor also wins if the group loses its HP or convicts an innocent. The game’s voices and optional original synthesized scene melodies are adjustable in Settings.</p><p>The AI has three intelligence levels—Dumb as Rocks, Average Joe, and Conniving—configurable separately for the team and the traitor. AI teammates are limited to their visible cards and received clues; the traitor has the legitimate one-time hand knowledge specified by the rules.</p><a class="ss-btn" href="#stack-squad">Back to game</a></section></div>`;}
+  function overView(){
+    const z=ss.over,actor=getActor(z.actor),label=nativeEnd(actor.id,z.humanWon),where=VENUES[config.count];
+    return `<div class="ss-shell ss-bm ss-bm-end">
+      <div class="ss-bm-stage"><div class="ss-bm-banner"><strong>${z.humanWon?'GAME WON':'GAME OVER'}</strong><span>${esc(where.title)} · ${config.count} players · Stack Squad v${GAME_VERSIONS.stackSquad}</span></div>
+      <div class="ss-bm-end-scene"><img src="${scene()}" alt="${esc(where.alt)}"></div>
+      <div class="ss-bm-end-result ${z.humanWon?'won':'lost'}">${z.humanWon?celebration():''}
+        <h1>${esc(label)}</h1><h2>${z.humanWon?'Congratulations!':'You lose!'}</h2>
+        <p>${esc(z.why)}. ${z.teamSuccess?'The team succeeded.':'The team failed.'} ${config.pure?'Pure co-op round.':ss.traitor===0?'You were the traitor.':`The traitor was ${esc(getActor(ss.traitor).name)}.`}</p>
+        <p class="ss-bm-end-stats">Last move: ${esc(actor.name)} · ${ss.pile.length} of 24 cards stacked · ${ss.hp} HP remaining</p>
+        <div class="ss-bm-end-actions"><button class="ss-btn" data-ss="restart">Play Again</button><button class="ss-btn alt" data-ss="title">Title Screen</button><a class="ss-btn alt" href="#games">All Games</a></div>
+      </div></div></div>`;
+  }
+
+  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='peek'?showPeek():'');}
+
+  function rules(){return `<div class="ss-shell ss-bm ss-rules ss-bm-rulebook"><div class="ss-head"><div><div class="ss-kicker">OFFICIAL RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>Stack Squad</h1></div><a class="ss-btn" href="#stack-squad">Play game</a></div><section class="ss-surface"><h2>The objective</h2><p>Each player sees everyone else’s hand, but not their own. Cooperate to place all <strong>24 cards</strong> (A, 2, 3, 4, 5, 6 in all four suits) on one face-up stack before running out of health. You may enable a single secret traitor or play purely cooperatively.</p></section><section class="ss-surface"><h2>Setup</h2><table><thead><tr><th>Players</th><th>Cards per player</th></tr></thead><tbody><tr><td>3</td><td>8 each</td></tr><tr><td>4</td><td>6 each</td></tr><tr><td>5</td><td>5 each except one lucky goose with 4</td></tr><tr><td>6</td><td>4 each</td></tr></tbody></table><p>The deck’s remaining high cards (7 through King) fund role cards, clue tokens and HP; unused cards are set aside. Each player receives three face-up clue cards. Each player draws one face-down role card from a selection of face cards containing exactly one <strong>Queen of Spades</strong>: the Queen of Spades holder is the traitor. They may privately inspect and memorize their own hand once during setup. The digital version handles the private peek automatically.</p><p>The group starts with 5 HP by default; selectable Baby Mode is 10 HP, and NIGHTMARE is 2 HP. For six players, a Joker supplies the fifth physical HP card. Extra selected health in Baby Mode uses digital counters.</p></section><section class="ss-surface"><h2>On your turn — choose exactly ONE action</h2><ol><li><strong>Place a card.</strong> Commit one of your own unknown cards. The first card is automatically valid; afterward the played card must match the top card’s suit, OR be within ±1 rank (including the same rank). A valid card restores all 3 of your clue tokens. An invalid card <strong>stays on top</strong> and removes 1 team HP. You cannot undo a placement after reveal.</li><li><strong>Give a clue.</strong> Spend one face-up clue token and point to an exact card in another player’s hand. Say truthfully only that the card’s rank is higher, rank is lower, suit is the same or suit is different from the <em>current</em> top card. You may not say it is the same rank. There is no clue before the first play or when your clue tokens are exhausted. Even a traitor <strong>must tell the truth</strong>.</li><li><strong>Call a traitor vote.</strong> Accuse another player; after discussion, all players may vote. A strict majority of all players is required to convict. If the vote fails, the calling player’s turn is consumed. A correct conviction wins for the team; convicting an innocent player loses immediately. Voting is unavailable in pure co-op.</li></ol></section><section class="ss-surface"><h2>Communication, memory and victory</h2><p><strong>Card information may ONLY be conveyed via the formal Give a clue action.</strong> Players must not name or hint at anyone’s hidden card through ordinary speech. Only the top card remains visible; the stack cannot be searched or spread out. Remember earlier reveals yourself.</p><p>If the 24th card reduces HP to zero, the team loses; otherwise placing all 24 wins. A traitor also wins if the group loses its HP or convicts an innocent. The game’s voices and optional original synthesized scene melodies are adjustable in Settings.</p><p>The AI has three intelligence levels—Dumb as Rocks, Average Joe, and Conniving—configurable separately for the team and the traitor. AI teammates are limited to their visible cards and received clues; the traitor has the legitimate one-time hand knowledge specified by the rules.</p><a class="ss-btn" href="#stack-squad">Back to game</a></section></div>`;}
   function action(el){const a=el.dataset.ss;if(!a)return;getAudio();
+    if(a==='settings'){screen='settings';render();return;}
+    if(a==='back'){screen='title';render();return;}
     if(a==='start'||a==='restart'){if(a==='restart'&&ss&&!ss.over&&!confirm('Start a new Stack Squad game? Current progress will be lost.'))return;start();return;}
     if(a==='title'){clearTimeout(aiTick);clearInterval(musicTick);stopSpeech();screen='title';ss=null;paused=false;render();return;}
     if(a==='pause'){paused=!paused;if(paused){stopSpeech();clearTimeout(aiTick);clearInterval(musicTick);}render();return;}
@@ -2130,11 +2325,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
 
 function gamesView(){return `<div class="page-heading"><div><span class="eyebrow">THE COLLECTION · 5 GAMES</span><h1>Our <span class="accent">Games</span></h1><p>Choose a game to play. No downloads or accounts required.</p></div><a class="btn sm ghost" href="#home" aria-label="Go to home page">Home</a></div><section class="game-grid games-hub" aria-label="Available games">
-<a href="#stack-squad" class="game-tile"><div class="tile-art bm-tile-art"><img src="${SS_SCENES[6]}" alt="The Stack Squad crew in a Belgrade alley, shown from the player's perspective"></div><div class="tile-bottom"><span class="tag">CO-OP CARD GAME</span><span class="tag">HIDDEN TRAITOR</span><span class="tile-arrow">↗</span></div><h3>Stack Squad <small>v${GAME_VERSIONS.stackSquad}</small></h3><p>Trust your teammates, share truthful clues, and stack every card before your luck—or your loyalty—runs out.</p></a>
+
 <a href="#play" class="game-tile"><div class="tile-art"><span class="big-card">A ♠ K</span></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">AUCTION</span><span class="tile-arrow">↗</span></div><h3>Race to 15</h3><p>Outbid your opponents, choose a zero-value suit and flip your way to 15 without busting.</p></a>
 <a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>No More Fours <small>v${GAME_VERSIONS.noMoreFours}</small></h3><p>Roll five dice, collect extraordinary special dice, and survive escalating HP drain to reach a worldwide high score.</p></a>
 <a href="#hmr" class="game-tile hmr-tile"><div class="tile-art hmr-tile-art"><img class="hmr-cover-image" src="${HMR_COVER}" alt="Gothic ruined citadel with armored dark-fantasy heroes and a treasure chest"></div><div class="tile-bottom"><span class="tag">RPG</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>Honorable Man of Restraint <small>v${GAME_VERSIONS.honorableMan}</small></h3><p>Spare your enemies or sacrifice blood for better loot. Survive twenty deadly encounters and unlock New Game+.</p></a>
 <a href="#bad-magicians" class="game-tile"><div class="tile-art bm-tile-art"><img src="${BM_TILE}" alt="Gregory, Edwardo and Roberta at the card table"></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">DEDUCTION</span><span class="tile-arrow">↗</span></div><h3>Bad Magicians <small>v${GAME_VERSIONS.badMagicians}</small></h3><p>Question three elderly card players, uncover their secret cards and make the winning guess.</p></a>
+<a href="#stack-squad" class="game-tile"><div class="tile-art bm-tile-art"><img src="${SS_SCENES[6]}" alt="The Stack Squad crew in a Belgrade alley, shown from the player's perspective"></div><div class="tile-bottom"><span class="tag">CO-OP CARD GAME</span><span class="tag">HIDDEN TRAITOR</span><span class="tile-arrow">↗</span></div><h3>Stack Squad <small>v${GAME_VERSIONS.stackSquad}</small></h3><p>Trust your teammates, share truthful clues, and stack every card before your luck—or your loyalty—runs out.</p></a>
 </section>`;}
 function setupView(){return `<div class="page-heading"><div><span class="eyebrow">CARD GAME</span><h1>Race to <span class="accent">15.</span></h1><p>A turn-based auction and card-flipping game.</p></div><a class="btn ghost" href="#rules">Full rulebook ↗</a></div><div class="setup-layout"><section class="surface setup-pane"><span class="tag">SINGLE PLAYER VS. COMPUTERS</span><h2 style="margin-top:20px">Game setup</h2><p>Face computer opponents at a fully simulated card table. Uses two complete shuffled decks and the Race to 15 rules.</p><div class="setup-field"><label>Total players (including you)</label><div class="player-buttons">${[2,3,4,5,6].map(n=>`<button class="player-num ${cfg.count===n?'selected':''}" data-action="player-count" data-num="${n}" aria-pressed="${cfg.count===n}">${n}</button>`).join('')}</div></div><button class="btn wide" data-action="new-game">DEAL THE CARDS <span>→</span></button><div class="setup-note">Your first hand starts with 3 cards, plus the opening-round bonus. The dealer (you) opens the first clockwise auction.</div></section><aside class="surface setup-benefits"><div><span class="eyebrow">RACE TO 15</span><h2 style="font-size:2rem;margin-top:9px">Game rules</h2></div><div class="setup-benefit"><span class="benefit-mark">♠</span><span>Keep your flipped-card total at or below the value of your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♥</span><span>One suit counts as zero. Aces can erase a flipped card's value.</span></div><div class="setup-benefit"><span class="benefit-mark">♦</span><span>Each successful shorter bid lets you keep up to two flipped cards, growing your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♣</span><span>Safely complete a bid of <strong style="color:#ffdda0">15 or more flips</strong> in one attempt.</span></div></aside></div>`;}
   function playerPanel(){return `<aside class="surface players-panel"><div class="panel-title">AT THE TABLE · ${g.players.length} PLAYERS</div><div class="player-list">${g.players.map((p,i)=>`<div class="player-row ${i===0?'me':''} ${currentActor()===i?'active':''}"><div class="avatar">${i===0?'YOU':escaped(p.name).slice(0,1)}</div><div class="player-detail"><div class="player-name">${escaped(p.name)} ${currentActor()===i?'· TURN':''}</div><div class="player-stats">${p.hand.length} cards · best ${p.best} flips</div><div class="player-stats">${p.hailUsed?'Hail Mary used':'Hail Mary ready'}</div></div><strong class="player-stat-num">${p.hand.length}</strong></div>`).join('')}</div><div class="small-status"><span class="status-dot"></span> Opponent hands stay hidden</div></aside>`;}
