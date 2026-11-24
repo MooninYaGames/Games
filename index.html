@@ -758,6 +758,19 @@
 .ss-bm .ss-card.sm .ss-corner i{display:none!important}
 .ss-bm .ss-card.sm .ss-corner.bottom{display:none!important}
 .ss-bm .ss-card.sm .ss-pip{position:static!important;align-self:flex-end!important;font:700 18px/1 Arial,'DejaVu Sans',sans-serif!important;padding:0!important;margin:0!important}
+
+/* Stack Squad v1.7: the hand follows the actions, before any table information. */
+.ss-bm-action-panel + .ss-bm-own{margin:0 12px 12px;border-radius:10px;border:1px solid #ac8956;box-shadow:0 5px 16px #0005}
+.ss-goose-reveal .ss-rolepeek-inner{text-align:center;max-width:520px;border:2px solid #e9c484;background:radial-gradient(ellipse at 50% 22%,#50633c,#1a3225 72%)}
+.ss-goose-reveal h2{font:900 clamp(25px,5vw,39px) Georgia,serif;color:#ffe4a2;text-shadow:0 2px 12px #0008}
+.ss-goose-reveal p{color:#f7e4c6}.ss-goose-stage{position:relative;display:grid;place-items:center;min-height:170px;margin:3px auto 10px;overflow:hidden}
+.ss-goose-bird{font-size:112px;filter:drop-shadow(0 9px 17px #0009);display:block;animation:ss-goose-honk 3.2s ease-in-out infinite;transform-origin:50% 85%}
+.ss-goose-star{position:absolute;font-size:36px;color:#ffeb8c;animation:ss-goose-sparkle 2.3s ease-in-out infinite}
+.ss-goose-star.star1{left:24%;top:22%}.ss-goose-star.star2{right:22%;top:19%;animation-delay:.5s}.ss-goose-star.star3{right:30%;bottom:11%;animation-delay:1s}
+.ss-goose-tiny{font-weight:800;letter-spacing:.07em;font-size:12px!important;color:#f3d49c!important}
+@keyframes ss-goose-honk{0%,100%{transform:rotate(-10deg) translateY(4px)}25%{transform:rotate(8deg) translateY(-11px)}50%{transform:rotate(-3deg) translateY(0) scale(1.09)}75%{transform:rotate(9deg) translateY(-7px)}}
+@keyframes ss-goose-sparkle{0%,100%{opacity:.15;transform:scale(.5) rotate(0)}45%{opacity:1;transform:scale(1.25) rotate(50deg)}}
+@media(prefers-reduced-motion:reduce){.ss-goose-reveal *{animation:none!important}}
 </style>
 <style id="hmr-affixes-style">.hmr-affix-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px;margin:14px 0}.hmr-affix-table>div{border:1px solid #6a5140;background:#151a25;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}.hmr-affix-table b{color:#edcb94}</style><style>
 /* Bad Magicians — warm, illustrated card-table style */
@@ -1074,7 +1087,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '1.6',
+    stackSquad: '1.7',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1816,7 +1829,7 @@ const SS_SCENES = Object.freeze({
  * - Never hardcode displayed version numbers: use GAME_VERSIONS.stackSquad everywhere.
  * - Player modes are ONLY 3–6. Scene order: 3 Antarctica, 4 China, 5 Seville, 6 Belgrade.
  * - UI MUST follow Bad Magicians: title screen -> settings page -> framed photo/felt table,
- *   speech bubbles, live turn announcements, animations, and human hand below the table.
+ *   speech bubbles, live turn announcements, animations, and human hand immediately below the actions.
  * - Stack Squad must be LAST in the Games listing (new games append, never prepend).
  * - Stack Squad artwork is always shown from the player's perspective: the human player is never visible in the scene art.
  * - Scene character rosters: three players: Stanislaw/Heinrich; four: add Sister; five: add Darell; six: add Tony.
@@ -1843,13 +1856,13 @@ const VENUES={
 };
 const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
-  let config={count:3,pure:false,team:'Average Joe',traitor:'Average Joe',hp:5,voices:true,sfx:true,music:true,volume:0.38};
-  try{const x=JSON.parse(localStorage.getItem('mooninya-stack-squad-settings')||'null');if(x){Object.assign(config,x);delete config.seat;config.count=Math.max(3,Math.min(6,Number(config.count)||3));}}catch(e){}
+  let config={count:4,pure:false,team:'Average Joe',traitor:'Average Joe',hp:5,voices:true,sfx:true,music:true,musicVolume:0.72,fxVolume:0.8};
+  try{const x=JSON.parse(localStorage.getItem('mooninya-stack-squad-settings')||'null');if(x){Object.assign(config,x);delete config.seat;if(typeof x.musicVolume!=='number')config.musicVolume=.72;if(typeof x.fxVolume!=='number')config.fxVolume=.8;config.count=Math.max(3,Math.min(6,Number(config.count)||4));}}catch(e){}
   let ss=null,screen='title',pane=null,selectedCard=null,selectedPlayer=null,clueTarget=null,clueIndex=null,peekDismissed=false,paused=false,aiTick=null,musicTick=null,audio=null,spoken=0,seen=new Set(),chatter=[],localOnly=false;
   let turnHold=null,holdTimer=null,holdDeadline=0,speechDone=true,speechSerial=0;
   const SESSION_KEY='mooninya-stack-squad-save-v16';
   function saveSession(){try{if(ss&&!ss.over&&!turnHold)localStorage.setItem(SESSION_KEY,JSON.stringify({ss,chatter,selectedCard,pane,peekDismissed,config}));else if(ss?.over)localStorage.removeItem(SESSION_KEY);}catch(e){}}
-  function restoreSession(){try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;const x=JSON.parse(raw);if(!x.ss?.players||x.ss.over||x.ss.players.length<3||x.ss.players.length>6)return;ss=x.ss;chatter=x.chatter||[];selectedCard=x.selectedCard||null;pane=x.pane||null;peekDismissed=!!x.peekDismissed;Object.assign(config,x.config||{});config.count=ss.players.length;ss.mode=ss.mode||'ready';}catch(e){}}
+  function restoreSession(){try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;const x=JSON.parse(raw);if(!x.ss?.players||x.ss.over||x.ss.players.length<3||x.ss.players.length>6)return;ss=x.ss;chatter=x.chatter||[];selectedCard=x.selectedCard||null;pane=x.pane||null;peekDismissed=!!x.peekDismissed;Object.assign(config,x.config||{});if(typeof config.musicVolume!=='number')config.musicVolume=.72;if(typeof config.fxVolume!=='number')config.fxVolume=.8;config.count=ss.players.length;ss.mode=ss.mode||'ready';}catch(e){}}
   restoreSession();
   function disarmHold(){clearTimeout(holdTimer);holdTimer=null;}
   function tryEndHold(force=false){if(!turnHold||paused||screen!=='game')return;
@@ -1858,9 +1871,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(next)next();saveSession();render();
   }
   function checkHoldVoice(){if(!turnHold||paused||screen!=='game')return;
+    // Speech completion is signaled ONLY by utterance.onend/onerror, not by a momentary silence.
     if(speechDone)return tryEndHold();
-    try{if(!speechSynthesis.speaking&&!speechSynthesis.pending){speechDone=true;return tryEndHold();}}catch(e){speechDone=true;return tryEndHold();}
-    holdTimer=setTimeout(checkHoldVoice,350);
+    holdTimer=setTimeout(checkHoldVoice,250);
   }
   function armHold(){disarmHold();if(!turnHold||paused||screen!=='game')return;const left=Math.max(0,holdDeadline-Date.now());
     if(!left&&speechDone){tryEndHold();return;}
@@ -2118,28 +2131,95 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function getAudio(){try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});return audio;}catch(e){return null;}}
   function ping(type='tap'){
     if(!config.sfx)return;const ctx=getAudio();if(!ctx)return;
-    const root=ctx.createGain();root.gain.value=Math.max(.004,config.volume)*.21;root.connect(ctx.destination);
+    const root=ctx.createGain();root.gain.value=Math.max(.004,config.fxVolume)*.25;root.connect(ctx.destination);
     const now=ctx.currentTime;const pitches={tap:[530],play:[340,510],clue:[660,740],wrong:[230,185,143],vote:[360,280],win:[494,587,740,988],lose:[330,276,196]};
     (pitches[type]||pitches.tap).forEach((f,i)=>{const o=ctx.createOscillator();const g=ctx.createGain();o.type=type==='wrong'?'sawtooth':'sine';o.frequency.value=f;g.gain.setValueAtTime(.001,now+i*.085);g.gain.exponentialRampToValueAtTime(.65,now+i*.085+.015);g.gain.exponentialRampToValueAtTime(.001,now+i*.085+.2);o.connect(g);g.connect(root);o.start(now+i*.085);o.stop(now+i*.085+.21);});
   }
-  const songs={3:[0,5,7,12,7,5,-2,0],4:[0,2,5,7,9,7,5,2],5:[0,1,4,5,7,5,4,1],6:[0,2,3,7,5,3,2,-2]};
+  // Four independent ORIGINAL instrumental themes; synthesized live without copyrighted samples.
+  // 3: expansive arctic electronic score; 4: Chinese pentatonic guzheng/flute;
+  // 5: Andalusian flamenco-inspired Phrygian guitar/palmas; 6: Serbian kolo accordion/bass.
+  const SS_SCORE={
+    3:{beat:300,root:146.83,mel:[0,7,12,14,10,7,5,2,0,-3,5,7,12,14,17,12],bass:[0,-5,-3,-7]},
+    4:{beat:330,root:261.63,mel:[0,2,4,7,9,12,9,7,4,2,0,-3,0,4,7,4],bass:[0,-5,-3,-7]},
+    5:{beat:245,root:329.63,mel:[0,1,4,5,4,1,0,-2,0,1,4,1,-2,-4,-5,-4],bass:[0,-2,-4,-5]},
+    6:{beat:208,root:293.66,mel:[0,2,4,7,9,7,4,2,0,4,7,11,9,7,4,2],bass:[0,-5,-7,-5]}
+  };
   let musicStep=0;
-  function musicPulse(){if(!config.music||!ss||paused||ss.over||screen!=='game')return;const ctx=getAudio();if(!ctx)return;const notes=songs[config.count]||songs[4],semi=notes[musicStep%notes.length],base=config.count===3?155:config.count===4?220:config.count===5?196:164;musicStep++;const now=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.type=config.count===6?'triangle':config.count===5?'sawtooth':'sine';o.frequency.value=base*Math.pow(2,semi/12);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0002,config.volume*.013),now+.04);g.gain.exponentialRampToValueAtTime(.0001,now+.36);o.connect(g);g.connect(ctx.destination);o.start(now);o.stop(now+.39);}
+  function musicPulse(){
+    if(!config.music||!ss||paused||ss.over||screen!=='game'||config.musicVolume<=0||['role','peek','lucky'].includes(ss.mode))return;
+    const ctx=getAudio();if(!ctx)return;
+    const score=SS_SCORE[config.count],nowMs=Date.now();if(nowMs-musicLastPulse<score.beat*.8)return;musicLastPulse=nowMs;const step=musicStep++,beat=score.beat/1000;
+    const t=ctx.currentTime+.008,bar=Math.floor(step/8),part=step%8;
+    const root=ctx.createGain();root.gain.value=Math.min(1,config.musicVolume)*.32;root.connect(ctx.destination);
+    const hz=(semi,oct=0)=>score.root*Math.pow(2,(semi+oct*12)/12);
+    function tone(freq,kind,dur,level=.15,attack=.01,tail=.15,at=t,detune=0){
+      const osc=ctx.createOscillator(),env=ctx.createGain();osc.type=kind;osc.frequency.value=freq;osc.detune.value=detune;
+      env.gain.setValueAtTime(.0001,at);env.gain.exponentialRampToValueAtTime(Math.max(.0002,level),at+Math.max(.004,attack));
+      env.gain.exponentialRampToValueAtTime(.0001,at+dur+tail);osc.connect(env);env.connect(root);osc.start(at);osc.stop(at+dur+tail+.015);
+    }
+    function sparkle(freq,level=.14,dur=.27){tone(freq,'sine',dur,level,.004,.22);tone(freq*2.002,'triangle',dur*.65,level*.15,.004,.08);}
+    function pluck(freq,lev=.21){tone(freq,'triangle',.11,lev,.004,.18);tone(freq*2,'sine',.07,lev*.23,.004,.1);tone(freq*3,'sine',.035,lev*.09,.004,.07);}
+    function accordion(freq,lev=.12,dur=.18){
+      tone(freq,'sawtooth',dur,lev,.025,.09,t,-5);tone(freq*1.003,'triangle',dur,lev*.9,.03,.08,t,5);
+    }
+    function noiseDrum(level=.09,dur=.085,type='clap'){
+      const count=Math.max(1,Math.floor(ctx.sampleRate*dur)),buffer=ctx.createBuffer(1,count,ctx.sampleRate),data=buffer.getChannelData(0);
+      for(let j=0;j<count;j++)data[j]=(Math.random()*2-1)*(type==='clap'?Math.pow(1-j/count,3):1-j/count);
+      const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),env=ctx.createGain();source.buffer=buffer;filter.type='highpass';filter.frequency.value=type==='clap'?850:2700;
+      env.gain.setValueAtTime(level,t);env.gain.exponentialRampToValueAtTime(.0001,t+dur);
+      source.connect(filter);filter.connect(env);env.connect(root);source.start(t);source.stop(t+dur);
+    }
+    const m=score.mel[step%score.mel.length],bass=score.bass[bar%score.bass.length];
+    if(config.count===3){ // icy arpeggios + cinematic pads + slow electronic beat
+      sparkle(hz(m,1),.12,.20);
+      if(part%2===0)tone(hz((m%7),0),'triangle',.24,.085,.02,.30);
+      if(part===0){tone(hz(bass,-1),'sine',beat*7,.20,.3,1.05);[-0,3,7].forEach(n=>tone(hz(bass+n,0),'sine',beat*6,.035,.22,.7));}
+      if(part===0||part===4)tone(55,'sine',.12,.3,.008,.20);
+      if(part===4)noiseDrum(.045,.07,'clap');
+    }else if(config.count===4){ // Chinese five-tone phrases / bright plucked strings and bamboo flute
+      pluck(hz(m,0),.23);
+      if(part===0)tone(hz(bass,-1),'sine',beat*4,.11,.03,.38);
+      if(part===2||part===6)tone(hz(score.mel[(step+3)%16],1),'sine',beat*3,.13,.055,.14);
+      if(part===0)tone(hz(bass,0),'triangle',.7,.043,.04,.8);
+    }else if(config.count===5){ // Spanish Phrygian guitar arpeggios, strummed chords, palmas
+      pluck(hz(m,0),.25);
+      if(part===0||part===4){[0,3,7,12].forEach((n,i)=>{tone(hz(bass+n,0),'triangle',.2,.085,.002,.14,t+i*.022);});}
+      if(part===1||part===3||part===6)noiseDrum(.19,.052,'clap');
+      if(part===5||part===7)noiseDrum(.07,.026,'castanet');
+      if(part===0)tone(hz(bass,-1),'sine',beat*4,.15,.007,.25);
+    }else{ // brisk Balkan kolo dance: reedy accordion chords, oom-pah bass, driving 2/4
+      accordion(hz(m,0),.17,.13);
+      if(part%2===0){tone(hz(bass,-1),'triangle',.16,.24,.012,.09);tone(hz(bass,-2),'sine',.12,.17,.012,.09);}
+      else{[0,4,7].forEach(n=>accordion(hz(bass+n,0),.058,.095));}
+      if(part===2||part===6)noiseDrum(.08,.04,'clap');
+    }
+  }
+  let voiceWatchdog=null,voiceKeepAlive=null;
+  function stopSpeech(){clearTimeout(voiceWatchdog);clearInterval(voiceKeepAlive);voiceWatchdog=null;voiceKeepAlive=null;try{speechSynthesis.cancel();}catch(e){}}
   function soundSpeech(line){
-    const serial=++speechSerial;speechDone=true;
+    const serial=++speechSerial;stopSpeech();speechDone=true;
     if(!config.voices||!('speechSynthesis' in window)||!line||paused)return;
     try{
-      speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(line.text);u.lang=line.locale;u.rate=line.speaker==='hein'?1.14:line.speaker==='nun'?.92:1;u.pitch=line.speaker==='nun'?1.25:line.speaker==='tony'?.8:line.speaker==='stan'?.79:1;u.volume=config.volume;
+      const u=new SpeechSynthesisUtterance(line.text);u.lang=line.locale;
+      u.rate=line.speaker==='hein'?1.12:line.speaker==='nun'?.91:1;
+      u.pitch=line.speaker==='nun'?1.25:line.speaker==='tony'?.8:line.speaker==='stan'?.79:1;
+      u.volume=Math.max(0,Math.min(1,config.fxVolume));
       const voices=speechSynthesis.getVoices(),same=voices.filter(v=>v.lang.toLowerCase()===u.lang.toLowerCase()),fallback=voices.filter(v=>v.lang.toLowerCase().startsWith(u.lang.slice(0,2).toLowerCase()));
       const selected=same.length?same:fallback,wantFemale=line.speaker==='nun',genderHint=wantFemale?/(female|woman|samantha|zira|karen|moira|fiona|amelia|sofia|paulina|maria)/i:/(male|man|daniel|alex|david|thomas|mark|james|pavel|adam)/i;
       if(selected.length)u.voice=selected.find(v=>genderHint.test(v.name))||selected[0];
       speechDone=false;
-      u.onend=u.onerror=()=>{if(serial!==speechSerial)return;speechDone=true;tryEndHold();};
+      function completed(){if(serial!==speechSerial)return;clearTimeout(voiceWatchdog);clearInterval(voiceKeepAlive);voiceWatchdog=null;voiceKeepAlive=null;speechDone=true;tryEndHold();}
+      u.onend=completed;u.onerror=completed;
+      u.onstart=()=>{if(serial!==speechSerial)return;
+        // Keep desktop speech engines active for long remarks; never assume a quiet gap means the line ended.
+        clearInterval(voiceKeepAlive);
+        voiceKeepAlive=setInterval(()=>{if(paused||serial!==speechSerial)return;try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){}},13000);
+      };
       speechSynthesis.speak(u);
-    }catch(e){speechDone=true;}
+      // Guard only against a genuinely wedged browser TTS service (not normal dialogue length).
+      voiceWatchdog=setTimeout(()=>{if(serial!==speechSerial||speechDone)return;stopSpeech();completed();},90000);
+    }catch(e){speechDone=true;tryEndHold();}
   }
-  function stopSpeech(){try{speechSynthesis.cancel();}catch(e){}}
   function whoKnows(pIdx,slot){
     if(!ss)return [];
     const p=ss.players[pIdx],visible=new Set(ss.pile.map(e=>e.card.id));
@@ -2163,8 +2243,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function described(slot){if(!ss)return '';const cl=ss.players[0].clues.filter(q=>q.slot===slot);if(!cl.length)return 'No clues yet';return cl.map(x=>x.type==='higher'?`>${x.top.r}`:x.type==='lower'?`<${x.top.r}`:x.type==='sameSuit'?`Same ${GL[x.top.s]}`:`Not ${GL[x.top.s]}`).join(' · ');}
   function record(text,kind='move'){if(!ss)return;ss.log.unshift({turn:ss.move,text,kind});if(ss.log.length>120)ss.log.length=120;}
+  function openingDialogue(){quote('dealt');beginHold(()=>{},'THE TABLE IS READY',getActor(ss.first).name+' takes the first turn. Everyone else follows clockwise.',ss.first);}
   function start(){
-    clearTimeout(aiTick);disarmHold();turnHold=null;ss=null;seen=new Set();chatter=[];voiceCount={};spoken=0;pane=null;paused=false;peekDismissed=false;musicStep=0;
+    clearTimeout(aiTick);disarmHold();turnHold=null;ss=null;seen=new Set();chatter=[];voiceCount={};spoken=0;pane=null;paused=false;peekDismissed=false;musicStep=0;musicLastPulse=0;
     const playable=shuffle(deck()),n=config.count,opponents=chars(),groups=n===3?[8,8,8]:n===4?[6,6,6,6]:n===5?[5,5,5,5,4]:[4,4,4,4,4,4];
     if(n===5){const ix=Math.floor(Math.random()*5);[groups[ix],groups[4]]=[groups[4],groups[ix]];}
     const players=[{character:CH[0]},...opponents.map(x=>({character:x}))]; // Human player is always seat 0 and is represented only through UI and scene perspective.
@@ -2240,11 +2321,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     ss.mode=accuser===0?'voteDiscussion':'respondVote';pane=null;
     record(`${getActor(accuser).name} accused ${getActor(accused).name}. The group discusses before voting.`,'vote');
     quote('accusation',getActor(accuser).id);
-    if(accused!==accuser)quote('accusation',getActor(accused).id);
-    render();
+    // Do not interrupt the accuser mid-sentence with a second simultaneous quote.
+    beginHold(()=>{},'TRAITOR ACCUSATION',`${getActor(accuser).name} accuses ${getActor(accused).name}. Discuss the evidence before voting.`,accuser);
   }
   function botChoose(){
-    if(!ss||ss.over||paused||screen!=='game'||ss.mode==='peek'||ss.turn===0)return;
+    if(!ss||ss.over||paused||screen!=='game'||['peek','role','lucky'].includes(ss.mode)||ss.turn===0||turnHold)return;
+    if(!speechDone){aiTick=setTimeout(botChoose,250);return;}
     const i=ss.turn,p=ss.players[i],isTraitor=ss.traitor===i&&!config.pure,baseLvl=INTEL.indexOf(isTraitor?config.traitor:config.team),top=ss.pile.at(-1)?.card||null;
     const scores=p.hand.map(x=>({id:x.id,p:probable(i,x.id),c:x.card})).sort((a,b)=>b.p-a.p),randomChance=[.56,.24,.07][baseLvl];
     // Note: candidates derive from this player's VISIBLE evidence, never secret own cards.
@@ -2289,17 +2371,18 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     }
     if(!candidates.length)return null;candidates.sort((a,b)=>b.weight-a.weight);return unhelpful?pick(candidates.slice(-Math.min(10,candidates.length))):pick(candidates.slice(0,Math.min(5,candidates.length)));
   }
+  let musicLastPulse=0;
   function afterRender(){
     clearTimeout(aiTick);clearInterval(musicTick);
     if(!ss||screen!=='game'||ss.over||paused)return;
     saveSession();
     if(turnHold)armHold();
-    else if(ss.mode!=='role'&&ss.mode!=='peek'&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,3100);
-    if(config.music&&config.volume>0)musicTick=setInterval(musicPulse,config.count===5?470:config.count===6?390:550);
+    else if(!['role','peek','lucky'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,3100);
+    if(config.music&&config.musicVolume>0&&!['role','peek','lucky'].includes(ss.mode)){musicPulse();musicTick=setInterval(musicPulse,SS_SCORE[config.count].beat);}
   }
   function enter(active){if(!active){clearTimeout(aiTick);clearInterval(musicTick);disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
     else if(ss&&screen==='game'){afterRender();}}
-  function setCfg(k,v){if(k==='count'){config.count=Math.max(3,Math.min(6,Number(v)||3));}else if(['voices','sfx','music','pure'].includes(k))config[k]=!!v;else if(k==='volume')config.volume=Number(v);else if(k==='hp')config.hp=Number(v);else if(['team','traitor'].includes(k)&&INTEL.includes(v))config[k]=v;saves();render();}
+  function setCfg(k,v){if(k==='count'){config.count=Math.max(3,Math.min(6,Number(v)||3));}else if(['voices','sfx','music','pure'].includes(k))config[k]=!!v;else if(['musicVolume','fxVolume'].includes(k))config[k]=Math.max(0,Math.min(1,Number(v)));else if(k==='hp')config.hp=Number(v);else if(['team','traitor'].includes(k)&&INTEL.includes(v))config[k]=v;saves();render();}
   const celebration=()=>Array.from({length:65},(_,i)=>`<i class="ss-confetti" style="--x:${(i*47)%100}%;--c:${['#62ffed','#fa85c1','#f8da83','#a58dff','#7beb94'][i%5]};--dur:${2+(i%4)*.63}s;--delay:-${(i%9)*.4}s;--w:${5+i%8}px;--h:${8+i%10}px"></i>`).join('');
   function intro(){
     const m=VENUES[config.count],c=chars();
@@ -2325,8 +2408,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="voices" ${config.voices?'checked':''}>Character voices</label>
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="sfx" ${config.sfx?'checked':''}>Sound effects</label>
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}>Scene music</label>
-      <label class="ss-bm-range">Volume · ${Math.round(config.volume*100)}%<input type="range" data-ss-change="volume" min="0" max="1" step="0.05" value="${config.volume}"></label></div>
-      <p class="ss-bm-settings-help">Native-language voices depend on your device's available speech voices.</p>
+      <label class="ss-bm-range">Music volume · ${Math.round(config.musicVolume*100)}%<input type="range" data-ss-change="musicVolume" min="0" max="1" step="0.05" value="${config.musicVolume}"></label>
+      <label class="ss-bm-range">Sound effects &amp; voices volume · ${Math.round(config.fxVolume*100)}%<input type="range" data-ss-change="fxVolume" min="0" max="1" step="0.05" value="${config.fxVolume}"></label></div>
+      <p class="ss-bm-settings-help">Music is an original synthesized theme for each location. Native-language voices depend on your device's available speech voices.</p>
       <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">Start Game</button><button class="ss-btn alt" data-ss="back">Back</button></div>
     </section>`;
   }
@@ -2343,7 +2427,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
 
   function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||'<span class="ss-meta">Your hand is empty. You can still give clues or call votes.</span>'}</div>`;}
-  function humanPane(){if(turnHold)return `<p class="ss-action-result">${esc(turnHold.detail)}<span> Animation in progress — press Skip to move on.</span></p>`;if(ss.mode==='role'||ss.mode==='peek')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
+  function humanPane(){if(turnHold)return `<p class="ss-action-result">${esc(turnHold.detail)}<span> Animation in progress — press Skip to move on.</span></p>`;if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
     if(pane==='clue'){
@@ -2358,8 +2442,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const latest=ss.log.find(x=>x.kind!=='banter');
     const talking=ss.speechLine||chatter[0],talker=talking&&CH.find(c=>c.id===talking.speaker);
     const speakerX=talker?(SPEECH_X[config.count]?.[talker.id]??50):50;
-    const bannerTitle=turnHold?.title||(ss.mode==='role'?'SECRET ROLE':paused?'GAME PAUSED':ss.turn===0?'YOUR TURN':activeName.toUpperCase()+'’S TURN');
-    const bannerDetail=turnHold?.detail||(ss.mode==='role'?'Reveal your role before the game begins.':paused?'The table waits until you resume.':latest?.text||'The cards are dealt. Make your move.');
+    const bannerTitle=turnHold?.title||(ss.mode==='lucky'?'LUCKY GOOSE':ss.mode==='role'?'SECRET ROLE':paused?'GAME PAUSED':ss.turn===0?'YOUR TURN':activeName.toUpperCase()+'’S TURN');
+    const bannerDetail=turnHold?.detail||(ss.mode==='lucky'?'A special four-card hand has been dealt.':ss.mode==='role'?'Reveal your role before the game begins.':paused?'The table waits until you resume.':latest?.text||'The cards are dealt. Make your move.');
     return `<div class="ss-shell ss-bm ss-bm-game">
       <div class="ss-bm-topline"><span>STACK SQUAD</span><span>v${GAME_VERSIONS.stackSquad}</span><span>${config.count} players · ${config.pure?'Pure co-op':'Traitor game'}</span>
         <button class="ss-bm-text-btn" data-ss="title">Title screen</button><a href="#stack-squad-rules">Rules</a><span class="ss-bm-control-pair"><button type="button" class="ss-bm-pause" data-ss="pause" aria-label="${paused?'Resume game':'Pause game'}">${paused?'▶':'⏸'}</button><button type="button" class="ss-bm-skip" data-ss="skip" ${paused||(!turnHold&&(ss.turn===0||ss.mode!=='ready'))?'disabled':''} title="Skip the current animation" aria-label="Skip animation">⏭ Skip</button></span></div>
@@ -2371,6 +2455,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           ${talking&&talker?`<div class="ss-bm-speech" style="--ss-speech-x:${speakerX}%"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
         </div>
         <div class="ss-bm-action-panel ss-bm-actions-first"><h3>${ss.turn===0?'Choose your action':esc(activeName)+' is thinking'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>
+      <section class="ss-bm-own"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
+        ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
+      </section>
         <div class="ss-bm-felt">
           <div class="ss-bm-status"><div><small>HEALTH</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp} / ${ss.maxHp}</strong></div><div><small>CARDS STACKED</small><strong>${ss.pile.length} / 24</strong></div><div><small>TURN</small><strong>${ss.move}</strong></div></div>
           ${playerTiles()}
@@ -2379,9 +2466,6 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
             <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
         </div>
       </div>
-      <section class="ss-bm-own"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
-        ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
-      </section>
       <div class="ss-bm-info"><div>${chatView()}</div><section class="ss-surface ss-panel"><h3>Table history</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>Turn ${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Only the current top card may be examined. Clues are the only way to communicate card information.</p></section></div>
       <div class="ss-bm-bottom-actions"><button class="ss-btn alt sm" data-ss="restart">New game</button><button class="ss-btn alt sm" data-ss="title">Exit to title</button></div>
     </div>`;
@@ -2391,6 +2475,13 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     return `<div class="ss-rolepeek ss-role-start" role="dialog" aria-modal="true" aria-label="Secret role reveal"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">YOUR SECRET ROLE</div><div class="ss-role-card ${traitor?'is-traitor':'is-loyal'}"><span class="ss-role-seal">${config.pure?'✦':traitor?'♠':'♥'}</span><h2>${config.pure?'PURE CO-OP':traitor?'YOU ARE THE TRAITOR':'YOU ARE LOYAL'}</h2></div><p>${config.pure?'No hidden traitor. Work together to stack all 24 cards.':traitor?'Sabotage the team without giving false clues. You will have one chance to memorize your cards.':'Protect the team, share truthful clues, and watch for the hidden traitor.'}</p><p><strong>First turn:</strong> ${esc(getActor(ss.first).name)}. Play continues clockwise: you, then each opponent from left to right.</p><button class="ss-btn" data-ss="revealrole">${traitor?'Reveal my cards':'Begin game'}</button></div></div>`;
   }
   function showPeek(){const p=ss.players[0];return `<div class="ss-rolepeek"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">SECRET ROLE · PRIVATE SETUP</div><h2>You are the TRAITOR</h2><p>In the physical game, the traitor gets one private look at their cards. Memorize these positions now; after you close this screen you can no longer see your hand. Your goal is to make the team lose its HP or convict an innocent person.</p><div class="ss-yourcards">${p.hand.map((x,i)=>`<div><div class="ss-meta">Card ${i+1}</div>${card(x.card)}</div>`).join('')}</div><button class="ss-btn" data-ss="hidepeek">I’ve memorized my cards — hide them</button></div></div>`;}
+  function showLucky(){const lucky=ss.lucky,person=getActor(lucky).name,own=lucky===0;
+    return `<div class="ss-rolepeek ss-goose-reveal" role="dialog" aria-modal="true" aria-label="Lucky Goose reveal"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">SPECIAL FIVE-PLAYER SETUP</div>
+      <div class="ss-goose-stage"><span class="ss-goose-star star1">✦</span><span class="ss-goose-star star2">✧</span><span class="ss-goose-bird" role="img" aria-label="A lucky goose">🪿</span><span class="ss-goose-star star3">✦</span></div>
+      <h2>${own?'YOU ARE THE LUCKY GOOSE!':`${esc(person).toUpperCase()} IS THE LUCKY GOOSE!`}</h2>
+      <p>${own?'You begin with just four hidden cards. Everyone else gets five.':'The lucky goose receives just four hidden cards. Every other player gets five.'}</p>
+      <p class="ss-goose-tiny">HONK! · Four cards · One very lucky goose</p><button class="ss-btn" data-ss="acklucky">Honk! Begin Game</button></div></div>`;
+  }
   const nativeEnd=(id,win)=>{
     const n={stan:['Zwycięstwo!','Przegraliśmy!'],hein:['Sieg!','Wir haben verloren!'],nun:['¡Victoria!','¡Hemos perdido!'],darell:['VICTORY!','WE LOST!'],tony:['Vittoria!','Abbiamo perso!'],you:['CONGRATULATIONS!','YOU LOSE!']};return (n[id]||n.you)[win?0:1];};
   function overView(){
@@ -2406,7 +2497,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       </div></div></div>`;
   }
 
-  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():'');}
+  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():'');}
 
   function rules(){
     const ex=(r,s)=>card(cdef(r,s));
@@ -2458,9 +2549,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(a==='title'){clearTimeout(aiTick);clearInterval(musicTick);if(turnHold)tryEndHold(true);stopSpeech();paused=false;screen='title';saveSession();render();return;}
     if(a==='skip'){if(turnHold&&!paused)return tryEndHold(true);if(ss&&!paused&&ss.turn!==0&&ss.mode==='ready'){clearTimeout(aiTick);botChoose();if(turnHold)return tryEndHold(true);}return;}
     if(a==='pause'){paused=!paused;if(paused){freezeHold();clearTimeout(aiTick);clearInterval(musicTick);try{speechSynthesis.pause();}catch(e){}}else{try{speechSynthesis.resume();}catch(e){}resumeHold();}render();return;}
-    if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':'ready';quote('dealt');saveSession();render();return;}
-    if(a==='hidepeek'&&ss?.mode==='peek'){ss.mode='ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');saveSession();render();return;}
-    if(!ss||ss.over||ss.mode==='peek'||ss.mode==='role'||turnHold)return;
+    if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
+    if(a==='hidepeek'&&ss?.mode==='peek'){ss.mode=config.count===5?'lucky':'ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
+    if(a==='acklucky'&&ss?.mode==='lucky'){ss.mode='ready';openingDialogue();saveSession();render();return;}
+    if(!ss||ss.over||['peek','role','lucky'].includes(ss.mode)||turnHold)return;
     if(a==='ballot'&&ss.mode==='respondVote'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,el.dataset.yes==='1');}
     if(a==='holdvote'&&ss.mode==='voteDiscussion'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,true);}
     if(a==='cancelvote'&&ss.mode==='voteDiscussion'){ss.mode='ready';ss.vote=null;record('The accusation was withdrawn before voting; the turn is over.','vote');advance();render();return;}
