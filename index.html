@@ -1069,6 +1069,12 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
 @keyframes ssFirstEnter{from{opacity:0;transform:translateY(26px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes ssFirstPulse{from{transform:scale(.9) rotate(-10deg)}to{transform:scale(1.1) rotate(10deg)}}
 @keyframes ssFirstFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* Stack Squad turn announcements: show the player's turn for two full seconds. */
+.ss-turn-reveal{pointer-events:none;background:#001418d9}
+.ss-turn-reveal .ss-turn-inner{text-align:center;max-width:540px;border:2px solid #b5e9d6;box-shadow:0 12px 60px #061d2fcf;animation:ssFirstEnter .42s ease-out both}
+.ss-turn-reveal .ss-turn-inner h2{font-size:clamp(2rem,7vw,3.4rem);color:#fff1c2;margin:20px 0 14px}
+.ss-turn-progress{height:6px;max-width:300px;margin:23px auto 0;background:#1b6473;border-radius:12px;overflow:hidden}
+.ss-turn-progress::after{content:'';display:block;width:100%;height:100%;background:#a0f4da;transform-origin:left;animation:ssFirstFill 2s linear forwards}
 </style>
 </head>
 <body>
@@ -1100,7 +1106,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '2.4',
+    stackSquad: '2.5',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1915,9 +1921,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   // whichever is later: that minimum or the *actual* end of speech.
   // Do not estimate reading time; it caused long silent holds after narration.
   function dialogueMinimumMs(){return 3000;}
-  function beginHold(next,title,detail,who){
+  function beginHold(next,title,detail,who,minimumMs=3000){
     turnHold={next,title,detail,who};
-    holdDeadline=Date.now()+dialogueMinimumMs(ss?.speechLine);
+    holdDeadline=Date.now()+minimumMs;
     render();
   }
   function freezeHold(){if(turnHold){turnHold.remaining=Math.max(0,holdDeadline-Date.now());disarmHold();}}
@@ -2577,10 +2583,20 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function described(slot){if(!ss)return '';const cl=ss.players[0].clues.filter(q=>q.slot===slot);if(!cl.length)return 'No clues yet';return cl.map(x=>x.type==='higher'?`>${x.top.r}`:x.type==='lower'?`<${x.top.r}`:x.type==='sameSuit'?`Same ${GL[x.top.s]}`:`Not ${GL[x.top.s]}`).join(' · ');}
   function record(text,kind='move'){if(!ss)return;ss.log.unshift({turn:ss.move,text,kind});if(ss.log.length>120)ss.log.length=120;}
+  // Each player's turn announcement is a distinct two-second screen. It must
+  // not affect the length of the previous player's spoken action animation.
+  function announceTurn(){
+    if(!ss||ss.over)return;
+    ss.mode='turnAnnouncement';ss.speechLine=null;speechDone=true;
+    const player=getActor(ss.turn);
+    beginHold(()=>{ss.mode='ready';},
+      ss.turn===0?'YOUR TURN':`${player.name.toUpperCase()}’S TURN`,
+      ss.turn===0?'Choose your next action.':`${player.name} is up next.`,ss.turn,2000);
+  }
   function openingDialogue(){
     ss.mode='first';ss.speechLine=null;speechDone=true;
     record(`${getActor(ss.first).name} was randomly selected to play first.`,'system');
-    beginHold(()=>{ss.mode='ready';},`FIRST PLAYER: ${getActor(ss.first).name.toUpperCase()}`, 'Randomly selected! Play continues clockwise from left to right.',ss.first);
+    beginHold(()=>announceTurn(),`FIRST PLAYER: ${getActor(ss.first).name.toUpperCase()}`, 'Randomly selected! Play continues clockwise from left to right.',ss.first);
   }
   function start(){
     clearTimeout(aiTick);disarmHold();speechSerial++;stopSpeech();speechDone=true;turnHold=null;ss=null;seen=new Set();chatter=[];voiceCount={};spoken=0;pane=null;paused=false;peekDismissed=false;musicStep=0;musicLastPulse=0;
@@ -2613,7 +2629,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function advance(){if(!ss||ss.over)return;ss.move++;ss.turn=(ss.turn+1)%ss.players.length;let loop=0;while(ss.players[ss.turn].hand.length===0&&ss.players[ss.turn].tokens===0&&loop++<ss.players.length){ss.turn=(ss.turn+1)%ss.players.length;ss.move++;}
     if(loop>=ss.players.length)return finish('No available moves',ss.lastActor,false);
-    pane=null;clueTarget=null;clueIndex=null;selectedCard=null;selectedPlayer=null;ss.mode='ready';
+    pane=null;clueTarget=null;clueIndex=null;selectedCard=null;selectedPlayer=null;
+    announceTurn();
   }
   function play(i,slot){if(!ss||ss.over||paused||turnHold||ss.turn!==i)return;
     const p=ss.players[i],at=p.hand.findIndex(x=>x.id===slot);if(at<0)return;
@@ -2664,7 +2681,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     beginHold(()=>{},'TRAITOR ACCUSATION',`${getActor(accuser).name} accuses ${getActor(accused).name}. Discuss the evidence before voting.`,accuser);
   }
   function botChoose(){
-    if(!ss||ss.over||paused||screen!=='game'||['peek','role','lucky'].includes(ss.mode)||ss.turn===0||turnHold)return;
+    if(!ss||ss.over||paused||screen!=='game'||['peek','role','lucky','turnAnnouncement'].includes(ss.mode)||ss.turn===0||turnHold)return;
     if(!speechDone){aiTick=setTimeout(botChoose,250);return;}
     const i=ss.turn,p=ss.players[i],isTraitor=ss.traitor===i&&!config.pure,baseLvl=INTEL.indexOf(isTraitor?config.traitor:config.team),top=ss.pile.at(-1)?.card||null;
     const scores=p.hand.map(x=>({id:x.id,p:probable(i,x.id),c:x.card})).sort((a,b)=>b.p-a.p),randomChance=[.56,.24,.07][baseLvl];
@@ -2717,7 +2734,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!ss||screen!=='game'||ss.over||paused)return;
     saveSession();
     if(turnHold)armHold();
-    else if(!['role','peek','lucky','first'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,350);
+    else if(!['role','peek','lucky','first','turnAnnouncement'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,350);
   }
   function enter(active){if(!active){clearTimeout(aiTick);stopMusicLoop();disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
     else if(ss&&screen==='game'){afterRender();}}
@@ -2818,6 +2835,15 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function showRole(){const traitor=ss.traitor===0&&!config.pure;
     return `<div class="ss-rolepeek ss-role-start" role="dialog" aria-modal="true" aria-label="Secret role reveal"><div class="ss-rolepeek-inner ss-surface"><div class="ss-kicker">YOUR SECRET ROLE</div><div class="ss-role-card ${traitor?'is-traitor':'is-loyal'}"><span class="ss-role-seal">${config.pure?'✦':traitor?'♠':'♥'}</span><h2>${config.pure?'PURE CO-OP':traitor?'YOU ARE THE TRAITOR':'YOU ARE LOYAL'}</h2></div><p>${config.pure?'No hidden traitor. Work together to stack all 24 cards.':traitor?'Sabotage the team without giving false clues. You will have one chance to memorize your cards.':'Protect the team, share truthful clues, and watch for the hidden traitor.'}</p><p><strong>First turn:</strong> ${esc(getActor(ss.first).name)}. Play continues clockwise: you, then each opponent from left to right.</p><button class="ss-btn" data-ss="revealrole">${traitor?'Reveal my cards':'Begin game'}</button></div></div>`;
   }
+  function showTurn(){
+    const player=getActor(ss.turn),human=ss.turn===0;
+    return `<div class="ss-rolepeek ss-turn-reveal" role="status" aria-live="polite"><div class="ss-rolepeek-inner ss-surface ss-turn-inner">
+      <div class="ss-kicker">NEXT TO PLAY</div>
+      <h2>${human?'YOUR TURN':esc(player.name.toUpperCase())+'’S TURN'}</h2>
+      <p>${human?'Choose your action.':esc(player.name)+' is up next.'}</p>
+      <div class="ss-turn-progress"></div>
+    </div></div>`;
+  }
   function showFirst(){
     const name=getActor(ss.first).name, human=ss.first===0;
     return `<div class="ss-rolepeek ss-first-reveal" role="status" aria-live="polite"><div class="ss-rolepeek-inner ss-surface ss-first-inner">
@@ -2849,7 +2875,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       </div></div></div>`;
   }
 
-  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():ss.mode==='first'?showFirst():'');}
+  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():ss.mode==='first'?showFirst():ss.mode==='turnAnnouncement'?showTurn():'');}
 
   function rules(){
     const ex=(r,s)=>card(cdef(r,s));
@@ -2905,7 +2931,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
     if(a==='hidepeek'&&ss?.mode==='peek'){ss.mode=config.count===5?'lucky':'ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
     if(a==='acklucky'&&ss?.mode==='lucky'){ss.mode='ready';openingDialogue();saveSession();render();return;}
-    if(!ss||ss.over||['peek','role','lucky'].includes(ss.mode)||turnHold)return;
+    if(!ss||ss.over||['peek','role','lucky','turnAnnouncement'].includes(ss.mode)||turnHold)return;
     if(a==='ballot'&&ss.mode==='respondVote'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,el.dataset.yes==='1');}
     if(a==='holdvote'&&ss.mode==='voteDiscussion'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,true);}
     if(a==='cancelvote'&&ss.mode==='voteDiscussion'){ss.mode='ready';ss.vote=null;record('The accusation was withdrawn before voting; the turn is over.','vote');advance();render();return;}
