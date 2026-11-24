@@ -1100,7 +1100,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '2.3',
+    stackSquad: '2.4',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1829,7 +1829,7 @@ function table(){const s=state,p=s.players[0],interactive=s.phase==='human'||s.p
    if(!active){active=true;if(pending)later(pending,stageMs(state?.banner?.stage,state?.banner?.placed?.length||0));}
  }
  function rules(){const demo=(...cs)=>`<div class="bm-rule-cards">${cs.map(c=>card(c)).join('')}</div>`;return `<article class="bm-rulebook"><header><span class="eyebrow">RULEBOOK</span><h1>Bad Magicians</h1><div class="bm-version">Version ${GAME_VERSIONS.badMagicians}</div><p>A four-player deduction card game.</p><a class="btn" href="#bad-magicians">Play Bad Magicians</a></header><div class="bm-rule-nav">${['Setup','Secret cards','Turns','Questions','Guessing','Examples','Settings'].map((x,i)=>`<a href="#bad-magicians-rules/bm-rule-${i}">${x}</a>`).join('')}</div><section id="bm-rule-0"><h2>1. Objective and setup</h2><p>Be the first player to correctly identify the exact rank AND suit of all three opponents’ secret cards in a single guess.</p><p>Use a standard deck, removing all Jacks, Queens and Kings (and any Jokers). Aces stay in the deck and count as 1. There are ten ranks across four suits, for 40 cards.</p>${demo(0,1,2,3,4,5,6,7,8,9)}<p>Shuffle the deck. Deal one secret card face down to each of the four players first, then deal nine more cards to each player to form their hand. Lay any leftover cards face up in the middle. With the specified 40-card deck and four players, no cards remain in the middle.</p><img class="bm-rule-scene" src="${BM_SCENE}" alt="The three opponents around the card table"><div class="bm-rule-seats">${names.map((n,i)=>`<div><b>${n}</b><div class="bm-hand-backs">${Array.from({length:9},()=>'<span></span>').join('')}</div><small>1 secret card + 9 hand cards</small></div>`).join('')}</div></section><section id="bm-rule-1"><h2>2. Receive your secret card</h2><p>Every player receives a random secret card, dealt before their nine-card hand. Privately look at your own secret card, then keep it face down in front of you. In the digital game, press OK on the secret-card reveal to begin. No player chooses their secret card. Your secret card cannot be used to pay for questions or guesses. Do not change or reveal it during the game.</p><div class="bm-rule-illustration">${card(null,{back:true})}<span>Secret card</span><span>+</span>${demo(1,12,24,35,7,18,29,30,3)}<span>9 cards in hand</span></div></section><section id="bm-rule-2"><h2>3. On your turn</h2><p>Choose exactly one action: ask one opponent a question using a card from your hand, or make a guess at all three opponents’ secret cards. After resolving the action, play passes to the next player clockwise: Edwardo → Gregory → Roberta → You → Edwardo. The starting player is chosen randomly and announced at the beginning of every game.</p><p>Every card placed down is face up in front of the player who paid it. Those cards stay visible and cannot be reused. Secret cards never count toward a payment.</p><p>If you have no cards left, you can still guess for free. An incorrect guess never makes you miss a turn.</p></section><section id="bm-rule-3"><h2>4. Ask a question</h2><p>Select one card from your hand and one opponent. Choose one of the two question types below. Place the selected card face up in front of you. The opponent answers truthfully using their secret card.</p><h3>A. Within plus or minus two?</h3><p>Ask whether their secret card’s rank is within two ranks of your selected card, inclusive. Suit does not matter. With a 6, the answer is Yes for any 4, 5, 6, 7 or 8. Otherwise No.</p>${demo(3,4,5,6,7)}<p>Rank ranges stop at 1 and 10. A 10 covers 8, 9 and 10, not Ace or 2. A 2 covers Ace through 4. No wrapping.</p><h3>Aces</h3><p>When using an Ace for the range question, choose any number from 1 to 10 as the center. For example, an Ace centered on 9 asks about 7, 8, 9 or 10. The Ace itself is placed face up; it does not change its actual rank or suit.</p><h3>B. Same rank or suit?</h3><p>Ask whether their secret card shares either the rank or the suit of your question card. One shared property is enough for Yes. It is not necessary to share both. An Ace used for this question matches other Aces or cards of its actual suit.</p><div class="bm-rule-illustration">${card(16)}<span>Question: 7♥</span>${demo(6,18)}<span>Both answer Yes</span>${demo(25)}<span>Answers No</span></div><h3>Paying for the answer</h3><p>Yes: the single question card is enough. No: place another card of your choice face up in front of you, if you have one. If you have no other card, there is nothing else to pay. Your turn then ends in either case.</p></section><section id="bm-rule-4"><h2>5. Make a guess</h2><p>Instead of asking, place three cards from your hand face up in front of you. Then name one exact card for each of the three other players. Each guessed card must be distinct.</p><p>If you have fewer than three cards, place all the cards you have down, including zero if your hand is empty. A wrong guess does not cost you a turn.</p><div class="bm-rule-illustration">${demo(1,13,27)}<span>Pay three cards</span><span>→</span><div><p>Gregory: 4♠</p><p>Edwardo: 9♥</p><p>Roberta: A♣</p></div></div><h3>Results</h3><p>Three correct: you win immediately. One or two correct: the game tells you exactly which guesses were correct and which were not. Zero correct: all three were wrong. An unsuccessful guess does not end your run; the next player takes their turn. Each of the three opponents responds to their own guessed card, confirming or denying it in turn. Your own responses are automatic when another player guesses your card. Feedback is public at the table.</p></section><section id="bm-rule-5"><h2>6. Worked examples</h2><h3>A Yes answer</h3><p>You use 5♣ to ask Gregory if his rank is within two of 5. His secret is 7♥. He answers Yes, because 7 is within 3–7. Only 5♣ is paid.</p>${demo(34,16)}<h3>A No answer</h3><p>You use 9♦ to ask Roberta if her card shares its suit or rank. Her secret is 4♠. She answers No; you place another hand card face up. Your turn ends.</p>${demo(28,3,11)}<h3>Partial guess</h3><p>You pay three cards and guess Gregory 3♣, Edwardo 6♦ and Roberta 10♥. If only Edwardo is correct, you learn that exact identity, and that the other two cards were not correct. You still need to make a later guess of all three opponents correctly.</p>${demo(32,25,19)}<h3>One card left</h3><p>Pay your final card to guess. If it is wrong, you take your next turn normally and may try again with no cards to pay.</p></section><section id="bm-rule-6"><h2>7. Settings and table information</h2><p>Easy, Medium and Hard change how the computer players choose questions and guesses. None of them can look at another player’s secret card to decide their move. They receive the same public answers and revealed cards as you.</p><p>Automatic Note Taking is on by default. It records the literal Yes or No answer and question, plus which exact guesses were right or wrong. Next to each opponent’s notes, the “I think it’s a” dropdowns let you record your own suspected rank and suit. These stay available even with Automatic Note Taking switched off. Complete selections prefill blank guesses when you open Make a guess; you can change them before submitting. They do not spend cards or reveal any secret information. The note dropdowns and their clear buttons remain usable while the game is paused. The pause button in the upper-right freezes gameplay, ongoing animations and speech until unpaused. Turn announcements, answers and action animations last at least three seconds. Each paid card is placed in sequence over three seconds. Sound effects and character voices can be turned off independently in Settings. With voices enabled, spoken actions may take a little longer. Roberta’s character dialogue is in Spanish; the interface and question results remain in English.</p><p>At the end of a match, select <strong>Grade me</strong> to see a Sleuthing Skills Score out of 100. Use the left and right arrows to review every player's turn, including your hand at that moment, cards placed on the table and Rod Pumpernickel's deductions and advice. The review uses only cards and answers you could have known at the time.</p><p>The table shows every publicly played card, each player's remaining hand size and their face-down secret card. Your own secret and hand are visible to you. At the end of the game, all secret cards are revealed.</p><a class="btn" href="#bad-magicians">Play game</a></section></article>`;}
- return {view,rules,action,change,routeChange, test:{deal,predicate,rank,options,candidates,card,cn}};
+ return {view,rules,action,change,routeChange, edwardoVoice: voices=>chooseVoice(2,voices), test:{deal,predicate,rank,options,candidates,card,cn}};
 })();
 
 
@@ -2333,7 +2333,21 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     5:{beat:245,root:329.63,mel:[0,1,4,5,4,1,0,-2,0,1,4,1,-2,-4,-5,-4],bass:[0,-2,-4,-5]},
     6:{beat:155,root:293.66,mel:[0,3,5,7,8,7,5,3,0,2,3,5,7,5,3,2,0,-2,0,3,5,7,8,10,8,7,5,3,2,0,3,0],bass:[0,-5,0,-7]}
   };
-  let musicStep=0;
+  let musicStep=0, musicPlayerCount=null;
+  function stopMusicLoop(){
+    if(musicTick!==null){clearInterval(musicTick);musicTick=null;}
+    musicPlayerCount=null;
+  }
+  function maintainMusicLoop(){
+    const enabled=!!(ss && screen==='game' && !ss.over && !paused && config.music && config.musicVolume>0 && !['role','peek','lucky'].includes(ss.mode));
+    if(!enabled){stopMusicLoop();return;}
+    // Never tear down the audio timer merely because a card, clue, or menu was clicked.
+    if(musicTick!==null && musicPlayerCount===config.count)return;
+    stopMusicLoop();
+    musicPlayerCount=config.count;
+    musicPulse();
+    musicTick=setInterval(musicPulse,SS_SCORE[config.count].beat);
+  }
   function musicPulse(){
     if(!config.music||!ss||paused||ss.over||screen!=='game'||config.musicVolume<=0||['role','peek','lucky'].includes(ss.mode))return;
     const ctx=getAudio();if(!ctx)return;
@@ -2391,9 +2405,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
     }
   }
-  let voiceWatchdog=null,activeVoiceUtterance=null,voicePendingOnResume=null;
+  let voiceWatchdog=null,voiceStartupTimer=null,voiceProgressTimer=null,activeVoiceUtterance=null,voicePendingOnResume=null;
   function stopSpeech(){
-    clearTimeout(voiceWatchdog);voiceWatchdog=null;
+    clearTimeout(voiceWatchdog);clearTimeout(voiceStartupTimer);clearTimeout(voiceProgressTimer);
+    voiceWatchdog=voiceStartupTimer=voiceProgressTimer=null;
     // Retain a strong reference while speaking (as Bad Magicians does): mobile
     // browsers can silently interrupt an utterance if its JS object is collected.
     activeVoiceUtterance=null;voicePendingOnResume=null;
@@ -2427,6 +2442,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function ssSelectVoice(voices,locale,speaker){
     const gender=speaker==='nun'?'female':'male',language=locale.slice(0,2).toLowerCase();
+    // The familiar Edwardo voice from Bad Magicians is the baseline for ALL men
+    // speaking English. Keep character distinctions in their dialogue, not odd pitches.
+    if(gender==='male' && language==='en'){
+      const edwardo=BM.edwardoVoice(voices);
+      if(edwardo)return edwardo;
+    }
     const exact=voices.filter(v=>String(v.lang||'').toLowerCase()===locale.toLowerCase());
     const related=voices.filter(v=>String(v.lang||'').slice(0,2).toLowerCase()===language);
     const english=voices.filter(v=>/^en/i.test(String(v.lang||'')));
@@ -2444,49 +2465,93 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!config.voices||!('speechSynthesis' in window)||!window.SpeechSynthesisUtterance||!line||paused)return;
     try{
       const engine=window.speechSynthesis;
-      const chunks=speechChunks(line.text).map(text=>({text,locale:line.locale||'en-US'}));
-      let index=0,voiceLoadAttempts=0;
+      const chunks=speechChunks(line.text);
+      let index=0;
       speechDone=false;
+      const clearChunkTimers=()=>{
+        clearTimeout(voiceStartupTimer);clearTimeout(voiceProgressTimer);
+        voiceStartupTimer=voiceProgressTimer=null;
+      };
       const complete=()=>{
         if(serial!==speechSerial)return;
-        clearTimeout(voiceWatchdog);voiceWatchdog=null;
-        activeVoiceUtterance=null;speechDone=true;tryEndHold();
+        clearChunkTimers();clearTimeout(voiceWatchdog);voiceWatchdog=null;
+        activeVoiceUtterance=null;
+        speechDone=true;
+        tryEndHold();
       };
       const speakNext=()=>{
         if(serial!==speechSerial||speechDone)return;
         if(paused){voicePendingOnResume=speakNext;return;}
         if(index>=chunks.length){complete();return;}
-        // Voice lists often populate asynchronously, particularly on mobile browsers.
-        const voices=engine.getVoices();
-        if(!voices.length&&voiceLoadAttempts++<6){setTimeout(speakNext,140);return;}
         const chunk=chunks[index++];
-        const u=new SpeechSynthesisUtterance(chunk.text);
-        const voice=ssSelectVoice(voices,chunk.locale,line.speaker);
-        u.lang=voice?.lang||chunk.locale;
+        const u=new SpeechSynthesisUtterance(chunk);
+        // Never postpone the first speak() behind repeated getVoices() polling:
+        // mobile browser speech can require the original user gesture.
+        const voices=engine.getVoices();
+        const voice=ssSelectVoice(voices,line.locale||'en-US',line.speaker);
+        u.lang=voice?.lang||line.locale||'en-US';
         if(voice)u.voice=voice;
-        u.rate=line.speaker==='hein'?1.1:line.speaker==='nun'?.91:.97;
-        u.pitch=line.speaker==='nun'?1.18:line.speaker==='tony'?.73:line.speaker==='stan'?.73:line.speaker==='darell'?.70:.78;
+        if(line.speaker==='nun'){
+          u.rate=.94;u.pitch=1.10;
+        }else{
+          // Matches Edwardo in Bad Magicians: .94 rate, natural ~1.02 pitch.
+          // Avoid the very deep robotic 0.70-0.78 pitches of older builds.
+          u.rate=.94;u.pitch=1.02;
+        }
         u.volume=Math.max(0,Math.min(1,config.fxVolume));
         activeVoiceUtterance=u;
-        let settled=false;
-        const onDone=()=>{if(settled||serial!==speechSerial)return;settled=true;speakNext();};
-        u.onend=onDone;
-        u.onerror=()=>{
+        let settled=false,started=false;
+        const onDone=()=>{
           if(settled||serial!==speechSerial)return;
-          settled=true;
-          // A platform speech failure is not an excuse to repeat or flash the bubble.
-          // Proceed to remaining chunks without redisplaying the whole line.
+          settled=true;clearChunkTimers();activeVoiceUtterance=null;
           speakNext();
         };
+        const armProgressGuard=()=>{
+          clearTimeout(voiceProgressTimer);
+          // This is a last-resort guard for browsers that never issue onend.
+          // It is long enough for normally spoken chunks, and is reset at each
+          // word-boundary event, so regular speech is never cut at 3 seconds.
+          const limit=Math.max(9500,Math.min(36000,chunk.length*210+4500));
+          voiceProgressTimer=setTimeout(()=>{
+            if(serial!==speechSerial||settled)return;
+            if(paused||engine.paused){armProgressGuard();return;}
+            try{engine.cancel();}catch(e){}
+            onDone();
+          },limit);
+        };
+        u.onstart=()=>{
+          if(settled||serial!==speechSerial)return;
+          started=true;clearTimeout(voiceStartupTimer);voiceStartupTimer=null;
+          armProgressGuard();
+        };
+        u.onboundary=()=>{
+          if(settled||serial!==speechSerial)return;
+          started=true;clearTimeout(voiceStartupTimer);voiceStartupTimer=null;
+          armProgressGuard();
+        };
+        u.onend=onDone;
+        u.onerror=onDone;
+        // A speech engine can accept speak() yet never start the first line.
+        // Fall back to text-only progression instead of freezing the game.
+        const checkSpeechStart=()=>{
+          if(settled||serial!==speechSerial||started)return;
+          if(paused){voiceStartupTimer=setTimeout(checkSpeechStart,1500);return;}
+          if(engine.speaking){started=true;armProgressGuard();return;}
+          try{engine.cancel();}catch(e){}
+          onDone();
+        };
+        voiceStartupTimer=setTimeout(checkSpeechStart,5000);
+        try{engine.resume();}catch(e){}
         try{engine.speak(u);}catch(e){onDone();}
       };
       speakNext();
-      // Only guards against an actual platform hang, not normal narration length.
+      // Absolute emergency bound for broken platform APIs; normal speech uses
+      // the per-chunk start/progress checks above and the onend signal.
       voiceWatchdog=setTimeout(()=>{
-        if(serial!==speechSerial||speechDone)return;
+        if(serial!==speechSerial||speechDone||paused)return;
         try{engine.cancel();}catch(e){}
         complete();
-      },90000);
+      },120000);
     }catch(e){speechDone=true;activeVoiceUtterance=null;tryEndHold();}
   }
   function whoKnows(pIdx,slot){
@@ -2647,14 +2712,14 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   let musicLastPulse=0;
   function afterRender(){
-    clearTimeout(aiTick);clearInterval(musicTick);
+    clearTimeout(aiTick);
+    maintainMusicLoop();
     if(!ss||screen!=='game'||ss.over||paused)return;
     saveSession();
     if(turnHold)armHold();
     else if(!['role','peek','lucky','first'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,350);
-    if(config.music&&config.musicVolume>0&&!['role','peek','lucky'].includes(ss.mode)){musicPulse();musicTick=setInterval(musicPulse,SS_SCORE[config.count].beat);}
   }
-  function enter(active){if(!active){clearTimeout(aiTick);clearInterval(musicTick);disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
+  function enter(active){if(!active){clearTimeout(aiTick);stopMusicLoop();disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
     else if(ss&&screen==='game'){afterRender();}}
   function setCfg(k,v){if(k==='count'){config.count=Math.max(3,Math.min(6,Number(v)||3));}else if(['voices','sfx','music','pure'].includes(k))config[k]=!!v;else if(['musicVolume','fxVolume'].includes(k))config[k]=Math.max(0,Math.min(1,Number(v)));else if(k==='hp')config.hp=Number(v);else if(['team','traitor'].includes(k)&&INTEL.includes(v))config[k]=v;saves();render();}
   const celebration=()=>Array.from({length:65},(_,i)=>`<i class="ss-confetti" style="--x:${(i*47)%100}%;--c:${['#62ffed','#fa85c1','#f8da83','#a58dff','#7beb94'][i%5]};--dur:${2+(i%4)*.63}s;--delay:-${(i%9)*.4}s;--w:${5+i%8}px;--h:${8+i%10}px"></i>`).join('');
@@ -2834,9 +2899,9 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       if(ss&&!ss.over&&!window.confirm('Start a new Stack Squad game? Your current game will be lost.'))return;
       start();return;
     }
-    if(a==='title'){clearTimeout(aiTick);clearInterval(musicTick);if(turnHold)tryEndHold(true);stopSpeech();if(ss)ss.speechLine=null;paused=false;screen='title';saveSession();render();return;}
+    if(a==='title'){clearTimeout(aiTick);stopMusicLoop();if(turnHold)tryEndHold(true);stopSpeech();if(ss)ss.speechLine=null;paused=false;screen='title';saveSession();render();return;}
     if(a==='skip'){if(turnHold&&!paused)return tryEndHold(true);if(ss&&!paused&&ss.turn!==0&&ss.mode==='ready'){clearTimeout(aiTick);botChoose();if(turnHold)return tryEndHold(true);}return;}
-    if(a==='pause'){paused=!paused;if(paused){freezeHold();clearTimeout(aiTick);clearInterval(musicTick);try{speechSynthesis.pause();}catch(e){}}else{try{speechSynthesis.resume();}catch(e){}if(voicePendingOnResume){const go=voicePendingOnResume;voicePendingOnResume=null;go();}resumeHold();}render();return;}
+    if(a==='pause'){paused=!paused;if(paused){freezeHold();clearTimeout(aiTick);stopMusicLoop();try{speechSynthesis.pause();}catch(e){}}else{try{speechSynthesis.resume();}catch(e){}if(voicePendingOnResume){const go=voicePendingOnResume;voicePendingOnResume=null;go();}resumeHold();}render();return;}
     if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
     if(a==='hidepeek'&&ss?.mode==='peek'){ss.mode=config.count===5?'lucky':'ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
     if(a==='acklucky'&&ss?.mode==='lucky'){ss.mode='ready';openingDialogue();saveSession();render();return;}
