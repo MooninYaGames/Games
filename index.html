@@ -1093,7 +1093,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '2.7',
+    stackSquad: '2.8',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -1884,7 +1884,11 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   let speechVisualId=0,lastPaintedSpeechId=null,lastPaintedPileKey=null;
   const SESSION_KEY='mooninya-stack-squad-save-v16';
   function saveSession(){try{if(ss&&!ss.over&&!turnHold)localStorage.setItem(SESSION_KEY,JSON.stringify({ss,chatter,selectedCard,pane,peekDismissed,config}));else if(ss?.over)localStorage.removeItem(SESSION_KEY);}catch(e){}}
-  function restoreSession(){try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;const x=JSON.parse(raw);if(!x.ss?.players||x.ss.over||x.ss.players.length<3||x.ss.players.length>6)return;ss=x.ss;chatter=x.chatter||[];selectedCard=x.selectedCard||null;pane=x.pane||null;peekDismissed=!!x.peekDismissed;Object.assign(config,x.config||{});if(typeof config.musicVolume!=='number')config.musicVolume=.72;if(typeof config.fxVolume!=='number')config.fxVolume=.8;config.count=ss.players.length;ss.mode=ss.mode||'ready';}catch(e){}}
+  function restoreSession(){try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;const x=JSON.parse(raw);if(!x.ss?.players||x.ss.over||x.ss.players.length<3||x.ss.players.length>6)return;
+    // Do not let a saved traitor match silently override a newly selected PURE mode
+    // on reload. Keep the old session stored if the player switches back later.
+    if(!!x.config?.pure!==!!config.pure||x.ss.players.length!==config.count)return;
+    ss=x.ss;chatter=x.chatter||[];selectedCard=x.selectedCard||null;pane=x.pane||null;peekDismissed=!!x.peekDismissed;ss.mode=ss.mode||'ready';if(config.pure&&ss.mode==='role')ss.mode='ready';}catch(e){}}
   restoreSession();
   function disarmHold(){clearTimeout(holdTimer);holdTimer=null;}
   function tryEndHold(force=false){if(!turnHold||paused||screen!=='game')return;
@@ -2188,9 +2192,14 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     darell:{5:['Why is everybody speaking foreign in Spain? This is ridiculous.'],6:['Belgrade? I demand English, and I want an American flag.']},
     tony:{6:['I came to Belgrade and missed the game. Thanks, Vicky.']}
   };
-  // Roughly four complete English utterances for every one complete native-language
-  // utterance PER multilingual speaker. Heinrich alone mixes German cognates into
-  // his English-language dialogue. Darell and Tony speak only English.
+  // Four FULL English lines and one FULL native-language line per five utterances.
+  // Stagger the positions so a new game features native speech early even when a
+  // match ends before any ONE character has had five opportunities to speak.
+  // Heinrich alone uses German cognates in English lines; Darell/Tony are English-only.
+  const SS_NATIVE_PHASE={stan:3,hein:2,nun:1};
+  const useNativeLine=(id,number)=>MULTILINGUAL.has(id)&&((number+(SS_NATIVE_PHASE[id]||0))%5===4);
+  // Pure co-op must never bring up secret-role accusations in character speech.
+  const pureSafeLine=text=>!config.pure||!/(?:\b(?:traitors?|traitorous|betray\w*|backstab\w*|sabotag\w*|accus\w*|vot(?:e|es|ed|ing)|snitch\w*|suspic\w*|treacher\w*|loyal\w*|convict\w*|guilty|innocent|undercover|informant|spy|spies|mole|double[ -]?agent|backstabber)\b|queen of spades|double[ -]?cross|sell us out|zdrajc\w*|zdrad\w*|oskarż\w*|verräter|verrat\w*|traidor\w*|traici[oó]n\w*|votaci[oó]n\w*)/i.test(String(text));
   const NATIVE_ACTION_LINES={
     stan:{
       dealt:['Zuzanna mnie zabije, jeśli znowu przegram.','Mam zły omen. Zawsze mam zły omen.'],
@@ -2242,10 +2251,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
   function actionLine(id,details){
     const character=CH.find(c=>c.id===id),number=voiceCount[id]||0;
-    const nativeLine=MULTILINGUAL.has(id)&&((number+1)%5===0);
+    const nativeLine=useNativeLine(id,number);
     const category=details.kind==='clue'?details.clueType:details.kind==='play'?'play':'accuse';
     const pools=nativeLine?SS_ACTION_DIALOGUE.native:SS_ACTION_DIALOGUE.english;
-    const pool=pools[id]?.[category]||[];
+    const pool=(pools[id]?.[category]||[]).filter(pureSafeLine);
     if(!pool.length)return lineFor(id,details.kind==='clue'?'clue':details.kind==='play'?'dealt':'accusation');
     const notUsed=pool.filter(template=>!seen.has(`${id}|action|${template}`));
     const template=pick(notUsed.length?notUsed:pool);
@@ -2300,7 +2309,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function lineFor(id,context='dealt'){
     const character=CH.find(x=>x.id===id),number=voiceCount[id]||0;
     // Exactly one complete native-language line per five spoken lines, per multilingual speaker.
-    const nativeLine=MULTILINGUAL.has(id)&&((number+1)%5===0);
+    const nativeLine=useNativeLine(id,number);
     voiceCount[id]=number+1;
     const extra=SS_AUTHORED[id]||{};
     let pool=[],fallback=[];
@@ -2325,9 +2334,11 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       pool=roll<.66&&event.length?event:roll<.79&&general.length?general:roll<.92&&local.length?local:relationshipsPool.length?relationshipsPool:event.length?event:general;
       fallback=[...event,...general,...local,...relationshipsPool];
     }
+    pool=pool.filter(pureSafeLine);fallback=fallback.filter(pureSafeLine);
     const unused=items=>items.filter(t=>!seen.has(`${id}|${t}`));
     const choices=unused(pool).length?unused(pool):unused(fallback).length?unused(fallback):pool.length?pool:fallback;
-    const text=pick(choices)||(nativeLine?'Nie wiem, co robić.':'We must be careful with the next move.');
+    const safeFallback=nativeLine?({stan:'Musimy spokojnie grać dalej.',hein:'Wir spielen ruhig weiter.',nun:'Sigamos jugando con calma.'}[id]||'We can do this.'):'We must be careful with the next move.';
+    const text=pick(choices)||safeFallback;
     const locale=nativeLine?character.native:'en-US';
     seen.add(`${id}|${text}`);
     return {speaker:id,language:nativeLine?'native':'english',locale,text};
@@ -2436,10 +2447,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function stopSpeech(){
     clearTimeout(voiceWatchdog);clearTimeout(voiceStartupTimer);clearTimeout(voiceProgressTimer);
     voiceWatchdog=voiceStartupTimer=voiceProgressTimer=null;
-    // Retain a strong reference while speaking (as Bad Magicians does): mobile
-    // browsers can silently interrupt an utterance if its JS object is collected.
+    // Do not call speechSynthesis.cancel() on a silent, newly opened page:
+    // on some mobile engines that prevents the first real utterance from starting.
+    const wasPlaying=!!activeVoiceUtterance;
     activeVoiceUtterance=null;voicePendingOnResume=null;
-    try{window.speechSynthesis?.cancel();}catch(e){}
+    try{if(wasPlaying||window.speechSynthesis?.speaking||window.speechSynthesis?.pending)
+      window.speechSynthesis?.cancel();}catch(e){}
   }
   function speechChunks(str){
     // Most speech engines handle short phrases more reliably than long utterances.
@@ -2469,19 +2482,22 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
   function ssSelectVoice(voices,locale,speaker){
     const gender=speaker==='nun'?'female':'male',language=locale.slice(0,2).toLowerCase();
-    // The familiar Edwardo voice from Bad Magicians is the baseline for ALL men
-    // speaking English. Keep character distinctions in their dialogue, not odd pitches.
-    if(gender==='male' && language==='en'){
+    const exact=voices.filter(v=>String(v.lang||'').toLowerCase()===locale.toLowerCase());
+    const related=voices.filter(v=>String(v.lang||'').slice(0,2).toLowerCase()===language);
+    const gendered=list=>list.find(v=>ssVoiceGender(v)===gender);
+    const neutral=list=>list.find(v=>ssVoiceGender(v)==='unknown');
+    if(language!=='en'){
+      // Never silently substitute an English voice for Polish, German or Spanish.
+      // Unknown-gender native voices beat known-gender English voices.
+      // If no native voice is installed, use utterance.lang to request one.
+      return gendered(exact)||gendered(related)||neutral(exact)||neutral(related)||
+        exact[0]||related[0]||null;
+    }
+    if(gender==='male'){
       const edwardo=BM.edwardoVoice(voices);
       if(edwardo)return edwardo;
     }
-    const exact=voices.filter(v=>String(v.lang||'').toLowerCase()===locale.toLowerCase());
-    const related=voices.filter(v=>String(v.lang||'').slice(0,2).toLowerCase()===language);
     const english=voices.filter(v=>/^en/i.test(String(v.lang||'')));
-    const gendered=list=>list.find(v=>ssVoiceGender(v)===gender);
-    const neutral=list=>list.find(v=>ssVoiceGender(v)==='unknown');
-    // Correct gender always wins over a voice explicitly marked as the wrong gender.
-    // Prioritize the correct language when a matching male/female voice exists.
     return gendered(exact)||gendered(related)||gendered(english)||gendered(voices)||
       neutral(exact)||neutral(related)||neutral(english)||neutral(voices)||
       exact[0]||related[0]||english[0]||voices[0]||null;
@@ -2493,7 +2509,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     try{
       const engine=window.speechSynthesis;
       const chunks=speechChunks(line.text);
-      let index=0;
+       let index=0,startRetries=0;
       speechDone=false;
       const clearChunkTimers=()=>{
         clearTimeout(voiceStartupTimer);clearTimeout(voiceProgressTimer);
@@ -2528,10 +2544,15 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         u.volume=Math.max(0,Math.min(1,config.fxVolume));
         activeVoiceUtterance=u;
         let settled=false,started=false;
-        const onDone=()=>{
+        const onDone=(failed=false)=>{
           if(settled||serial!==speechSerial)return;
           settled=true;clearChunkTimers();activeVoiceUtterance=null;
-          speakNext();
+          if(failed&&!started&&startRetries<1){
+            // A dropped first-time utterance isn't a delivered dialogue line.
+            // Retry the SAME chunk once; no extra on-screen popup or line.
+            startRetries++;index--;
+            voiceStartupTimer=setTimeout(speakNext,180);
+          }else{startRetries=0;speakNext();}
         };
         const armProgressGuard=()=>{
           clearTimeout(voiceProgressTimer);
@@ -2557,7 +2578,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           armProgressGuard();
         };
         u.onend=onDone;
-        u.onerror=onDone;
+        u.onerror=()=>onDone(true);
         // A speech engine can accept speak() yet never start the first line.
         // Fall back to text-only progression instead of freezing the game.
         const checkSpeechStart=()=>{
@@ -2565,11 +2586,11 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           if(paused){voiceStartupTimer=setTimeout(checkSpeechStart,1500);return;}
           if(engine.speaking){started=true;armProgressGuard();return;}
           try{engine.cancel();}catch(e){}
-          onDone();
+          onDone(true);
         };
-        voiceStartupTimer=setTimeout(checkSpeechStart,5000);
+        voiceStartupTimer=setTimeout(checkSpeechStart,6500);
         try{engine.resume();}catch(e){}
-        try{engine.speak(u);}catch(e){onDone();}
+        try{engine.speak(u);}catch(e){onDone(true);}
       };
       speakNext();
       // Absolute emergency bound for broken platform APIs; normal speech uses
@@ -2607,6 +2628,11 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function openingDialogue(){
     ss.mode='first';ss.speechLine=null;speechDone=true;
     record(`${getActor(ss.first).name} was randomly selected to play first.`,'system');
+    // Announce first player on the EXISTING table banner, with no popup/loading bar.
+    // Begin the very first audible NPC introduction inside the user's Start/Begin
+    // click. iOS/Safari can reject first-time synthesis started from a later timer.
+    const firstSpeaker=ss.first>0?getActor(ss.first).id:getActor(1).id;
+    quote('dealt',firstSpeaker);
     beginHold(()=>{ss.mode='ready';},`FIRST PLAYER: ${getActor(ss.first).name.toUpperCase()}`, 'Randomly selected! Play continues clockwise from left to right.',ss.first);
   }
   function start(){
@@ -2626,9 +2652,13 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const hpPool=shuffle(residue).slice(0,config.count===6?4:5);
     if(config.count===6)hpPool.push({id:'joker',r:0,s:'J'});
     const first=Math.floor(Math.random()*players.length);
-    ss={players,traitor,hp:config.hp,maxHp:config.hp,hpPool,turn:first,first,move:1,pile:[],log:[],over:null,lastActor:first,vote:null,mode:'role',lucky:players.findIndex(p=>p.lucky)};
+    ss={players,traitor,hp:config.hp,maxHp:config.hp,hpPool,turn:first,first,move:1,pile:[],log:[],over:null,lastActor:first,vote:null,mode:config.pure?(config.count===5?'lucky':'ready'):'role',lucky:players.findIndex(p=>p.lucky)};
     screen='game';
-    if(traitor===0)record('You are the hidden traitor. Memorize your hand after the role reveal.','system');else if(config.pure)record('Pure cooperative mode: no roles or voting.','system');else record('Your role is Loyal. The traitor is hidden.','system');
+    if(config.pure){
+      record('Pure cooperative game: work together to place all 24 cards.','system');
+      if(ss.mode==='ready'){openingDialogue();saveSession();return;}
+    }else if(traitor===0)record('You are the hidden traitor. Memorize your hand after the role reveal.','system');
+    else record('Your role is Loyal. The traitor is hidden.','system');
     saveSession();render();
   }
   function valid(c,top){return !top||c.s===top.s||Math.abs(c.r-top.r)<=1;}
@@ -2756,8 +2786,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <div class="ss-bm-cover"><img src="${scene()}" alt="${esc(m.alt)}"></div>
       <h1>Stack Squad</h1>
       <div class="ss-bm-version">Version ${GAME_VERSIONS.stackSquad}</div>
-      <p class="ss-bm-lead">Twenty-four cards. Hidden hands. One team. Perhaps one traitor.</p>
-      <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">New Game</button><button class="ss-btn ss-continue" data-ss="continue" ${!ss||ss.over?'disabled':''}>Continue Game</button><button class="ss-btn alt" data-ss="settings">Settings</button><a class="ss-btn alt" href="#stack-squad-rules">Rulebook</a></div>
+      <p class="ss-bm-lead">${config.pure?'Twenty-four cards. Hidden hands. One team. Work together.':'Twenty-four cards. Hidden hands. One team. Perhaps one traitor.'}</p>
+      <div class="ss-bm-menu-buttons"><button class="ss-btn" data-ss="start">New Game</button><button class="ss-btn ss-continue" data-ss="continue" ${!ss||ss.over||(config.pure!==((ss.traitor??-1)<0))?'disabled':''}>Continue Game</button><button class="ss-btn alt" data-ss="settings">Settings</button><a class="ss-btn alt" href="#stack-squad-rules">Rulebook</a></div>
       <p class="ss-bm-menu-note">${config.pure?'Pure co-op':'Hidden traitor'} · ${config.count} players · ${config.hp} HP</p>
     </section>`;
   }
@@ -2769,8 +2799,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <div class="ss-bm-settings-fields"><label>Players<select data-ss-change="count">${[3,4,5,6].map(n=>`<option value="${n}" ${config.count===n?'selected':''}>${n} players</option>`).join('')}</select></label>
       <label>Health<select data-ss-change="hp"><option value="10" ${config.hp===10?'selected':''}>Baby Mode · 10 HP</option><option value="5" ${config.hp===5?'selected':''}>Normal · 5 HP</option><option value="2" ${config.hp===2?'selected':''}>NIGHTMARE · 2 HP</option></select></label>
       <label>Team intelligence<select data-ss-change="team">${INTEL.map(x=>`<option ${config.team===x?'selected':''}>${x}</option>`).join('')}</select></label>
-      <label class="${config.pure?'ss-disabled-option':''}">Traitor intelligence<select data-ss-change="traitor" ${config.pure?'disabled':''}>${INTEL.map(x=>`<option ${config.traitor===x?'selected':''}>${x}</option>`).join('')}</select></label>
-      <label class="ss-bm-check"><input type="checkbox" data-ss-change="pure" ${config.pure?'checked':''}>Pure co-op mode (no traitor)</label>
+      ${config.pure?'':`<label>Traitor intelligence<select data-ss-change="traitor">${INTEL.map(x=>`<option ${config.traitor===x?'selected':''}>${x}</option>`).join('')}</select></label>`}
+      <label class="ss-bm-check"><input type="checkbox" data-ss-change="pure" ${config.pure?'checked':''}>Pure co-op mode</label>
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="voices" ${config.voices?'checked':''}>Character voices</label>
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="sfx" ${config.sfx?'checked':''}>Sound effects</label>
       <label class="ss-bm-check"><input type="checkbox" data-ss-change="music" ${config.music?'checked':''}>Scene music</label>
@@ -2792,7 +2822,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     }).join('')}</div>`;
   }
 
-  function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||'<span class="ss-meta">Your hand is empty. You can still give clues or call votes.</span>'}</div>`;}
+  function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||`<span class="ss-meta">Your hand is empty. You can still give clues${config.pure?'': ' or call votes'}.</span>`}</div>`;}
   function humanPane(){if(turnHold)return `<p class="ss-action-result">${esc(turnHold.detail)}<span> Animation in progress — press Skip to move on.</span></p>`;if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
@@ -2854,7 +2884,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <p class="ss-goose-tiny">HONK! · Four cards · One very lucky goose</p><button class="ss-btn" data-ss="acklucky">Honk! Begin Game</button></div></div>`;
   }
   const nativeEnd=(id,win)=>{
-    const n={stan:['Zwycięstwo!','Przegraliśmy!'],hein:['Sieg!','Wir haben verloren!'],nun:['¡Victoria!','¡Hemos perdido!'],darell:['VICTORY!','WE LOST!'],tony:['Vittoria!','Abbiamo perso!'],you:['CONGRATULATIONS!','YOU LOSE!']};return (n[id]||n.you)[win?0:1];};
+    const n={stan:['Zwycięstwo!','Przegraliśmy!'],hein:['Sieg!','Wir haben verloren!'],nun:['¡Victoria!','¡Hemos perdido!'],darell:['VICTORY!','WE LOST!'],tony:['VICTORY!','WE LOST!'],you:['CONGRATULATIONS!','YOU LOSE!']};return (n[id]||n.you)[win?0:1];};
   function overView(){
     const z=ss.over,actor=getActor(z.actor),label=nativeEnd(actor.id,z.humanWon),where=VENUES[config.count];
     return `<div class="ss-shell ss-bm ss-bm-end">
@@ -2868,13 +2898,13 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       </div></div></div>`;
   }
 
-  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(ss.mode==='role'?showRole():ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():'');}
+  function view(){if(screen==='settings')return settings();if(!ss||screen==='title')return intro();return ss.over?overView():live()+(!config.pure&&ss.mode==='role'?showRole():!config.pure&&ss.mode==='peek'?showPeek():ss.mode==='lucky'?showLucky():'');}
 
   function rules(){
     const ex=(r,s)=>card(cdef(r,s));
     return `<article class="ss-shell ss-bm ss-rules ss-bm-rulebook">
-      <header class="ss-head"><div><div class="ss-kicker">ILLUSTRATED RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>Stack Squad</h1><p>24 cards. Hidden hands. Five starting HP. One possible traitor.</p></div><a class="ss-btn" href="#stack-squad">Back to game</a></header>
-      <nav class="ss-rule-nav">${[['ss-rule-setup','Setup'],['ss-rule-roles','Roles'],['ss-rule-stack','Stacking'],['ss-rule-clues','Clues'],['ss-rule-votes','Voting'],['ss-rule-ending','Victory']].map(([id,label])=>`<a href="#stack-squad-rules/${id}">${label}</a>`).join('')}</nav>
+      <header class="ss-head"><div><div class="ss-kicker">ILLUSTRATED RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>Stack Squad</h1><p>${config.pure?'24 cards. Hidden hands. One team. Five starting HP.':'24 cards. Hidden hands. Five starting HP. One possible traitor.'}</p></div><a class="ss-btn" href="#stack-squad">Back to game</a></header>
+      <nav class="ss-rule-nav">${[['ss-rule-setup','Setup'],...(!config.pure?[['ss-rule-roles','Roles']]:[]),['ss-rule-stack','Stacking'],['ss-rule-clues','Clues'],...(!config.pure?[['ss-rule-votes','Voting']]:[]),['ss-rule-ending','Victory']].map(([id,label])=>`<a href="#stack-squad-rules/${id}">${label}</a>`).join('')}</nav>
       <section class="ss-surface" id="ss-rule-setup"><h2>1. Set up the table</h2>
         <p>Remove all ranks above 6 from the playable deck. The four suits from Ace (1) through 6 make <strong>24 unique cards</strong>. All are dealt. <strong>You cannot see your own hand</strong>, but you can see every other player's hand.</p>
         <div class="ss-rule-cards">${[1,2,3,4,5,6].map(r=>ex(r,'S')).join('')}<span class="ss-rule-note">Six ranks in each of four suits. Aces count as 1; there is no rank wraparound.</span></div>
@@ -2882,38 +2912,40 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         <div class="ss-rules-scenes">${[3,4,5,6].map(n=>`<figure><img src="${SS_SCENES[n]}" alt="${esc(VENUES[n].alt)}"><figcaption>${n} players · ${esc(VENUES[n].title)}</figcaption></figure>`).join('')}</div>
         <p>Each player starts with <strong>three available clues</strong>. The team starts with <strong>5 HP</strong>, or 10 on Baby Mode / 2 on NIGHTMARE. Play clockwise: you, then the opponents from left to right. The starting player is chosen randomly.</p>
       </section>
-      <section class="ss-surface" id="ss-rule-roles"><h2>2. Secret roles</h2>
+      ${!config.pure?`<section class="ss-surface" id="ss-rule-roles"><h2>2. Secret roles</h2>
         <div class="ss-rule-steps"><div><strong>Hidden traitor</strong><p>Each player gets a face-down face card. Exactly one is the Queen of Spades. Its holder is the traitor.</p></div><div><strong>One private peek</strong><p>Only the traitor may look at their own cards once, at the beginning. Memorize them before play starts.</p></div><div><strong>Pure co-op</strong><p>Enable Pure co-op in Settings to remove roles, traitor votes, and the hidden traitor.</p></div></div>
         <p>The traitor wins if the team loses all HP or convicts an innocent. Everyone else wins by stacking all 24 cards or correctly convicting the traitor.</p>
-      </section>
-      <section class="ss-surface" id="ss-rule-stack"><h2>3. Place a card</h2>
+      </section>`:''}
+      <section class="ss-surface" id="ss-rule-stack"><h2>${config.pure?'2':'3'}. Place a card</h2>
         <p>Choose one of your own <strong>unknown</strong> cards. Once chosen, it is revealed and placed face up on the single stack—even if invalid.</p>
         <div class="ss-rule-cards">${ex(4,'S')}<strong>→</strong>${ex(5,'H')}<span class="ss-rule-note"><strong>Valid:</strong> 5♥ is 1 higher than 4♠. Also valid: any 3, 4 or 5, or any spade.</span></div>
         <div class="ss-rule-cards">${ex(4,'S')}<strong>→</strong>${ex(6,'D')}<span class="ss-rule-note"><strong>Invalid:</strong> 6♦ is two ranks higher and the suit differs. Lose 1 HP, but 6♦ stays on top.</span></div>
         <p>The <strong>first card</strong> is always valid. A valid play restores that player's 3 clues. An invalid play costs 1 team HP. Only the newest card is visible; do not look under or search through the stack.</p>
       </section>
-      <section class="ss-surface" id="ss-rule-clues"><h2>4. Give a truthful clue</h2>
+      <section class="ss-surface" id="ss-rule-clues"><h2>${config.pure?'3':'4'}. Give a truthful clue</h2>
         <p>Instead of playing, spend one of your three clue tokens. Point to <strong>one specific card in another player's hand</strong> and give exactly one truthful clue relative to the current top card.</p>
-        <div class="ss-rule-steps"><div><strong>Rank</strong><p>“Higher than” or “Lower than” the current top card.</p></div><div><strong>Suit</strong><p>“Same suit as” or “Different suit from” the current top card.</p></div><div><strong>Not allowed</strong><p>Never say “same rank.” No false clues, even from the traitor.</p></div></div>
+        <div class="ss-rule-steps"><div><strong>Rank</strong><p>“Higher than” or “Lower than” the current top card.</p></div><div><strong>Suit</strong><p>“Same suit as” or “Different suit from” the current top card.</p></div><div><strong>Not allowed</strong><p>Never say “same rank.” ${config.pure?'Clues must be truthful.':'No false clues, even from the traitor.'}</p></div></div>
         <div class="ss-rule-cards">${ex(3,'H')}<strong>→</strong>${ex(5,'C')}<span class="ss-rule-note">With 3♥ on top, you may truthfully tell a player their 5♣ is <strong>higher</strong> or a <strong>different suit</strong>.</span></div>
         <p>You cannot give clues before the first card is stacked or after spending all three tokens. <strong>Only the Give a Clue action</strong> may convey any information about cards in hands—no hints, gestures, or coded chatter.</p>
       </section>
-      <section class="ss-surface" id="ss-rule-votes"><h2>5. Call a traitor vote</h2>
+      ${!config.pure?`<section class="ss-surface" id="ss-rule-votes"><h2>5. Call a traitor vote</h2>
         <p>As your turn action, accuse another player and hold a discussion. Each player votes. A <strong>strict majority of all players</strong> must vote YES to convict (2/3, 3/4, 3/5, or 4/6).</p>
         <div class="ss-rule-steps"><div><strong>Vote fails</strong><p>No one is revealed. The accuser uses up their turn.</p></div><div><strong>Traitor convicted</strong><p>Reveal the Queen of Spades. The loyal team wins immediately.</p></div><div><strong>Innocent convicted</strong><p>The traitor wins immediately. A wrong accusation is risky.</p></div></div>
-      </section>
-      <section class="ss-surface" id="ss-rule-ending"><h2>6. Ending the game</h2>
-        <p><strong>Team wins:</strong> All 24 cards are stacked without reaching 0 HP, or the real traitor is convicted. <strong>Team loses:</strong> HP reaches zero (including if the 24th card causes the final loss) or an innocent player is convicted.</p>
+      </section>`:''}
+      <section class="ss-surface" id="ss-rule-ending"><h2>${config.pure?'4':'6'}. Ending the game</h2>
+        <p>${config.pure?'<strong>Team wins:</strong> All 24 cards are stacked while the team still has HP. <strong>Team loses:</strong> HP reaches zero, including on the last card.':'<strong>Team wins:</strong> All 24 cards are stacked without reaching 0 HP, or the real traitor is convicted. <strong>Team loses:</strong> HP reaches zero (including if the 24th card causes the final loss) or an innocent player is convicted.'}</p>
         <p><strong>${dialogueLineCount().toLocaleString('en-US')} unique character dialogue lines</strong> are available across all settings, scenes, and characters. This total is calculated directly from the game's selectable dialogue; adding or removing lines updates it automatically. Stanisław, Heinrich, and Sister Guadalupe each use about 80% English lines and 20% native-language lines. Darell and Tony speak only English.</p>
-        <p>Set team and traitor AI separately to Dumb as Rocks, Average Joe, or Conniving. Use the Pause control to stop play; Skip advances past the current animation. Available native-language speech voices depend on your device.</p>
+        <p>${config.pure?'Set teammate AI':'Set team and traitor AI separately'} to Dumb as Rocks, Average Joe, or Conniving. Use the Pause control to stop play; Skip advances past the current animation. Available native-language speech voices depend on your device.</p>
         <a class="ss-btn" href="#stack-squad">Return to game</a>
       </section>
     </article>`;
   }
   function action(el){const a=el.dataset.ss;if(!a)return;getAudio();
+    // Ask the browser to load its speech voices during a genuine user gesture.
+    if(config.voices){try{window.speechSynthesis?.getVoices();window.speechSynthesis?.resume();}catch(e){}}
     if(a==='settings'){screen='settings';render();return;}
     if(a==='back'){screen='title';render();return;}
-    if(a==='continue'){if(ss&&!ss.over){screen='game';paused=false;render();}return;}
+    if(a==='continue'){if(ss&&!ss.over&&config.pure===((ss.traitor??-1)<0)){screen='game';paused=false;render();}return;}
     if(a==='start'||a==='restart'){
       if(ss&&!ss.over&&!window.confirm('Start a new Stack Squad game? Your current game will be lost.'))return;
       start();return;
@@ -2921,8 +2953,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(a==='title'){clearTimeout(aiTick);stopMusicLoop();if(turnHold)tryEndHold(true);stopSpeech();if(ss)ss.speechLine=null;paused=false;screen='title';saveSession();render();return;}
     if(a==='skip'){if(turnHold&&!paused)return tryEndHold(true);if(ss&&!paused&&ss.turn!==0&&ss.mode==='ready'){clearTimeout(aiTick);botChoose();if(turnHold)return tryEndHold(true);}return;}
     if(a==='pause'){paused=!paused;if(paused){freezeHold();clearTimeout(aiTick);stopMusicLoop();try{speechSynthesis.pause();}catch(e){}}else{try{speechSynthesis.resume();}catch(e){}if(voicePendingOnResume){const go=voicePendingOnResume;voicePendingOnResume=null;go();}resumeHold();}render();return;}
-    if(a==='revealrole'&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
-    if(a==='hidepeek'&&ss?.mode==='peek'){ss.mode=config.count===5?'lucky':'ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
+    if(a==='revealrole'&&!config.pure&&ss?.mode==='role'){ss.mode=ss.traitor===0&&!config.pure?'peek':config.count===5?'lucky':'ready';if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
+    if(a==='hidepeek'&&!config.pure&&ss?.mode==='peek'){ss.mode=config.count===5?'lucky':'ready';peekDismissed=true;record('The traitor’s one-time private peek is over.');if(ss.mode==='ready')openingDialogue();saveSession();render();return;}
     if(a==='acklucky'&&ss?.mode==='lucky'){ss.mode='ready';openingDialogue();saveSession();render();return;}
     if(!ss||ss.over||['peek','role','lucky'].includes(ss.mode)||turnHold)return;
     if(a==='ballot'&&ss.mode==='respondVote'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,el.dataset.yes==='1');}
@@ -2939,8 +2971,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(a==='cancel'){pane=null;clueTarget=null;clueIndex=null;render();return;}
   }
   function change(el){if(!el.dataset.ssChange)return;setCfg(el.dataset.ssChange,el.type==='checkbox'?el.checked:el.value);}
-  function debug(){return {state:ss,config,possible:whoKnows,valid,deckSize:deck().length,characters:chars().map(x=>x.name),uniqueDialogueLines:dialogueLineCount(),introCounts:Object.fromEntries(ORDER.map(id=>[CH.find(x=>x.id===id).name,(SS_AUTHORED[id]?.intro||[]).length]))};}
-  return {view,rules,action,change,enter,afterRender,debug};
+  function debug(){return {state:ss,config,possible:whoKnows,valid,deckSize:deck().length,characters:chars().map(x=>x.name),uniqueDialogueLines:dialogueLineCount(),nativePhase:SS_NATIVE_PHASE,voiceCounts:{...voiceCount},introCounts:Object.fromEntries(ORDER.map(id=>[CH.find(x=>x.id===id).name,(SS_AUTHORED[id]?.intro||[]).length]))};}
+  return {view,rules,action,change,enter,afterRender,debug,isPure:()=>config.pure};
 })();
 
 
@@ -2950,7 +2982,7 @@ function gamesView(){return `<div class="page-heading"><div><span class="eyebrow
 <a href="#no-fours" class="game-tile"><div class="tile-art"><div class="tile-dice"><span>⚄</span><span>⚃</span></div></div><div class="tile-bottom"><span class="tag">DICE GAME</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>No More Fours <small>v${GAME_VERSIONS.noMoreFours}</small></h3><p>Roll five dice, collect extraordinary special dice, and survive escalating HP drain to reach a worldwide high score.</p></a>
 <a href="#hmr" class="game-tile hmr-tile"><div class="tile-art hmr-tile-art"><img class="hmr-cover-image" src="${HMR_COVER}" alt="Gothic ruined citadel with armored dark-fantasy heroes and a treasure chest"></div><div class="tile-bottom"><span class="tag">RPG</span><span class="tag">PUSH YOUR LUCK</span><span class="tile-arrow">↗</span></div><h3>Honorable Man of Restraint <small>v${GAME_VERSIONS.honorableMan}</small></h3><p>Spare your enemies or sacrifice blood for better loot. Survive twenty deadly encounters and unlock New Game+.</p></a>
 <a href="#bad-magicians" class="game-tile"><div class="tile-art bm-tile-art"><img src="${BM_TILE}" alt="Gregory, Edwardo and Roberta at the card table"></div><div class="tile-bottom"><span class="tag">CARD GAME</span><span class="tag">DEDUCTION</span><span class="tile-arrow">↗</span></div><h3>Bad Magicians <small>v${GAME_VERSIONS.badMagicians}</small></h3><p>Question three elderly card players, uncover their secret cards and make the winning guess.</p></a>
-<a href="#stack-squad" class="game-tile"><div class="tile-art bm-tile-art"><img src="${SS_SCENES[6]}" alt="The Stack Squad crew in a Belgrade alley, shown from the player's perspective"></div><div class="tile-bottom"><span class="tag">CO-OP CARD GAME</span><span class="tag">HIDDEN TRAITOR</span><span class="tile-arrow">↗</span></div><h3>Stack Squad <small>v${GAME_VERSIONS.stackSquad}</small></h3><p>Trust your teammates, share truthful clues, and stack every card before your luck—or your loyalty—runs out.</p></a>
+<a href="#stack-squad" class="game-tile"><div class="tile-art bm-tile-art"><img src="${SS_SCENES[6]}" alt="The Stack Squad crew in a Belgrade alley, shown from the player's perspective"></div><div class="tile-bottom"><span class="tag">CO-OP CARD GAME</span><span class="tag">${SS.isPure()?'PURE CO-OP':'HIDDEN TRAITOR'}</span><span class="tile-arrow">↗</span></div><h3>Stack Squad <small>v${GAME_VERSIONS.stackSquad}</small></h3><p>${SS.isPure()?'Work together, share truthful clues, and stack all 24 cards before your team runs out of health.':'Trust your teammates, share truthful clues, and stack every card before your luck—or your loyalty—runs out.'}</p></a>
 </section>`;}
 function setupView(){return `<div class="page-heading"><div><span class="eyebrow">CARD GAME</span><h1>Race to <span class="accent">15.</span></h1><p>A turn-based auction and card-flipping game.</p></div><a class="btn ghost" href="#rules">Full rulebook ↗</a></div><div class="setup-layout"><section class="surface setup-pane"><span class="tag">SINGLE PLAYER VS. COMPUTERS</span><h2 style="margin-top:20px">Game setup</h2><p>Face computer opponents at a fully simulated card table. Uses two complete shuffled decks and the Race to 15 rules.</p><div class="setup-field"><label>Total players (including you)</label><div class="player-buttons">${[2,3,4,5,6].map(n=>`<button class="player-num ${cfg.count===n?'selected':''}" data-action="player-count" data-num="${n}" aria-pressed="${cfg.count===n}">${n}</button>`).join('')}</div></div><button class="btn wide" data-action="new-game">DEAL THE CARDS <span>→</span></button><div class="setup-note">Your first hand starts with 3 cards, plus the opening-round bonus. The dealer (you) opens the first clockwise auction.</div></section><aside class="surface setup-benefits"><div><span class="eyebrow">RACE TO 15</span><h2 style="font-size:2rem;margin-top:9px">Game rules</h2></div><div class="setup-benefit"><span class="benefit-mark">♠</span><span>Keep your flipped-card total at or below the value of your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♥</span><span>One suit counts as zero. Aces can erase a flipped card's value.</span></div><div class="setup-benefit"><span class="benefit-mark">♦</span><span>Each successful shorter bid lets you keep up to two flipped cards, growing your hand.</span></div><div class="setup-benefit"><span class="benefit-mark">♣</span><span>Safely complete a bid of <strong style="color:#ffdda0">15 or more flips</strong> in one attempt.</span></div></aside></div>`;}
   function playerPanel(){return `<aside class="surface players-panel"><div class="panel-title">AT THE TABLE · ${g.players.length} PLAYERS</div><div class="player-list">${g.players.map((p,i)=>`<div class="player-row ${i===0?'me':''} ${currentActor()===i?'active':''}"><div class="avatar">${i===0?'YOU':escaped(p.name).slice(0,1)}</div><div class="player-detail"><div class="player-name">${escaped(p.name)} ${currentActor()===i?'· TURN':''}</div><div class="player-stats">${p.hand.length} cards · best ${p.best} flips</div><div class="player-stats">${p.hailUsed?'Hail Mary used':'Hail Mary ready'}</div></div><strong class="player-stat-num">${p.hand.length}</strong></div>`).join('')}</div><div class="small-status"><span class="status-dot"></span> Opponent hands stay hidden</div></aside>`;}
