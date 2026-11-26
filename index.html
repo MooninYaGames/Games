@@ -776,6 +776,9 @@
 
 .ss-bm-first-announce{border-color:#efd38b!important;box-shadow:0 0 30px #d3a64c47!important}
 .ss-bm-first-announce strong{color:#fff0b3!important}
+
+/* Top card remains INSIDE the felt/table information, never as an action footer. */
+.ss-bm .ss-bm-center-first{margin:0 0 12px}
 </style>
 <style id="hmr-affixes-style">.hmr-affix-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px;margin:14px 0}.hmr-affix-table>div{border:1px solid #6a5140;background:#151a25;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}.hmr-affix-table b{color:#edcb94}</style><style>
 /* Bad Magicians — warm, illustrated card-table style */
@@ -1063,13 +1066,6 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
     @media(max-width:600px){.feedback-page{margin-top:0}.feedback-panel{padding:18px}.feedback-form textarea{min-height:175px}.feedback-form .feedback-submit{width:100%}.feedback-callout{margin-top:18px}}
 
 
-/* Stack Squad: keep the actual top card immediately below the action controls. */
-.ss-bm .ss-bm-topcard-action{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:15px;margin:0 12px 10px;padding:10px 14px;border:1px solid #a98c5a;border-radius:9px;background:linear-gradient(110deg,#1a3d2f,#223b2c);text-align:left;box-shadow:0 4px 10px #0004}
-.ss-bm .ss-bm-topcard-action>small{min-width:65px;font-size:12px;letter-spacing:.07em;color:#f5d39c}
-.ss-bm .ss-bm-topcard-action>.ss-pile{flex:0 0 65px}
-.ss-bm .ss-bm-topcard-action>span{flex:1;color:#edddbd;font-size:12px}
-.ss-bm .ss-bm-topcard-action+.ss-bm-own{margin:0 12px 12px;border-radius:10px;border:1px solid #ac8956;box-shadow:0 5px 16px #0005}
-@media(max-width:430px){.ss-bm .ss-bm-topcard-action{gap:10px;padding:7px 10px}.ss-bm .ss-bm-topcard-action>small{min-width:50px;font-size:10px}}
 </style>
 </head>
 <body>
@@ -1101,7 +1097,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '3.2',
+    stackSquad: '3.3',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2999,15 +2995,15 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           ${talking&&talker?`<div class="ss-bm-speech ${speechNew?'':'ss-bm-speech-still'}" data-ss-line="${talking.visualId||0}" style="--ss-speech-x:${speakerX}%"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
         </div>
         <div class="ss-bm-action-panel ss-bm-actions-first"><h3>${ss.turn===0?'Choose your action':esc(activeName)+' is thinking'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>
-      <div class="ss-bm-topcard ss-bm-topcard-action"><small>TOP CARD</small><div class="ss-pile ${animatePile?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
       <section class="ss-bm-own"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
         ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
       </section>
         <div class="ss-bm-felt">
+          <div class="ss-bm-center ss-bm-center-first"><div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${animatePile?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
+            <div class="ss-bm-felt-mark">STACK<br>SQUAD</div>
+            <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
           <div class="ss-bm-status"><div><small>HEALTH</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp} / ${ss.maxHp}</strong></div><div><small>CARDS STACKED</small><strong>${ss.pile.length} / 24</strong></div><div><small>TURN</small><strong>${ss.move}</strong></div></div>
           ${playerTiles()}
-          <div class="ss-bm-center"><div class="ss-bm-felt-mark">STACK<br>SQUAD</div>
-            <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
         </div>
       </div>
       <div class="ss-bm-info"><div>${chatView()}</div><section class="ss-surface ss-panel"><h3>Table history</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>Turn ${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Only the current top card may be examined. Clues are the only way to communicate card information.</p></section></div>
