@@ -1102,7 +1102,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '3.4',
+    stackSquad: '3.5',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2967,7 +2967,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   }
 
   function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||`<span class="ss-meta">Your hand is empty. You can still give clues${config.pure?'': ' or call votes'}.</span>`}</div>`;}
-  function humanPane(){if(turnHold)return `<p class="ss-action-result">${esc(turnHold.detail)}<span> Animation in progress — press Skip to move on.</span></p>`;if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
+  function humanPane(){if(turnHold)return '';if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
     if(pane==='clue'){
@@ -2999,7 +2999,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           <span class="ss-bm-scene-place">${esc(where.tag)}</span>
           ${talking&&talker?`<div class="ss-bm-speech ${speechNew?'':'ss-bm-speech-still'}" data-ss-line="${talking.visualId||0}" style="--ss-speech-x:${speakerX}%"><b>${esc(talker.name)}</b><span>${esc(talking.text)}</span></div>`:''}
         </div>
-        <div class="ss-bm-action-panel ss-bm-actions-first"><h3>${ss.turn===0?'Choose your action':esc(activeName)+' is thinking'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>
+        ${!turnHold&&(ss.turn===0||ss.mode==='voteDiscussion'||ss.mode==='respondVote')?`<div class="ss-bm-action-panel ss-bm-actions-first"><h3>${ss.turn===0?'Choose your action':'Your vote'}${paused?' · PAUSED':''}</h3>${humanPane()}</div>`:''}
       <section class="ss-bm-top-card-row" aria-label="Current top card">
         <div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${animatePile?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
       </section>
@@ -3007,9 +3007,6 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
         ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
       </section>
         <div class="ss-bm-felt">
-          <div class="ss-bm-center ss-bm-center-first">
-            <div class="ss-bm-felt-mark">STACK<br>SQUAD</div>
-            <div class="ss-bm-health"><small>TEAM HP</small>${hpHTML()}<span>${24-ss.pile.length} cards left to place</span></div></div>
           <div class="ss-bm-status"><div><small>HEALTH</small><strong class="${ss.hp<=2?'ss-hp-low':''}">${ss.hp} / ${ss.maxHp}</strong></div><div><small>CARDS STACKED</small><strong>${ss.pile.length} / 24</strong></div><div><small>TURN</small><strong>${ss.move}</strong></div></div>
           ${playerTiles()}
         </div>
