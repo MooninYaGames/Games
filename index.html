@@ -643,7 +643,7 @@
 .ss-bm-op-name{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px;margin-bottom:5px}
 .ss-bm-op-name strong{font:700 clamp(12px,1.9vw,19px) Georgia,serif;color:#ffe3b0}.ss-bm-op-name small{font-size:10px;color:#d2cab4}
 .ss-bm-opponent .ss-player-cards{display:flex;flex-wrap:wrap;gap:3px}.ss-bm-opponent .ss-player-cards button{border:none;background:none;padding:0;cursor:pointer}
-.ss-bm-opponent .ss-player-cards button:hover{transform:translateY(-3px)}.ss-bm-opponent .ss-card.sm{width:clamp(28px,3.5vw,40px);height:clamp(41px,5vw,56px);border-radius:4px;padding:2px}.ss-bm-opponent .ss-card.sm .ss-pip{font-size:clamp(18px,2.5vw,28px)}.ss-bm-opponent .ss-card.sm .ss-corner{font-size:11px}
+.ss-bm-opponent .ss-player-cards button:hover .ss-card{transform:translateY(-5px)}.ss-bm-opponent .ss-player-cards button.selected .ss-card{transform:translateY(-8px)}.ss-bm-opponent .ss-card.sm{width:clamp(28px,3.5vw,40px);height:clamp(41px,5vw,56px);border-radius:4px;padding:2px}.ss-bm-opponent .ss-card.sm .ss-pip{font-size:clamp(18px,2.5vw,28px)}.ss-bm-opponent .ss-card.sm .ss-corner{font-size:11px}
 .ss-bm-opp-clues{font-size:11px;color:#dbcb99;margin-top:5px}
 .ss-bm-center{display:grid;grid-template-columns:1fr .7fr 1fr;align-items:center;gap:10px;padding:10px 8px;margin:12px 0 0;min-height:133px;border:1px solid #a18a5e6b;border-radius:13px;background:radial-gradient(ellipse,#244b38,#18392d)}
 .ss-bm-topcard,.ss-bm-health{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}.ss-bm-topcard small,.ss-bm-health small{font-size:10px;color:#ddcaa5;letter-spacing:.09em;font-weight:900}
@@ -1093,7 +1093,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '2.8',
+    stackSquad: '2.9',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2816,7 +2816,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     return `<div class="ss-bm-opponents">${ss.players.slice(1).map((p,j)=>{const i=j+1,active=ss.turn===i&&!ss.over;
       return `<section class="ss-bm-opponent ${active?'active':''}" aria-label="${esc(getActor(i).name)}">
         <div class="ss-bm-op-name"><strong>${esc(getActor(i).name)}</strong><small>${p.hand.length} cards${p.lucky?' · Lucky goose':''}</small></div>
-        <div class="ss-player-cards">${p.hand.map((x,k)=>`<button type="button" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${ss.turn===0&&pane==='clue'?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}</button>`).join('')||'<small>Hand empty</small>'}</div>
+        <div class="ss-player-cards">${p.hand.map((x,k)=>{const selectable=ss.turn===0&&pane==='clue',picked=selectable&&clueTarget===i&&clueIndex===x.id;
+          return `<button type="button" class="${picked?'selected':''}" aria-pressed="${picked?'true':'false'}" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${selectable?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}</button>`;}).join('')||'<small>Hand empty</small>'}</div>
         <div class="ss-bm-opp-clues" aria-label="${p.tokens} clues remaining">${p.clueCards.map(x=>x.up?'◆':'◇').join(' ')}</div>
       </section>`;
     }).join('')}</div>`;
