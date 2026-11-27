@@ -1120,7 +1120,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '3.6',
+    stackSquad: '3.7',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2979,7 +2979,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     return `<div class="ss-bm-opponents">${ss.players.slice(1).map((p,j)=>{const i=j+1,active=ss.turn===i&&!ss.over,clueFocus=!!turnHold&&ss.actionFocus?.kind==='clue'&&ss.actionFocus.to===i;
       return `<section class="ss-bm-opponent ${active?'active':''} ${clueFocus?'ss-clue-recipient':''}" aria-label="${esc(getActor(i).name)}">
         <div class="ss-bm-op-name"><strong>${esc(getActor(i).name)}</strong><small>${p.hand.length} cards${p.lucky?' · Lucky goose':''}</small></div>
-        <div class="ss-player-cards">${p.hand.map((x,k)=>{const selectable=ss.turn===0&&pane==='clue',picked=selectable&&clueTarget===i&&clueIndex===x.id,clued=clueFocus&&ss.actionFocus.slot===x.id;
+        <div class="ss-player-cards">${p.hand.map((x,k)=>{const selectable=ss.mode==='ready'&&ss.turn===0&&!turnHold&&!paused&&ss.players[0].tokens>0&&ss.pile.length>0,picked=selectable&&pane==='clue'&&clueTarget===i&&clueIndex===x.id,clued=clueFocus&&ss.actionFocus.slot===x.id;
           return `<button type="button" class="${picked?'selected':''} ${clued?'ss-just-clued':''}" aria-pressed="${picked?'true':'false'}" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${selectable?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}${clued?`<span class="ss-clue-card-tag">${esc({higher:'Higher',lower:'Lower',sameSuit:'Same suit',differentSuit:'Different suit'}[ss.actionFocus.type])}</span>`:''}</button>`;}).join('')||'<small>Hand empty</small>'}</div>
         <div class="ss-bm-opp-clues" aria-label="${p.tokens} clues remaining">${p.clueCards.map(x=>x.up?'◆':'◇').join(' ')}</div>
       </section>`;
@@ -2990,6 +2990,10 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function humanPane(){if(turnHold)return '';if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
+    if(pane==='place'){
+      const pos=ss.players[0].hand.findIndex(x=>x.id===selectedCard)+1;
+      return `<div class="ss-clue-picker"><p><strong>Place your card ${pos}?</strong> You cannot see its face. It will be revealed and placed on the stack.</p><div class="ss-turn-actions"><button class="ss-btn ss-main-action" data-ss="place" ${selectedCard===null||paused?'disabled':''}>Place selected card</button><button class="ss-btn alt" data-ss="cancel">Cancel</button></div></div>`;
+    }
     if(pane==='clue'){
       const p=ss.players[0],top=ss.pile.at(-1)?.card;return `<div class="ss-clue-picker"><p><strong>Give a truthful clue.</strong> Spend 1 clue token to identify another player’s card relative to ${vcard(top)}.</p>${clueTarget!==null?`<p>Selected: ${esc(getActor(clueTarget).name)} · card ${ss.players[clueTarget].hand.findIndex(x=>x.id===clueIndex)+1}</p><div class="ss-actions">${clueValid(ss.players[clueTarget].hand.find(x=>x.id===clueIndex).card,top).map(c=>`<button class="ss-btn sm" data-ss="give" data-to="${clueTarget}" data-slot="${clueIndex}" data-clue="${c.type}">${esc(c.text)}</button>`).join('')}</div>`:'<p>Choose a face-up card from another player.</p>'}<button class="ss-btn alt sm" data-ss="cancel">Cancel</button></div>`;
     }
@@ -3124,14 +3128,14 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(a==='holdvote'&&ss.mode==='voteDiscussion'){const z=ss.vote;ss.mode='ready';return castVote(z.accuser,z.accused,true);}
     if(a==='cancelvote'&&ss.mode==='voteDiscussion'){ss.mode='ready';ss.vote=null;record('The accusation was withdrawn before voting; the turn is over.','vote');advance();render();return;}
     if(ss.turn!==0||paused)return;
-    if(a==='select'){selectedCard=el.dataset.slot;render();return;}
+    if(a==='select'){if(!ss.players[0].hand.some(x=>x.id===el.dataset.slot))return;selectedCard=el.dataset.slot;pane='place';clueTarget=null;clueIndex=null;render();return;}
     if(a==='place'){if(!selectedCard)return;return play(0,selectedCard);}
-    if(a==='clue'){if(ss.players[0].tokens>0&&ss.pile.length){pane='clue';render();}return;}
-    if(a==='target'&&pane==='clue'){clueTarget=Number(el.dataset.to);clueIndex=el.dataset.slot;render();return;}
+    if(a==='clue'){if(ss.players[0].tokens>0&&ss.pile.length){pane='clue';selectedCard=null;render();}return;}
+    if(a==='target'&&ss.players[0].tokens>0&&ss.pile.length){const to=Number(el.dataset.to);if(!ss.players[to]||to===0||!ss.players[to].hand.some(x=>x.id===el.dataset.slot))return;pane='clue';selectedCard=null;clueTarget=to;clueIndex=el.dataset.slot;render();return;}
     if(a==='give'){return giveClue(0,Number(el.dataset.to),el.dataset.slot,el.dataset.clue);}
     if(a==='vote'&&!config.pure){pane='vote';render();return;}
     if(a==='accuse'&&pane==='vote')return voteStart(Number(el.dataset.player));
-    if(a==='cancel'){pane=null;clueTarget=null;clueIndex=null;render();return;}
+    if(a==='cancel'){if(pane==='place')selectedCard=null;pane=null;clueTarget=null;clueIndex=null;render();return;}
   }
   function change(el){if(!el.dataset.ssChange)return;setCfg(el.dataset.ssChange,el.type==='checkbox'?el.checked:el.value);}
   function debug(){return {state:ss,config,possible:whoKnows,valid,deckSize:deck().length,characters:chars().map(x=>x.name),uniqueDialogueLines:dialogueLineCount(),nativePhase:SS_NATIVE_PHASE,voiceCounts:{...voiceCount},introCounts:Object.fromEntries(ORDER.map(id=>[CH.find(x=>x.id===id).name,(SS_AUTHORED[id]?.intro||[]).length]))};}
