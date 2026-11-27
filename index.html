@@ -802,7 +802,42 @@
 .ss-bm .ss-bm-top-card-row .ss-bm-topcard{gap:6px}
 .ss-bm .ss-bm-center-first{grid-template-columns:1fr 1fr}
 
-</style>
+/* Stack Squad rulebook only: distinguish rules from selectable turn actions. */
+.ss-bm-rulebook.ss-guide{max-width:940px}
+.ss-guide .ss-guide-header{gap:12px}
+.ss-guide .ss-guide-header p{max-width:650px;font-size:15px;line-height:1.5}
+.ss-guide .ss-guide-mode{display:inline-block;margin-top:8px;color:#f3d5a1;font:700 11px ui-sans-serif,system-ui,sans-serif;letter-spacing:1.5px}
+.ss-guide .ss-guide-section-label{font:800 10px ui-sans-serif,system-ui,sans-serif;letter-spacing:2px;color:#b5c8aa;margin-bottom:7px}
+.ss-guide .ss-surface h2{margin-bottom:12px}
+.ss-guide .ss-guide-subhead{font:700 18px Georgia,serif;color:#f2d6a9;margin:17px 0 6px}
+.ss-guide .ss-guide-token-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;border:1px solid #907e56;border-radius:10px;padding:12px;background:#152f25;margin:12px 0}
+.ss-guide .ss-guide-token{display:inline-flex;justify-content:center;align-items:center;width:42px;height:43px;color:#f6d79c;border:1px solid #aa8c5c;background:#2a422e;border-radius:9px;flex:none;font-weight:900}
+.ss-guide .ss-guide-token-row>span:last-child{flex:1 1 200px;font-size:13px;color:#dfd6c2;line-height:1.5}
+.ss-guide .ss-guide-physical{font-size:13px;line-height:1.55;padding:12px 15px;background:#20372d;border-radius:9px;border-left:3px solid #b99a62;color:#e8d6bb;margin-top:16px}
+.ss-guide .ss-guide-actions{display:grid;gap:18px;margin:18px 0}
+.ss-guide .ss-guide-action{background:#172d24;border:2px solid #c5a671;border-radius:12px;padding:18px 16px;overflow:hidden}
+.ss-guide .ss-guide-action-title{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.ss-guide .ss-guide-action-num{font:800 11px ui-sans-serif,system-ui,sans-serif;letter-spacing:1.1px;background:#e1bd79;color:#1e2b21;padding:8px 11px;border-radius:6px;white-space:nowrap}
+.ss-guide .ss-guide-action h3{font:700 clamp(20px,3.5vw,25px) Georgia,serif;color:#f9dfb0;margin:0}
+.ss-guide .ss-guide-action p{margin:8px 0 12px;line-height:1.55}
+.ss-guide .ss-guide-action-vote{border-color:#6f7d6b;background:#1b2d25}
+.ss-guide .ss-guide-action-vote .ss-guide-action-num{background:#697b69;color:#fff}
+.ss-guide .ss-guide-clue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.ss-guide .ss-guide-clue-grid div{background:#263e30;border:1px solid #66765d;padding:12px;border-radius:8px;color:#f1dfb6;font-weight:700;font-size:13px;line-height:1.4}
+.ss-guide .ss-guide-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.ss-guide .ss-guide-results>div{background:#233e30;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;color:#eee0c5;font-size:13px;line-height:1.4}
+.ss-guide .ss-guide-results>div>strong{color:#ffdd98;letter-spacing:1px;font-size:12px}
+.ss-guide .ss-guide-results span{color:#e3d9c4}
+.ss-guide .ss-guide-fine{font-size:13px}
+.ss-guide .ss-guide-outcome-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}
+.ss-guide .ss-guide-outcome-list>div{background:#1b3729;border:1px solid #92754f;border-radius:9px;padding:14px}
+.ss-guide .ss-guide-outcome-list>div>strong{color:#f6d99f;font-size:13px;letter-spacing:1.3px}
+.ss-guide .ss-guide-outcome-list p{margin:8px 0 0}
+.ss-guide .ss-guide-example .ss-rule-note{max-width:300px;line-height:1.45}
+.ss-guide .ss-surface[id],.ss-guide .ss-guide-action[id]{scroll-margin-top:15px}
+@media(max-width:600px){.ss-bm-rulebook.ss-guide{padding:9px 14px}.ss-guide .ss-guide-action{padding:15px 11px}.ss-guide .ss-guide-clue-grid,.ss-guide .ss-guide-results,.ss-guide .ss-guide-outcome-list{grid-template-columns:1fr}.ss-guide .ss-guide-action-title{gap:8px}.ss-guide .ss-guide-token{width:36px;height:39px}}
+
+  </style>
 <style id="hmr-affixes-style">.hmr-affix-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px;margin:14px 0}.hmr-affix-table>div{border:1px solid #6a5140;background:#151a25;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}.hmr-affix-table b{color:#edcb94}</style><style>
 /* Bad Magicians — warm, illustrated card-table style */
 .bm-shell,.bm-rulebook{--bm-cream:#f7e9cb;--bm-gold:#e5bb73;--bm-dim:#c2b498;color:var(--bm-cream);font-family:system-ui,sans-serif}
@@ -1120,7 +1155,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '4.3',
+    stackSquad: '4.4',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -3277,40 +3312,89 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
 
   function rules(){
     const ex=(r,s)=>card(cdef(r,s));
-    return `<article class="ss-shell ss-bm ss-rules ss-bm-rulebook">
-      <header class="ss-head"><div><div class="ss-kicker">ILLUSTRATED RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>Stack Squad</h1><p>${config.pure?'24 cards. Hidden hands. One team. Six starting HP.':'24 cards. Hidden hands. Six starting HP. One possible traitor.'}</p></div><a class="ss-btn" href="#stack-squad">Back to game</a></header>
-      <nav class="ss-rule-nav">${[['ss-rule-setup','Setup'],...(!config.pure?[['ss-rule-roles','Roles']]:[]),['ss-rule-stack','Stacking'],['ss-rule-clues','Clues'],...(!config.pure?[['ss-rule-votes','Voting']]:[]),['ss-rule-ending','Victory']].map(([id,label])=>`<a href="#stack-squad-rules/${id}">${label}</a>`).join('')}</nav>
-      <section class="ss-surface" id="ss-rule-setup"><h2>1. Set up the table</h2>
-        <p>Remove all ranks above 6 from the playable deck. The four suits from Ace (1) through 6 make <strong>24 unique cards</strong>. All are dealt. <strong>You cannot see your own hand</strong>, but you can see every other player's hand.</p>
-        <div class="ss-rule-cards">${[1,2,3,4,5,6].map(r=>ex(r,'S')).join('')}<span class="ss-rule-note">Six ranks in each of four suits. Aces count as 1; there is no rank wraparound.</span></div>
-        <table><thead><tr><th>Players</th><th>Hand sizes</th><th>Location</th></tr></thead><tbody><tr><td>3</td><td>8, 8, 8</td><td>Arctic camp</td></tr><tr><td>4</td><td>6 each</td><td>Opium den</td></tr><tr><td>5</td><td>Four get 5; the lucky goose gets 4</td><td>Seville</td></tr><tr><td>6</td><td>4 each</td><td>Belgrade</td></tr></tbody></table>
+    const token=(n)=>`<span class="ss-guide-token" aria-label="Clue token ${n}">✦</span>`;
+    const modeLabel=config.pure?'PURE COOPERATIVE':'HIDDEN TRAITOR';
+    const nav=[['ss-rule-goal','Goal'],['ss-rule-setup','Setup'],['ss-rule-talk','Communication'],['ss-rule-turn','Your actions'],['ss-rule-ending','End of game'],['ss-rule-options','Settings']];
+    return `<article class="ss-shell ss-bm ss-rules ss-bm-rulebook ss-guide">
+      <header class="ss-head ss-guide-header"><div><div class="ss-kicker">STACK SQUAD · RULEBOOK · v${GAME_VERSIONS.stackSquad}</div><h1>How to play</h1><p>One shared stack. 24 cards. You see everybody else's hand, but never your own.</p><span class="ss-guide-mode">${modeLabel}</span></div><a class="ss-btn" href="#stack-squad">Back to game</a></header>
+      <nav class="ss-rule-nav" aria-label="Rulebook sections">${nav.map(([id,label])=>`<a href="#stack-squad-rules/${id}">${label}</a>`).join('')}</nav>
+
+      <section class="ss-surface" id="ss-rule-goal">
+        <div class="ss-guide-section-label">GAME RULES</div><h2>The goal</h2>
+        <p>Work together to place <strong>all 24 cards</strong> onto a single face-up stack without running out of <strong>team HP</strong>. The cards are Ace (1) through 6 in all four suits.</p>
+        <div class="ss-rule-cards ss-guide-example">${[1,2,3,4,5,6].map(r=>ex(r,'S')).join('')}<span class="ss-rule-note">Six ranks × four suits = 24 playable cards. Ace is always 1.</span></div>
+        ${!config.pure?'<p><strong>One player is secretly the traitor.</strong> The traitor wants the team to lose HP or mistakenly convict an innocent player. The team can also win by correctly identifying and convicting the traitor.</p>':''}
+      </section>
+
+      <section class="ss-surface" id="ss-rule-setup">
+        <div class="ss-guide-section-label">GAME RULES</div><h2>Setting up</h2>
+        ${!config.pure?`<h3 class="ss-guide-subhead">Assign secret roles</h3>
+        <p>Deal one face-down face-card role to each player, with <strong>exactly one Queen of Spades</strong> among them. Its holder is the traitor; everyone else is loyal. Keep roles hidden until a conviction or the end.</p>
+        <p>Only the traitor may privately inspect and memorize their own playable cards once during setup. Other players never see their own cards.</p>`:''}
+        <h3 class="ss-guide-subhead">Deal the playable cards</h3>
+        <p>Shuffle the 24 playable cards and deal them face down. <strong>Each player sees everyone else's cards, but cannot see their own.</strong> The entire deck is dealt:</p>
+        <table><thead><tr><th>Players</th><th>Cards in each hand</th><th>Table</th></tr></thead><tbody>
+        <tr><td>3</td><td>8 each</td><td>Antarctica</td></tr><tr><td>4</td><td>6 each</td><td>China</td></tr><tr><td>5</td><td>Four players get 5; the <strong>Lucky Goose</strong> gets 4</td><td>Seville</td></tr><tr><td>6</td><td>4 each</td><td>Belgrade</td></tr></tbody></table>
         <div class="ss-rules-scenes">${[3,4,5,6].map(n=>`<figure><img src="${SS_SCENES[n]}" alt="${esc(VENUES[n].alt)}"><figcaption>${n} players · ${esc(VENUES[n].title)}</figcaption></figure>`).join('')}</div>
-        <p>Each player starts with <strong>three available clues</strong>. The team starts with <strong>6 HP</strong> by default, 10 on Baby Mode, or 4 on NIGHTMARE. Play clockwise: you, then the opponents from left to right. The starting player is chosen randomly.</p>
+        <h3 class="ss-guide-subhead">Give everyone 3 clue tokens</h3>
+        <div class="ss-guide-token-row">${[1,2,3].map(token).join('')}<span>Each player starts with <strong>3 available clues</strong>. Giving a clue spends one; a <strong>valid card placement restores only that player's 3 clues</strong>.</span></div>
+        <p>For a physical game, use cards ranked 7 and above as face-up clue markers and face-down health markers; flip a clue down when spent. In six-player games, a Joker can be used as an additional health marker. Digital games show these markers on screen.</p>
+        <h3 class="ss-guide-subhead">Set team health and turn order</h3>
+        <p>Choose starting HP: <strong>NIGHTMARE 4</strong>, <strong>Normal 6</strong> (default), or <strong>Baby Mode 10</strong>. The seating order is <strong>You → leftmost opponent → the next opponent to the right → … → You</strong>. The first seat to act is chosen <strong>randomly</strong>; play follows that seating order from then on.</p>
+        <div class="ss-guide-physical"><strong>Playing with real cards?</strong> Hold your cards facing outward so everybody else can see them but you cannot. ${config.pure?'':'During the secret setup, everyone closes their eyes while the traitor takes their one private look.'}</div>
       </section>
-      ${!config.pure?`<section class="ss-surface" id="ss-rule-roles"><h2>2. Secret roles</h2>
-        <div class="ss-rule-steps"><div><strong>Hidden traitor</strong><p>Each player gets a face-down face card. Exactly one is the Queen of Spades. Its holder is the traitor.</p></div><div><strong>One private peek</strong><p>Only the traitor may look at their own cards once, at the beginning. Memorize them before play starts.</p></div><div><strong>Pure co-op</strong><p>Enable Pure co-op in Settings to remove roles, traitor votes, and the hidden traitor.</p></div></div>
-        <p>The traitor wins if the team loses all HP or convicts an innocent. Everyone else wins by stacking all 24 cards or correctly convicting the traitor.</p>
-      </section>`:''}
-      <section class="ss-surface" id="ss-rule-stack"><h2>${config.pure?'2':'3'}. Place a card</h2>
-        <p>Choose one of your own <strong>unknown</strong> cards. Once chosen, it is revealed and placed face up on the single stack—even if invalid.</p>
-        <div class="ss-rule-cards">${ex(4,'S')}<strong>→</strong>${ex(5,'H')}<span class="ss-rule-note"><strong>Valid:</strong> 5♥ is 1 higher than 4♠. Also valid: any 3, 4 or 5, or any spade.</span></div>
-        <div class="ss-rule-cards">${ex(4,'S')}<strong>→</strong>${ex(6,'D')}<span class="ss-rule-note"><strong>Invalid:</strong> 6♦ is two ranks higher and the suit differs. Lose 1 HP, but 6♦ stays on top.</span></div>
-        <p>The <strong>first card</strong> is always valid. A valid play restores that player's 3 clues. An invalid play costs 1 team HP. Only the newest card is visible; do not look under or search through the stack.</p>
+
+      <section class="ss-surface" id="ss-rule-talk">
+        <div class="ss-guide-section-label">GAME RULES</div><h2>Communication</h2>
+        <p><strong>No player may reveal or hint at information about cards in anyone's hand</strong> through ordinary conversation, gestures, or coded signals.</p>
+        <p><strong>Give a clue</strong> is the <em>only</em> permitted way to communicate information about a card in someone's hand. Ordinary character chatter is fine as long as it does not reveal card facts.</p>
       </section>
-      <section class="ss-surface" id="ss-rule-clues"><h2>${config.pure?'3':'4'}. Give a truthful clue</h2>
-        <p>Instead of playing, spend one of your three clue tokens. Point to <strong>one specific card in another player's hand</strong> and give exactly one truthful clue relative to the current top card.</p>
-        <div class="ss-rule-steps"><div><strong>Rank</strong><p>“Higher than” or “Lower than” the current top card.</p></div><div><strong>Suit</strong><p>“Same suit as” or “Different suit from” the current top card.</p></div><div><strong>Not allowed</strong><p>Never say “same rank.” ${config.pure?'Clues must be truthful.':'No false clues, even from the traitor.'}</p></div></div>
-        <div class="ss-rule-cards">${ex(3,'H')}<strong>→</strong>${ex(5,'C')}<span class="ss-rule-note">With 3♥ on top, you may truthfully tell a player their 5♣ is <strong>higher</strong> or a <strong>different suit</strong>.</span></div>
-        <p>You cannot give clues before the first card is stacked or after spending all three tokens. <strong>Only the Give a Clue action</strong> may convey any information about cards in hands—no hints, gestures, or coded chatter.</p>
+
+      <section class="ss-surface" id="ss-rule-turn">
+        <div class="ss-guide-section-label">CHOOSE ONE ON YOUR TURN</div><h2>Your turn: selectable actions</h2>
+        <p>When your turn arrives, choose <strong>one action</strong> below. These are the actions you can select in the game—not separate setup steps.</p>
+        <div class="ss-guide-actions">
+          <div class="ss-guide-action" id="ss-rule-stack">
+            <div class="ss-guide-action-title"><span class="ss-guide-action-num">ACTION 1</span><h3>Place a card</h3></div>
+            <p>Choose one of your <strong>unknown</strong> cards and commit it to the stack. Once revealed, you cannot change your choice. <strong>The first card placed is always valid.</strong></p>
+            <p>After that, a card is <strong>valid</strong> if it matches the top card's <strong>suit</strong> OR its rank is <strong>within 1</strong> of the top card (including the same rank).</p>
+            <div class="ss-rule-cards ss-guide-example">${ex(4,'S')}<strong>→</strong>${ex(5,'H')}<span class="ss-rule-note"><strong>Valid:</strong> 5♥ is one higher than 4♠. Any 3, 4, 5, or spade also works.</span></div>
+            <div class="ss-rule-cards ss-guide-example">${ex(4,'S')}<strong>→</strong>${ex(6,'D')}<span class="ss-rule-note"><strong>Invalid:</strong> 6♦ is two higher and has a different suit.</span></div>
+            <div class="ss-guide-results"><div><strong>VALID</strong><span>The card stays on top. <strong>Your 3 clue tokens refresh</strong>.</span></div><div><strong>INVALID</strong><span>The card <strong>still stays on top</strong>. The team loses <strong>1 HP</strong>.</span></div></div>
+            <p class="ss-guide-fine">The stack stays one card-width tall. You can look at <strong>only its current top card</strong>, never the cards underneath. Remember earlier cards yourself.</p>
+          </div>
+
+          <div class="ss-guide-action" id="ss-rule-clues">
+            <div class="ss-guide-action-title"><span class="ss-guide-action-num">ACTION 2</span><h3>Give a clue</h3></div>
+            <p>Spend <strong>one of your own clue tokens</strong>. Select <strong>one specific card</strong> in another player's hand, then truthfully say <strong>one</strong> of these four things about that card compared with the current top card:</p>
+            <div class="ss-guide-clue-grid"><div>Higher rank than the top card</div><div>Lower rank than the top card</div><div>Same suit as the top card</div><div>Different suit from the top card</div></div>
+            <div class="ss-rule-cards ss-guide-example">${ex(3,'H')}<strong>→</strong>${ex(5,'C')}<span class="ss-rule-note">With 3♥ on top, you may tell someone their 5♣ is <strong>higher</strong> or a <strong>different suit</strong>.</span></div>
+            <p><strong>Not allowed:</strong> Saying a card has the same <em>rank</em> as the top card, or giving an untrue clue${config.pure?'.':', even if you are the traitor.'}</p>
+            <p>You need at least one unused clue token and a card already on the stack. After spending all three, you cannot give another clue until a <strong>valid placement</strong> refreshes your tokens. <strong>You can still give clues when your own hand is empty.</strong></p>
+          </div>
+
+          ${!config.pure?`<div class="ss-guide-action ss-guide-action-vote" id="ss-rule-votes">
+            <div class="ss-guide-action-title"><span class="ss-guide-action-num">ACTION 3 · TRAITOR MODE ONLY</span><h3>Call for a vote</h3></div>
+            <p>Accuse another player of being the traitor. The group discusses, then votes. Conviction requires a <strong>strict majority of all players</strong> (2 of 3, 3 of 4, 3 of 5, or 4 of 6).</p>
+            <div class="ss-guide-results"><div><strong>VOTE FAILS</strong><span>Nothing is revealed. Your turn is spent.</span></div><div><strong>VOTE PASSES</strong><span>The accused reveals their role: <strong>traitor = team wins</strong>; <strong>innocent = team loses</strong>.</span></div></div>
+          </div>`:''}
+        </div>
       </section>
-      ${!config.pure?`<section class="ss-surface" id="ss-rule-votes"><h2>5. Call a traitor vote</h2>
-        <p>As your turn action, accuse another player and hold a discussion. Each player votes. A <strong>strict majority of all players</strong> must vote YES to convict (2/3, 3/4, 3/5, or 4/6).</p>
-        <div class="ss-rule-steps"><div><strong>Vote fails</strong><p>No one is revealed. The accuser uses up their turn.</p></div><div><strong>Traitor convicted</strong><p>Reveal the Queen of Spades. The loyal team wins immediately.</p></div><div><strong>Innocent convicted</strong><p>The traitor wins immediately. A wrong accusation is risky.</p></div></div>
-      </section>`:''}
-      <section class="ss-surface" id="ss-rule-ending"><h2>${config.pure?'4':'6'}. Ending the game</h2>
-        <p>${config.pure?'<strong>Team wins:</strong> All 24 cards are stacked while the team still has HP. <strong>Team loses:</strong> HP reaches zero, including on the last card.':'<strong>Team wins:</strong> All 24 cards are stacked without reaching 0 HP, or the real traitor is convicted. <strong>Team loses:</strong> HP reaches zero (including if the 24th card causes the final loss) or an innocent player is convicted.'}</p>
-        <p><strong>${dialogueLineCount().toLocaleString('en-US')} unique character dialogue lines</strong> are available across all settings, scenes, and characters. This total is calculated directly from the game's selectable dialogue; adding or removing lines updates it automatically. Stanisław, Heinrich, and Sister Guadalupe each use about 80% English lines and 20% native-language lines. Darell and Tony speak only English.</p>
-        <p>Teammate intelligence: Dumb as Rocks, Average Joe, or Stack’n Genius. ${config.pure?'':'Traitor intelligence: Dumb as Rocks, Average Joe, or Conniving. ' }Pause stops play; Skip advances past the current animation. Available voices depend on your device.</p>
+
+      <section class="ss-surface" id="ss-rule-ending">
+        <div class="ss-guide-section-label">GAME RULES</div><h2>When the game ends</h2>
+        <div class="ss-guide-outcome-list">
+          <div><strong>TEAM WINS</strong><p>All <strong>24 cards</strong> reach the stack while at least <strong>1 HP</strong> remains.${config.pure?'':' The team also wins by convicting the actual traitor.'}</p></div>
+          <div><strong>TEAM LOSES</strong><p>Team HP reaches <strong>0</strong>—even if the last card was the 24th.${config.pure?'':' Convicting an innocent player also loses the game.'}</p></div>
+        </div>
+        ${!config.pure?'<p>The traitor wins when the team loses, and loses when the team wins.</p>':''}
+      </section>
+
+      <section class="ss-surface" id="ss-rule-options">
+        <div class="ss-guide-section-label">GAME OPTIONS</div><h2>Settings and extras</h2>
+        <p><strong>3–6 players</strong> · <strong>HP:</strong> 4 / 6 / 10 · <strong>Team AI:</strong> Dumb as Rocks, Average Joe, Stack’n Genius.${config.pure?'':' <strong>Traitor AI:</strong> Dumb as Rocks, Average Joe, Conniving.'}</p>
+        <p>Pause stops play. Skip advances the current animation. Each scene has its own music, with separate music and voice/effects volume controls.</p>
+        <p><strong>${dialogueLineCount().toLocaleString('en-US')} unique character dialogue lines.</strong> This count is calculated from the selectable game dialogue and updates automatically when lines change.</p>
         <a class="ss-btn" href="#stack-squad">Return to game</a>
       </section>
     </article>`;
