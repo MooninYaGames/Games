@@ -622,7 +622,7 @@
 .ss-bm-text-btn,.ss-bm-pause{border:0;background:transparent;color:#d5c8b4;font-size:12px;padding:5px;cursor:pointer}
 .ss-bm-pause{font-size:17px;color:#e9ebde;background:transparent;border:1px solid #7b8774;border-radius:7px;min-width:35px;min-height:34px}
 .ss-bm-stage{border:4px solid #67492d;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at center,#285647,#173d33 70%,#132e27);box-shadow:inset 0 0 40px #0005,0 8px 24px #0006}
-.ss-bm-banner{min-height:70px;background:linear-gradient(120deg,#161e1a,#353a2d);border-bottom:1px solid #9c8455;padding:9px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;animation:ss-bm-announcement 2.1s ease both}
+.ss-bm-banner{min-height:70px;background:linear-gradient(120deg,#161e1a,#353a2d);border-bottom:1px solid #9c8455;padding:9px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;animation:ss-bm-announcement 2.5s ease both}
 .ss-bm-banner strong{font:900 clamp(19px,4vw,29px) Georgia,serif;color:#f6dba7}.ss-bm-banner span{font-size:12px;color:#e3d8bc;max-width:720px;line-height:1.35}
 @keyframes ss-bm-announcement{0%{opacity:.4;filter:brightness(1.3)}20%{opacity:1}65%{box-shadow:inset 0 0 20px #e6c27e2d}100%{opacity:1}}
 .ss-bm-scene{position:relative;background:#162b25;overflow:hidden}.ss-bm-scene>img{display:block;width:100%;aspect-ratio:3/1.65;object-fit:cover;object-position:center 43%}
@@ -779,6 +779,24 @@
 
 /* Top card remains INSIDE the felt/table information, never as an action footer. */
 .ss-bm .ss-bm-center-first{margin:0 0 12px}
+/* Stack Squad v3.6: clearer turn tracking using existing table surfaces only. */
+.ss-bm-banner{animation-duration:2.5s}
+.ss-bm-banner.ss-action-success{border-bottom:2px solid #94d4a1}
+.ss-bm-banner.ss-action-failure{border-bottom:2px solid #e98d80}
+.ss-bm-banner.ss-action-clue{border-bottom:2px solid #9ec8e9}
+.ss-bm .ss-bm-opponent.active{border-color:#ffd996;box-shadow:0 0 0 2px #e5b96b9e,0 0 17px #f2c56d59}
+.ss-bm .ss-bm-own.ss-active-human{border-color:#f6d58f;box-shadow:inset 0 0 0 2px #f7d18d77,0 0 18px #d9ac5850}
+.ss-bm .ss-bm-own.ss-active-human h3::before{content:'● ';color:#f4d18b;font-size:.68em;vertical-align:middle}
+.ss-bm .ss-bm-opponent.ss-clue-recipient,.ss-bm .ss-bm-own.ss-clue-recipient{border-color:#e7e3a0;box-shadow:0 0 0 2px #eedda57d,0 0 18px #efcc6d55}
+.ss-bm .ss-bm-opponent .ss-player-cards button.ss-just-clued{position:relative;z-index:2;overflow:visible}
+.ss-bm .ss-bm-opponent .ss-player-cards button.ss-just-clued .ss-card{transform:translateY(-8px)!important;box-shadow:0 0 0 3px #f2d693,0 6px 13px #0008;animation:ss-clue-emphasis 1.2s ease-out both}
+.ss-bm .ss-clue-card-tag{position:absolute;left:50%;top:100%;transform:translate(-50%,3px);white-space:nowrap;font-size:9px;font-weight:850;color:#352614;background:#f2d693;border:1px solid #9e7e45;padding:2px 4px;border-radius:4px;z-index:4}
+.ss-bm .ss-hidden-slot.ss-just-clued{box-shadow:0 0 0 2px #f2d693,0 0 15px #f2d69366;transform:translateY(-5px)}
+.ss-bm .ss-bm-banner.ss-action-failure strong{color:#ffb8aa}
+.ss-bm .ss-bm-banner.ss-action-success strong{color:#d0ffcf}
+@keyframes ss-clue-emphasis{0%{filter:brightness(1.6);transform:translateY(0)}100%{filter:brightness(1);transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){.ss-bm .ss-bm-opponent .ss-player-cards button.ss-just-clued .ss-card{animation:none}}
+
 /* Stack Squad: actions, top card, own hand, and table information in that order. */
 .ss-bm .ss-bm-top-card-row{margin:12px 12px 0;padding:12px 10px;background:radial-gradient(ellipse at center,#315b42,#18392d);border:1px solid #a18a5e9c;border-radius:12px}
 .ss-bm .ss-bm-top-card-row .ss-bm-topcard{gap:6px}
@@ -1102,7 +1120,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '3.5',
+    stackSquad: '3.6',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2778,7 +2796,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const hpPool=shuffle(residue).slice(0,config.count===6?4:5);
     if(config.count===6)hpPool.push({id:'joker',r:0,s:'J'});
     const first=Math.floor(Math.random()*players.length);
-    ss={players,traitor,hp:config.hp,maxHp:config.hp,hpPool,turn:first,first,move:1,pile:[],log:[],over:null,lastActor:first,vote:null,mode:config.pure?(config.count===5?'lucky':'ready'):'role',lucky:players.findIndex(p=>p.lucky)};
+    ss={players,traitor,hp:config.hp,maxHp:config.hp,hpPool,turn:first,first,move:1,pile:[],log:[],actionFocus:null,over:null,lastActor:first,vote:null,mode:config.pure?(config.count===5?'lucky':'ready'):'role',lucky:players.findIndex(p=>p.lucky)};
     screen='game';
     if(config.pure){
       record('Pure cooperative game: work together to place all 24 cards.','system');
@@ -2794,7 +2812,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const humanWon=humanTraitor?!teamSuccess:teamSuccess;
     ss.over={why,actor,teamSuccess,humanWon};ss.lastActor=actor;screen='game';pane=null;ss.mode='over';clearTimeout(aiTick);stopSpeech();ping(humanWon?'win':'lose');quote(teamSuccess?'victory':'defeat',getActor(actor).id);render();
   }
-  function advance(){if(!ss||ss.over)return;ss.move++;ss.turn=(ss.turn+1)%ss.players.length;let loop=0;while(ss.players[ss.turn].hand.length===0&&ss.players[ss.turn].tokens===0&&loop++<ss.players.length){ss.turn=(ss.turn+1)%ss.players.length;ss.move++;}
+  function advance(){if(!ss||ss.over)return;ss.actionFocus=null;ss.move++;ss.turn=(ss.turn+1)%ss.players.length;let loop=0;while(ss.players[ss.turn].hand.length===0&&ss.players[ss.turn].tokens===0&&loop++<ss.players.length){ss.turn=(ss.turn+1)%ss.players.length;ss.move++;}
     if(loop>=ss.players.length)return finish('No available moves',ss.lastActor,false);
     pane=null;clueTarget=null;clueIndex=null;selectedCard=null;selectedPlayer=null;ss.mode='ready';
   }
@@ -2803,7 +2821,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const old=ss.pile[ss.pile.length-1]?.card||null,got=p.hand.splice(at,1)[0],okay=valid(got.card,old),name=getActor(i).name;
     ss.pile.push({card:got.card,who:i,okay,move:ss.move});p.good+=okay?1:0;p.failed+=okay?0:1;p.sus+=okay?-0.12:1;
     if(okay){p.tokens=3;p.clueCards.forEach(x=>x.up=true);}else{ss.hp--;}
-    record(`${name} placed ${vcard(got.card)} — ${okay?'VALID, refreshed 3 clues':`INVALID, −1 HP (now ${ss.hp})`}.`);
+    record(`${name} played ${vcard(got.card)} — ${okay?`valid; ${i===0?'your':`${name}’s`} clues refreshed`:`invalid; −1 HP (${ss.hp} left)`}.`);
+    ss.actionFocus={kind:'play',who:i,okay,move:ss.move};
     ss.lastActor=i;ping(okay?'play':'wrong');
     const suspiciousWitnesses=!config.pure&&!okay&&ss.pile.length>=3
       ?ss.players.map((_,ix)=>ix).filter(ix=>ix>0&&ix!==i):[];
@@ -2821,7 +2840,8 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const cl=clueValid(obj.card,top).find(x=>x.type===type);if(!cl)return;
     p.tokens--;const spent=p.clueCards.find(c=>c.up);if(spent)spent.up=false;
     const info={type,slot,top:{r:top.r,s:top.s},move:ss.move,who:i};target.clues.push(info);
-    record(`${getActor(i).name} told ${getActor(to).name}: card ${target.hand.findIndex(x=>x.id===slot)+1} is ${cl.text.toLowerCase()} versus ${vcard(top)}. (${p.tokens} clues left)`);
+    record(`${getActor(i).name} → ${getActor(to).name}, card ${target.hand.findIndex(x=>x.id===slot)+1}: ${{higher:'higher than',lower:'lower than',sameSuit:'same suit as',differentSuit:'different suit from'}[type]} ${vcard(top)}. (${p.tokens} clues left)`);
+    ss.actionFocus={kind:'clue',who:i,to,slot,type,move:ss.move};
     ss.lastActor=i;ping('clue');quote('clue',getActor(i).id,{kind:'clue',clueType:type,targetName:getActor(to).name,cardIndex:target.hand.findIndex(x=>x.id===slot)+1});
     beginHold(()=>advance(),`${getActor(i).name.toUpperCase()} GAVE A CLUE`,`Clue to ${getActor(to).name}: card ${target.hand.findIndex(x=>x.id===slot)+1} is ${{higher:'higher than',lower:'lower than',sameSuit:'the same suit as',differentSuit:'a different suit from'}[type]} ${vcard(top)}.`,i);
   }
@@ -2837,7 +2857,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       raw.push(yes);
     }
     const yes=raw.filter(Boolean).length,pass=yes>=req;
-    record(`${getActor(accuser).name} called a vote on ${getActor(accused).name}: ${yes}/${voters} YES, required ${req} — ${pass?'CONVICTED':'motion failed'}.`,'vote');
+    record(`${getActor(accuser).name} called a vote on ${getActor(accused).name} — ${yes}/${voters} YES; ${pass?'convicted':'vote failed'}.`,'vote');
     ping('vote');
     ss.lastActor=accuser;
     if(pass){const correct=accused===ss.traitor;beginHold(()=>finish(correct?'Traitor convicted':'An innocent was convicted',accuser,correct),'TRAITOR VOTE PASSED',`${yes} of ${voters} voted to convict ${getActor(accused).name}.`,accuser);}
@@ -2847,7 +2867,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     ss.vote={accuser,accused};
     // Voting has a short in-character discussion phase before any ballots are counted.
     ss.mode=accuser===0?'voteDiscussion':'respondVote';pane=null;
-    record(`${getActor(accuser).name} accused ${getActor(accused).name}. The group discusses before voting.`,'vote');
+    record(`${getActor(accuser).name} accused ${getActor(accused).name} — discussion opened.`,'vote');
     // A named NPC accuser makes a firm accusation; when the human accuses,
     // the accused NPC immediately answers instead. The innocent/guilty role remains secret.
     if(accuser>0)traitorRemark('certain',accuser,accused);
@@ -2917,7 +2937,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     if(!ss||screen!=='game'||ss.over||paused)return;
     saveSession();
     if(turnHold)armHold();
-    else if(!['role','peek','lucky','first'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,2000);
+    else if(!['role','peek','lucky','first'].includes(ss.mode)&&ss.turn!==0&&ss.mode!=='respondVote'&&ss.mode!=='voteDiscussion')aiTick=setTimeout(botChoose,2500);
   }
   function enter(active){if(!active){clearTimeout(aiTick);stopMusicLoop();disarmHold();stopSpeech();if(screen==='game'){if(turnHold)freezeHold();screen='title';paused=false;saveSession();}}
     else if(ss&&screen==='game'){afterRender();}}
@@ -2956,17 +2976,17 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
 
   function hpHTML(){return `<div class="ss-hp-cards">${Array.from({length:ss.maxHp},(_,j)=>`<span class="${j>=ss.hp?'off':''}" title="${j>=ss.hp?'Lost HP':'Remaining HP'}"></span>`).join('')}</div>`;}
   function playerTiles(){
-    return `<div class="ss-bm-opponents">${ss.players.slice(1).map((p,j)=>{const i=j+1,active=ss.turn===i&&!ss.over;
-      return `<section class="ss-bm-opponent ${active?'active':''}" aria-label="${esc(getActor(i).name)}">
+    return `<div class="ss-bm-opponents">${ss.players.slice(1).map((p,j)=>{const i=j+1,active=ss.turn===i&&!ss.over,clueFocus=!!turnHold&&ss.actionFocus?.kind==='clue'&&ss.actionFocus.to===i;
+      return `<section class="ss-bm-opponent ${active?'active':''} ${clueFocus?'ss-clue-recipient':''}" aria-label="${esc(getActor(i).name)}">
         <div class="ss-bm-op-name"><strong>${esc(getActor(i).name)}</strong><small>${p.hand.length} cards${p.lucky?' · Lucky goose':''}</small></div>
-        <div class="ss-player-cards">${p.hand.map((x,k)=>{const selectable=ss.turn===0&&pane==='clue',picked=selectable&&clueTarget===i&&clueIndex===x.id;
-          return `<button type="button" class="${picked?'selected':''}" aria-pressed="${picked?'true':'false'}" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${selectable?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}</button>`;}).join('')||'<small>Hand empty</small>'}</div>
+        <div class="ss-player-cards">${p.hand.map((x,k)=>{const selectable=ss.turn===0&&pane==='clue',picked=selectable&&clueTarget===i&&clueIndex===x.id,clued=clueFocus&&ss.actionFocus.slot===x.id;
+          return `<button type="button" class="${picked?'selected':''} ${clued?'ss-just-clued':''}" aria-pressed="${picked?'true':'false'}" aria-label="${esc(getActor(i).name)} card ${k+1}: ${esc(full(x.card))}" ${selectable?'data-ss="target" data-to="'+i+'" data-slot="'+x.id+'"':''}>${card(x.card,true)}${clued?`<span class="ss-clue-card-tag">${esc({higher:'Higher',lower:'Lower',sameSuit:'Same suit',differentSuit:'Different suit'}[ss.actionFocus.type])}</span>`:''}</button>`;}).join('')||'<small>Hand empty</small>'}</div>
         <div class="ss-bm-opp-clues" aria-label="${p.tokens} clues remaining">${p.clueCards.map(x=>x.up?'◆':'◇').join(' ')}</div>
       </section>`;
     }).join('')}</div>`;
   }
 
-  function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||`<span class="ss-meta">Your hand is empty. You can still give clues${config.pure?'': ' or call votes'}.</span>`}</div>`;}
+  function humanCards(){const p=ss.players[0];return `<div class="ss-yourcards">${p.hand.map((x,k)=>`<div class="ss-hidden-slot ${selectedCard===x.id?'selected':''} ${turnHold&&ss.actionFocus?.kind==='clue'&&ss.actionFocus.to===0&&ss.actionFocus.slot===x.id?'ss-just-clued':''}"><button type="button" data-ss="select" data-slot="${x.id}" aria-label="Select your hidden card ${k+1}">${card(null,false,true)}</button><div class="ss-meta">Card ${k+1}</div><div class="ss-slot-sub" title="${esc(described(x.id))}">${esc(described(x.id))}</div></div>`).join('')||`<span class="ss-meta">Your hand is empty. You can still give clues${config.pure?'': ' or call votes'}.</span>`}</div>`;}
   function humanPane(){if(turnHold)return '';if(ss.mode==='role'||ss.mode==='peek'||ss.mode==='lucky')return `<p class="ss-helper">Reveal your role to begin.</p>`;if(ss.mode==='voteDiscussion')return `<div class="ss-vote-panel"><strong>Discussion: You accuse ${esc(getActor(ss.vote.accused).name)}</strong><p>Think carefully about the evidence before calling for the group vote. If the team convicts an innocent player, the traitor wins immediately.</p><div class="ss-actions"><button class="ss-btn" data-ss="holdvote">Hold vote</button><button class="ss-btn alt" data-ss="cancelvote">Withdraw accusation</button></div></div>`;
     if(ss.mode==='respondVote')return `<div class="ss-vote-panel"><strong>${esc(getActor(ss.vote.accuser).name)} accuses ${esc(getActor(ss.vote.accused).name)}</strong><p>The group has discussed the accusation. Cast your own vote; a strict majority is required. ${ss.vote.accused===0?'You are the accused.':''}</p><div class="ss-actions"><button class="ss-btn" data-ss="ballot" data-yes="1">Vote YES</button><button class="ss-btn alt" data-ss="ballot" data-yes="0">Vote NO</button></div></div>`;
     if(ss.turn!==0)return `<p class="ss-helper">${esc(getActor(ss.turn).name)} is considering their next action. Each AI can see everyone else’s cards, but not their own.</p>`;
@@ -2979,7 +2999,6 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
   function chatView(){return `<section class="ss-surface ss-panel"><h3>Table chatter</h3>${chatter.length?`<div class="ss-chat"><span class="who">${esc(CH.find(c=>c.id===chatter[0].speaker).name)}</span><p>${esc(chatter[0].text)}</p></div>`:'<p class="ss-meta">The table is quiet for now.</p>'}<div class="ss-chat-list">${chatter.slice(1,8).map(l=>`<div class="ss-chat"><span class="who">${esc(CH.find(c=>c.id===l.speaker).name)}</span><p>${esc(l.text)}</p></div>`).join('')}</div></section>`;}
   function live(){
     const t=ss.pile.at(-1),where=VENUES[config.count],activeName=getActor(ss.turn).name;
-    const latest=ss.log.find(x=>x.kind!=='banter');
     const talking=ss.speechLine,talker=talking&&CH.find(c=>c.id===talking.speaker);
     const speakerX=talker?(SPEECH_X[config.count]?.[talker.id]??50):50;
     const speechNew=!!talking&&lastPaintedSpeechId!==talking.visualId;
@@ -2988,12 +3007,12 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
     const animatePile=!!t&&lastPaintedPileKey!==pileKey;
     lastPaintedPileKey=pileKey;
     const bannerTitle=turnHold?.title||(ss.mode==='lucky'?'LUCKY GOOSE':ss.mode==='role'?'SECRET ROLE':paused?'GAME PAUSED':ss.turn===0?'YOUR TURN':activeName.toUpperCase()+'’S TURN');
-    const bannerDetail=turnHold?.detail||(ss.mode==='lucky'?'A special four-card hand has been dealt.':ss.mode==='role'?'Reveal your role before the game begins.':paused?'The table waits until you resume.':latest?.text||'The cards are dealt. Make your move.');
+    const bannerDetail=turnHold?.detail||(ss.mode==='lucky'?'A special four-card hand has been dealt.':ss.mode==='role'?'Reveal your role before the game begins.':paused?'The table waits until you resume.':ss.turn===0?'Choose to place a card or give a clue.':`${activeName} is choosing an action.`);
     return `<div class="ss-shell ss-bm ss-bm-game">
       <div class="ss-bm-topline"><span>STACK SQUAD</span><span>v${GAME_VERSIONS.stackSquad}</span><span>${config.count} players · ${config.pure?'Pure co-op':'Traitor game'}</span>
         <button class="ss-bm-text-btn" data-ss="title">Title screen</button><a href="#stack-squad-rules">Rules</a><span class="ss-bm-control-pair"><button type="button" class="ss-bm-pause" data-ss="pause" aria-label="${paused?'Resume game':'Pause game'}">${paused?'▶':'⏸'}</button><button type="button" class="ss-bm-skip" data-ss="skip" ${paused||(!turnHold&&(ss.turn===0||ss.mode!=='ready'))?'disabled':''} title="Skip the current animation" aria-label="Skip animation">⏭ Skip</button></span></div>
       <div class="ss-bm-stage">
-        <div class="ss-bm-banner ${turnHold?'ss-bm-animating':''} ${ss.mode==='first'?'ss-bm-first-announce':''}"><strong>${esc(bannerTitle)}</strong>
+        <div class="ss-bm-banner ${turnHold?'ss-bm-animating':''} ${ss.mode==='first'?'ss-bm-first-announce':''} ${turnHold&&ss.actionFocus?.kind==='play'?(ss.actionFocus.okay?'ss-action-success':'ss-action-failure'):turnHold&&ss.actionFocus?.kind==='clue'?'ss-action-clue':''}"><strong>${esc(bannerTitle)}</strong>
           <span>${esc(bannerDetail)}</span></div>
         <div class="ss-bm-scene"><img src="${scene()}" alt="${esc(where.alt)}">
           <span class="ss-bm-scene-place">${esc(where.tag)}</span>
@@ -3003,7 +3022,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
       <section class="ss-bm-top-card-row" aria-label="Current top card">
         <div class="ss-bm-topcard"><small>TOP CARD</small><div class="ss-pile ${animatePile?'ss-reveal':''}">${t?card(t.card):card(null,false,true)}</div><span>${t?'Placed by '+esc(getActor(t.who).name):'Any first card is valid'}</span></div>
       </section>
-      <section class="ss-bm-own"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
+      <section class="ss-bm-own ${ss.turn===0&&!ss.over?'ss-active-human':''} ${turnHold&&ss.actionFocus?.kind==='clue'&&ss.actionFocus.to===0?'ss-clue-recipient':''}"><header><h3>YOUR HAND <small>Each player can not see their own cards</small></h3>${!config.pure?`<span class="ss-bm-role">${ss.traitor===0?'You are the traitor':'You are loyal'}</span>`:''}</header>
         ${humanCards()}<div class="ss-bm-own-clues"><span>Clues available:</span>${ss.players[0].clueCards.map((x,i)=>`<span class="ss-clue-token ${x.up?'':'used'}">${x.up?'✦':'✕'} ${i+1}</span>`).join('')}</div>
       </section>
         <div class="ss-bm-felt">
@@ -3011,7 +3030,7 @@ const INTEL=['Dumb as Rocks','Average Joe','Conniving'];
           ${playerTiles()}
         </div>
       </div>
-      <div class="ss-bm-info"><div>${chatView()}</div><section class="ss-surface ss-panel"><h3>Table history</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>Turn ${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Only the current top card may be examined. Clues are the only way to communicate card information.</p></section></div>
+      <div class="ss-bm-info"><div>${chatView()}</div><section class="ss-surface ss-panel"><h3>Recent actions</h3><div class="ss-log">${ss.log.filter(x=>x.kind!=='banter').slice(0,16).map(x=>`<div class="ss-log-entry"><small>Turn ${x.turn}</small>${esc(x.text)}</div>`).join('')}</div><p class="ss-helper">Only the current top card may be examined. Clues are the only way to communicate card information.</p></section></div>
       <div class="ss-bm-bottom-actions"><button class="ss-btn alt sm" data-ss="restart">New game</button><button class="ss-btn alt sm" data-ss="title">Exit to title</button></div>
     </div>`;
   }
