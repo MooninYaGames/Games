@@ -1120,7 +1120,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '4.2',
+    stackSquad: '4.3',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2976,7 +2976,7 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
       }
     }
     if(!p.hand.length){
-      if(p.tokens>0&&top){const hint=findClue(i,true,lvl);if(hint)return giveClue(i,hint.to,hint.slot,hint.type);}
+      if(p.tokens>0&&top){const hint=findClue(i,true,lvl,true);if(hint)return giveClue(i,hint.to,hint.slot,hint.type);}
       advance();return render();
     }
     if(!top)return play(i,p.hand[0].id); // First card is always legal.
@@ -3027,7 +3027,7 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
       const target=fairSus[0]?.x;
       if(target!==undefined&&ss.players[target].sus>=1.3)return voteStart(target,i);
     }
-    if(!p.hand.length){if(p.tokens>0&&top){const target=findClue(i);if(target)return giveClue(i,target.to,target.slot,target.type);}advance();return render();}
+    if(!p.hand.length){if(p.tokens>0&&top){const target=findClue(i,false,baseLvl,true);if(target)return giveClue(i,target.to,target.slot,target.type);}advance();return render();}
     if(!top)return play(i,p.hand[0].id);
     const best=scores[0],randomChance=[.56,.24,.07][baseLvl];
     // Teammates consider clue value, recipient needs, and approaching turns.
@@ -3064,9 +3064,9 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
   // AI can see *other* players' actual cards, but estimates what those players
   // can deduce using only their public information. Never reads their role to
   // decide whom to help or uses its own hidden card value to choose clues.
-  function findClue(i,unhelpful=false,level=teamLevel()){
+  function findClue(i,unhelpful=false,level=teamLevel(),allowRedundant=false){
     const top=ss.pile.at(-1)?.card;if(!top)return null;
-    const candidates=[],n=ss.players.length;
+    const candidates=[],fallback=[],n=ss.players.length;
     const safeFraction=cards=>cards.length?cards.filter(c=>valid(c,top)).length/cards.length:0;
     for(let to=0;to<n;to++){
       if(to===i||!ss.players[to].hand.length)continue;
@@ -3080,10 +3080,17 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
         // The target cannot see this card. Reconstruct its possibilities from
         // everything that recipient actually knows (including previous clues).
         const before=whoKnows(to,slot,true);
-        if(!before.length)continue;
         const prior=safeFraction(before);
         for(const v of clueValid(realCard,top)){
           const alreadyKnown=target.clues.some(c=>c.slot===slot&&c.type===v.type&&c.top.r===top.r&&c.top.s===top.s);
+          // With an empty hand, the player still has a turn if they have a clue
+          // token. Even when every legal clue is already inferable from the 24-card
+          // deck, it remains a valid formal action. Prefer a fresh truthful fact.
+          if(allowRedundant){
+            fallback.push({to,slot,type:v.type,recipientBest,distance,cardIndex:ci,
+              actuallyValid:valid(realCard,top),score:urgency*.25+(to===0?.22:0)
+                +(alreadyKnown?-.6:0)+(v.type==='sameSuit'?.035:0)});
+          }
           if(alreadyKnown)continue;
           const after=before.filter(c=>satisfiesClue(c,v.type,top));
           if(!after.length||after.length===before.length)continue; // No new information.
@@ -3102,7 +3109,16 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
         }
       }
     }
-    if(!candidates.length)return null;
+    if(!candidates.length){
+      if(!allowRedundant||!fallback.length)return null;
+      fallback.sort((a,b)=>b.score-a.score);
+      // Fallback is for empty-handed players only: spend their remaining clue
+      // tokens on legal statements instead of silently skipping their turns.
+      // A redundant truthful clue is preferable to skipping a legal action.
+      if(unhelpful)return pick(fallback.slice(-Math.min(4,fallback.length)));
+      const bestScore=fallback[0].score;
+      return pick(fallback.filter(x=>x.score>=bestScore-.018));
+    }
     candidates.sort((a,b)=>b.score-a.score);
     if(unhelpful){ // Always truthful, but never intentionally the most helpful clue.
       if(level===0)return pick(candidates.slice(-Math.max(1,Math.ceil(candidates.length*.30))));
