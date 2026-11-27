@@ -1155,7 +1155,7 @@ body:has(.bm-review-mode) .game-back-link{margin-bottom:4px}
      Website ZIP versions increment independently (Moonin_Ya_Games_vX.Y.zip).
   */
   const GAME_VERSIONS = Object.freeze({
-    stackSquad: '4.4',
+    stackSquad: '4.5',
     noMoreFours: '1.2',
     honorableMan: '2.1',
     badMagicians: '1.21'
@@ -2908,8 +2908,8 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
     const p=ss.players[i],at=p.hand.findIndex(x=>x.id===slot);if(at<0)return;
     const old=ss.pile[ss.pile.length-1]?.card||null,got=p.hand.splice(at,1)[0],okay=valid(got.card,old),name=getActor(i).name;
     ss.pile.push({card:got.card,who:i,okay,move:ss.move});p.good+=okay?1:0;p.failed+=okay?0:1;p.sus+=okay?-0.12:1;
-    if(okay){p.tokens=3;p.clueCards.forEach(x=>x.up=true);}else{ss.hp--;}
-    record(`${name} played ${vcard(got.card)} — ${okay?`valid; ${i===0?'your':`${name}’s`} clues refreshed`:`invalid; −1 HP (${ss.hp} left)`}.`);
+    p.tokens=3;p.clueCards.forEach(x=>x.up=true);if(!okay)ss.hp--;
+    record(`${name} played ${vcard(got.card)} — ${okay?'valid':'invalid; −1 HP ('+ss.hp+' left)'}; ${i===0?'your':`${name}’s`} clues refreshed.`);
     ss.actionFocus={kind:'play',who:i,okay,move:ss.move};
     ss.lastActor=i;ping(okay?'play':'wrong');
     const suspiciousWitnesses=!config.pure&&!okay&&ss.pile.length>=3
@@ -2919,7 +2919,7 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
       traitorRemark(p.sus>=1.7?'certain':'suspicious',observer,i);
     }else quote(okay?'correct':'wrong',getActor(i).id,{kind:'play'});
     const end=ss.hp<=0?'The last HP was lost':ss.pile.length===24?'All 24 cards were stacked':null;
-    beginHold(()=>{if(end)finish(end,i,ss.hp>0);else advance();},`${name.toUpperCase()} PLACED ${vcard(got.card)}`,okay?`Valid card! ${i===0?'Your clues':`${name}’s clues`} are refreshed.`:`Wrong card! Team loses 1 HP.`,i);
+    beginHold(()=>{if(end)finish(end,i,ss.hp>0);else advance();},`${name.toUpperCase()} PLACED ${vcard(got.card)}`,okay?`Valid card! ${i===0?'Your clues':`${name}’s clues`} are refreshed.`:`Wrong card! Team loses 1 HP. ${i===0?'Your clues':`${name}’s clues`} are refreshed.`,i);
   }
   const clueValid=(target,top)=>[{type:'higher',text:'Higher rank',valid:target.r>top.r},{type:'lower',text:'Lower rank',valid:target.r<top.r},{type:'sameSuit',text:'Same suit',valid:target.s===top.s},{type:'differentSuit',text:'Different suit',valid:target.s!==top.s}].filter(c=>c.valid);
   function giveClue(i,to,slot,type){if(!ss||ss.over||paused||turnHold||ss.turn!==i)return;
@@ -3327,21 +3327,26 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
       </section>
 
       <section class="ss-surface" id="ss-rule-setup">
-        <div class="ss-guide-section-label">GAME RULES</div><h2>Setting up</h2>
-        ${!config.pure?`<h3 class="ss-guide-subhead">Assign secret roles</h3>
-        <p>Deal one face-down face-card role to each player, with <strong>exactly one Queen of Spades</strong> among them. Its holder is the traitor; everyone else is loyal. Keep roles hidden until a conviction or the end.</p>
-        <p>Only the traitor may privately inspect and memorize their own playable cards once during setup. Other players never see their own cards.</p>`:''}
+        <div class="ss-guide-section-label">GAME RULES · PHYSICAL OR DIGITAL</div><h2>Setting up</h2>
+        <h3 class="ss-guide-subhead">What you need for a real-life game</h3>
+        <p>Use <strong>one standard 52-card deck</strong>, plus a <strong>Joker or small counters/coins</strong> if you need extra HP markers. You need <strong>3–6 players</strong>. Separate the <strong>24 playable cards</strong> (A, 2, 3, 4, 5, 6 in all four suits) from the <strong>28 high cards</strong> (7 through King). Shuffle the playable cards on their own. Keep the high cards aside for ${config.pure?'clue and health markers':'secret roles, clue markers, and health markers'}.</p>
+        ${!config.pure?`<h3 class="ss-guide-subhead">Secret roles (traitor mode only)</h3>
+        <p>From the Jacks, Queens and Kings, choose <strong>one face card per player</strong>, including <strong>exactly one Queen of Spades (Q♠)</strong>; shuffle these role cards separately. Deal one to each player. Each player <strong>privately checks their own role</strong>, then leaves it face down beside them. The Q♠ player is the traitor; everyone else is loyal. Do not reveal roles until a successful conviction vote or the end of the game.</p>`:''}
         <h3 class="ss-guide-subhead">Deal the playable cards</h3>
-        <p>Shuffle the 24 playable cards and deal them face down. <strong>Each player sees everyone else's cards, but cannot see their own.</strong> The entire deck is dealt:</p>
+        <p>Shuffle and deal <strong>all 24</strong> playable cards face down, without anyone looking at their own hand. For five players, randomly choose the <strong>Lucky Goose</strong>, who receives one fewer card.</p>
         <table><thead><tr><th>Players</th><th>Cards in each hand</th><th>Table</th></tr></thead><tbody>
         <tr><td>3</td><td>8 each</td><td>Antarctica</td></tr><tr><td>4</td><td>6 each</td><td>China</td></tr><tr><td>5</td><td>Four players get 5; the <strong>Lucky Goose</strong> gets 4</td><td>Seville</td></tr><tr><td>6</td><td>4 each</td><td>Belgrade</td></tr></tbody></table>
         <div class="ss-rules-scenes">${[3,4,5,6].map(n=>`<figure><img src="${SS_SCENES[n]}" alt="${esc(VENUES[n].alt)}"><figcaption>${n} players · ${esc(VENUES[n].title)}</figcaption></figure>`).join('')}</div>
-        <h3 class="ss-guide-subhead">Give everyone 3 clue tokens</h3>
-        <div class="ss-guide-token-row">${[1,2,3].map(token).join('')}<span>Each player starts with <strong>3 available clues</strong>. Giving a clue spends one; a <strong>valid card placement restores only that player's 3 clues</strong>.</span></div>
-        <p>For a physical game, use cards ranked 7 and above as face-up clue markers and face-down health markers; flip a clue down when spent. In six-player games, a Joker can be used as an additional health marker. Digital games show these markers on screen.</p>
-        <h3 class="ss-guide-subhead">Set team health and turn order</h3>
-        <p>Choose starting HP: <strong>NIGHTMARE 4</strong>, <strong>Normal 6</strong> (default), or <strong>Baby Mode 10</strong>. The seating order is <strong>You → leftmost opponent → the next opponent to the right → … → You</strong>. The first seat to act is chosen <strong>randomly</strong>; play follows that seating order from then on.</p>
-        <div class="ss-guide-physical"><strong>Playing with real cards?</strong> Hold your cards facing outward so everybody else can see them but you cannot. ${config.pure?'':'During the secret setup, everyone closes their eyes while the traitor takes their one private look.'}</div>
+        <h3 class="ss-guide-subhead">Turn hands face out (real life)</h3>
+        ${config.pure?`<p>Everyone looks away, then turns their cards to <strong>face outward</strong>, without glimpsing their own cards. You may hold the cards on your forehead or use stands that show your cards to the others but not to you.</p>`:`<p><strong>Everyone closes their eyes</strong> and holds their playable cards on their forehead, <strong>faces pointing toward themselves</strong>. The traitor alone opens their eyes and <strong>looks at and memorizes their own cards once</strong>, then closes their eyes. With all eyes closed, everyone flips their hands to <strong>face outward</strong>. Afterward everyone opens their eyes. Use a card stand instead if it achieves the same thing: everyone sees the other hands, nobody sees their own. The traitor must not show anyone their private peek.</p>`}
+        <h3 class="ss-guide-subhead">Give everyone 3 clue markers</h3>
+        <div class="ss-guide-token-row">${[1,2,3].map(token).join('')}<span>Each player starts with <strong>3 available clues</strong>. Giving a clue spends one; <strong>placing any card—valid or invalid—refreshes only that player's 3 clues</strong>.</span></div>
+        <p>Take <strong>3 unused high cards per player</strong> (rank 7–King) and place them <strong>face up</strong> in front of that player. These are their clue markers. Flip one face down whenever they give a clue; flip all three face up whenever <em>that player places a card</em>, regardless of whether it is valid.</p>
+        <h3 class="ss-guide-subhead">Set the team's HP</h3>
+        <p>Choose <strong>NIGHTMARE: 4 HP</strong>, <strong>Normal: 6 HP</strong> (default), or <strong>Baby Mode: 10 HP</strong>. Set aside <strong>one face-down marker per HP</strong> from the unused high cards. When an invalid card is played, flip one marker face up beside the HP pile. In a six-player game, only <strong>four high cards remain</strong> after roles and clue markers; use a Joker and/or coins for extra HP. At any player count, if there are not enough spare cards for the chosen HP, use coins, tokens, or spare markers. (For coins, simply remove one whenever HP is lost.)</p>
+        <h3 class="ss-guide-subhead">Choose who starts</h3>
+        <p>Choose the starting player <strong>randomly</strong>, then follow a consistent seating order around the table for every turn. In the digital game the order is <strong>You → leftmost opponent → each opponent to the right → You</strong>, but the first player can be anyone. Before the first card is placed there is <strong>no top card to give clues about</strong>, so the starting player places a card.</p>
+        <div class="ss-guide-physical"><strong>Real-life reminder:</strong> Never look at your own playable cards after the private setup. Keep role cards and your clue and HP markers separate from the playable stack.</div>
       </section>
 
       <section class="ss-surface" id="ss-rule-talk">
@@ -3357,10 +3362,11 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
           <div class="ss-guide-action" id="ss-rule-stack">
             <div class="ss-guide-action-title"><span class="ss-guide-action-num">ACTION 1</span><h3>Place a card</h3></div>
             <p>Choose one of your <strong>unknown</strong> cards and commit it to the stack. Once revealed, you cannot change your choice. <strong>The first card placed is always valid.</strong></p>
-            <p>After that, a card is <strong>valid</strong> if it matches the top card's <strong>suit</strong> OR its rank is <strong>within 1</strong> of the top card (including the same rank).</p>
+            <p>After that, a card is <strong>valid</strong> if it matches the top card's <strong>suit</strong> OR its rank is <strong>within 1</strong> of the top card (including the same rank). Ace counts as <strong>1</strong>.</p>
             <div class="ss-rule-cards ss-guide-example">${ex(4,'S')}<strong>→</strong>${ex(5,'H')}<span class="ss-rule-note"><strong>Valid:</strong> 5♥ is one higher than 4♠. Any 3, 4, 5, or spade also works.</span></div>
             <div class="ss-rule-cards ss-guide-example">${ex(4,'S')}<strong>→</strong>${ex(6,'D')}<span class="ss-rule-note"><strong>Invalid:</strong> 6♦ is two higher and has a different suit.</span></div>
-            <div class="ss-guide-results"><div><strong>VALID</strong><span>The card stays on top. <strong>Your 3 clue tokens refresh</strong>.</span></div><div><strong>INVALID</strong><span>The card <strong>still stays on top</strong>. The team loses <strong>1 HP</strong>.</span></div></div>
+            <div class="ss-guide-results"><div><strong>VALID</strong><span>The card stays on top. <strong>Your 3 clue tokens refresh.</strong></span></div><div><strong>INVALID</strong><span>The card <strong>still stays on top</strong>. The team loses <strong>1 HP</strong>. <strong>Your 3 clue tokens still refresh.</strong></span></div></div>
+            <p><strong>Important:</strong> Any card placement restores <strong>all 3 clue markers belonging to the player who played it</strong>—even a wrong card. It never restores everyone else's clues.</p>
             <p class="ss-guide-fine">The stack stays one card-width tall. You can look at <strong>only its current top card</strong>, never the cards underneath. Remember earlier cards yourself.</p>
           </div>
 
@@ -3370,7 +3376,7 @@ const traitorLevel=()=>Math.max(0,INTEL.indexOf(config.traitor));
             <div class="ss-guide-clue-grid"><div>Higher rank than the top card</div><div>Lower rank than the top card</div><div>Same suit as the top card</div><div>Different suit from the top card</div></div>
             <div class="ss-rule-cards ss-guide-example">${ex(3,'H')}<strong>→</strong>${ex(5,'C')}<span class="ss-rule-note">With 3♥ on top, you may tell someone their 5♣ is <strong>higher</strong> or a <strong>different suit</strong>.</span></div>
             <p><strong>Not allowed:</strong> Saying a card has the same <em>rank</em> as the top card, or giving an untrue clue${config.pure?'.':', even if you are the traitor.'}</p>
-            <p>You need at least one unused clue token and a card already on the stack. After spending all three, you cannot give another clue until a <strong>valid placement</strong> refreshes your tokens. <strong>You can still give clues when your own hand is empty.</strong></p>
+            <p>You need at least one unused clue token and a card already on the stack. After spending all three, you cannot give another clue until <strong>you place a card (whether valid or invalid)</strong> and refresh your tokens. <strong>You can still give clues when your own hand is empty</strong>, as long as somebody else still holds a card.</p>
           </div>
 
           ${!config.pure?`<div class="ss-guide-action ss-guide-action-vote" id="ss-rule-votes">
